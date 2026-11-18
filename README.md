@@ -60,7 +60,11 @@ A **standalone HTML preview** is also provided with the downloadable package for
 ## Project structure
 
 ```text
-notekeep98-bun/
+NoteKeep98/
+├── .gitignore
+├── CREDITS.md           # Design attribution and AI disclosure
+├── LICENSE              # MIT license
+├── README.md            # Documentation
 ├── index.html           # Application HTML entry
 ├── server.ts            # Bun development/production HTTP server
 ├── src/
@@ -71,6 +75,7 @@ notekeep98-bun/
 │   └── build.ts         # Bun.build production bundling
 ├── tests/
 │   └── browser_test.py  # Optional Playwright Chromium interaction checks
+├── standalone-preview.html
 ├── package.json
 └── tsconfig.json
 ```
