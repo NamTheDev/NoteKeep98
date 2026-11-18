@@ -99,3 +99,9 @@ This disclosure acknowledges AI assistance, not authorship or endorsement by Chr
 - Chromium browser interaction checks passed for editing, search, checklists, colors, pinning, labels, reminders, duplication, archive, trash/restore, menus, list mode, min/max window and JSON export.
 - The mobile layout was checked at 390 × 844 with no horizontal overflow.
 - Bun itself was not installed in the build environment, so `bun run dev` and `bun run build` were not directly executed here. The Bun script implementation is supplied as source.
+
+## License
+
+NoteKeep 98 is licensed under the [MIT License](LICENSE).
+
+The Windows 95/98 design reference by [Chris Lemke](https://github.com/chrislemke) is separately licensed under MIT. See [CREDITS.md](CREDITS.md) for attribution.
