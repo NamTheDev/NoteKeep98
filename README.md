@@ -98,12 +98,19 @@ See [CREDITS.md](CREDITS.md) for the attribution. Google Keep is a Google produc
 
 This disclosure acknowledges AI assistance, not authorship or endorsement by Chris Lemke, Google, Microsoft, or OpenAI.
 
-## Verification
+## Testing
 
-- `tsc --noEmit` passed with strict TypeScript checking.
-- Chromium browser interaction checks passed for editing, search, checklists, colors, pinning, labels, reminders, duplication, archive, trash/restore, menus, list mode, min/max window and JSON export.
-- The mobile layout was checked at 390 × 844 with no horizontal overflow.
-- Bun itself was not installed in the build environment, so `bun run dev` and `bun run build` were not directly executed here. The Bun script implementation is supplied as source.
+From the repository root, install dependencies, type-check the source, and attempt a production build:
+
+```bash
+bun install
+bun run typecheck
+bun run build
+```
+
+To check the interface manually, run `bun run dev`, open **http://localhost:3000**, and test creating, editing, searching, archiving, and restoring notes. Reload the page to check browser-local persistence.
+
+The optional `tests/browser_test.py` script is environment-specific: it expects pre-generated `.preview/` JavaScript files and Chromium at `/usr/bin/chromium`. It is **not** configured as a portable test command.
 
 ## License
 
