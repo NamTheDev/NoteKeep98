@@ -1,0 +1,19 @@
+{
+  "name": "notekeep-98",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A local-first, Windows 95/98-styled notes app built with TypeScript and Bun",
+  "scripts": {
+    "dev": "bun --watch server.ts",
+    "build": "bun run scripts/build.ts",
+    "start": "bun server.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "bun": ">=1.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
