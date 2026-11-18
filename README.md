@@ -87,6 +87,12 @@ The design reference's source repository is [MIT licensed](https://github.com/ch
 
 See [CREDITS.md](CREDITS.md) for the attribution. Google Keep is a Google product; this independent notes app is not affiliated with or endorsed by Google.
 
+## AI disclaimer
+
+**NoteKeep 98 was developed with assistance from OpenAI's ChatGPT.** AI was used to generate and refine the application code, Windows 95/98-inspired interface, and project documentation. AI-generated output may contain errors, limitations, or security issues; the project has not undergone an independent security audit. Review and test the code before relying on it in production.
+
+This disclosure acknowledges AI assistance, not authorship or endorsement by Chris Lemke, Google, Microsoft, or OpenAI.
+
 ## Verification
 
 - `tsc --noEmit` passed with strict TypeScript checking.
