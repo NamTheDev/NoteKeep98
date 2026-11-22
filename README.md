@@ -61,6 +61,7 @@ A **standalone HTML preview** is also provided with the downloadable package for
 
 ```text
 NoteKeep98/
+├── .github/workflows/ui-verification.yml  # Build and browser test CI
 ├── .gitignore
 ├── AI_DISCLAIMER.md    # AI usage and project-specific disclosure
 ├── CREDITS.md           # Design attribution and AI disclosure
@@ -75,7 +76,7 @@ NoteKeep98/
 ├── scripts/
 │   └── build.ts         # Bun.build production bundling
 ├── tests/
-│   └── browser_test.py  # Optional Playwright Chromium interaction checks
+│   └── browser_test.py  # Playwright Chromium browser and storage checks
 ├── standalone-preview.html
 ├── package.json
 └── tsconfig.json
@@ -113,7 +114,21 @@ bun run build
 
 To check the interface manually, run `bun run dev`, open **http://localhost:3000**, and test creating, editing, searching, archiving, and restoring notes. Reload the page to check browser-local persistence.
 
-The optional `tests/browser_test.py` script is environment-specific: it expects pre-generated `.preview/` JavaScript files and Chromium at `/usr/bin/chromium`. It is **not** configured as a portable test command.
+The browser test runs against the actual Bun server (no generated `.preview` files or hard-coded browser path). From a clean checkout, install and build with Bun, then install Playwright and run the tests:
+
+```bash
+bun install --frozen-lockfile
+bun run typecheck
+bun run build
+python -m pip install playwright==1.56.1
+python -m playwright install chromium
+NODE_ENV=production bun run start &
+python tests/browser_test.py
+```
+
+GitHub Actions runs type checking, production build, and Chromium tests on `ubuntu-24.04`. The browser suite includes a regression check for unavailable browser storage: failed saves keep the editor open and do not report success.
+
+When browser storage is full or blocked, edits cannot be persisted. The app now rolls back failed changes, keeps an unsaved editor draft available for recovery, and asks users to free space or export a backup.
 
 ## License
 

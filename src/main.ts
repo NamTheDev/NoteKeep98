@@ -110,12 +110,23 @@ app.innerHTML = `
   <input type="file" id="importInput" accept=".json,application/json" hidden>
 </div>`;
 
-function persist(): void {
-  try {localStorage.setItem(STORAGE_KEY,JSON.stringify(data));}
-  catch {notify('Could not save to browser storage. Export a backup.');}
+function persist(): boolean {
+  try {localStorage.setItem(STORAGE_KEY,JSON.stringify(data));return true;}
+  catch {return false;}
 }
 function getNote(noteId: string): Note | undefined {return data.notes.find(n=>n.id===noteId);}
-function mutate(fn:()=>void): void {fn();persist();render();}
+function mutate(fn:()=>void): boolean {
+  const previous=structuredClone(data);
+  fn();
+  if(!persist()){
+    data=previous;
+    render();
+    notify('Could not save to browser storage. Your change was not applied. Free up space or export a backup.');
+    return false;
+  }
+  render();
+  return true;
+}
 function notify(message: string, allowUndo = false): void {
   if (toastTimer) window.clearTimeout(toastTimer);
   const root = $('#toastRoot'); if (!root) return;
@@ -123,7 +134,10 @@ function notify(message: string, allowUndo = false): void {
   toastTimer = window.setTimeout(()=>{root.innerHTML='';},4500);
 }
 function mutationWithUndo(message: string, fn:()=>void): void {
-  undo = structuredClone(data.notes);mutate(fn);notify(message,true);
+  const previous=structuredClone(data.notes);
+  if(!mutate(fn))return;
+  undo=previous;
+  notify(message,true);
 }
 function counts(): Record<string,number> {
   return {
@@ -257,10 +271,10 @@ function saveEditor():void {
   item.items=item.items.filter(c=>c.text.trim());
   if(!item.title.trim()&&!item.body.trim()&&!item.items.length){dialog=null;draft=null;renderDialog();return;}
   item.updatedAt=now();
-  mutate(()=>{
+  if(!mutate(()=>{
     if(editingId){const index=data.notes.findIndex(n=>n.id===editingId);if(index>=0)data.notes[index]=normalizeNote(item);}
     else data.notes.unshift(normalizeNote(item));
-  });
+  }))return;
   editingId=null;draft=null;dialog=null;renderDialog();notify('Note saved');
 }
 function closeEditor():void {draft=null;editingId=null;dialog=null;closePopup();renderDialog();}
@@ -361,14 +375,14 @@ function renderPopup():void {
   }
   if (['file','edit','view','help'].includes(kind))$$('.menu-btn').forEach(btn=>btn.classList.toggle('is-active',btn.getAttribute('data-value')===kind));
 }
-function updateTarget(action:(n:Note)=>void,target:string|null=popup.target):void {
-  if(target==='draft'&&draft){action(draft);return;}
+function updateTarget(action:(n:Note)=>void,target:string|null=popup.target):boolean {
+  if(target==='draft'&&draft){action(draft);return true;}
   const n=target?getNote(target):undefined;
-  if(n)mutate(()=>{action(n);n.updatedAt=now();});
+  return n?mutate(()=>{action(n);n.updatedAt=now();}):false;
 }
 function setReminder(value:string|null):void {
   const target=reminderTarget;
-  updateTarget(n=>{n.reminder=value;},target);
+  if(!updateTarget(n=>{n.reminder=value;},target))return;
   closeReminder();
   if(reminderReturn==='editor') renderDialog();
   notify(value?'Reminder set':'Reminder removed');
@@ -385,7 +399,7 @@ function renameLabel(oldName:string):void {
   const input=$<HTMLInputElement>(`.rename-input[data-old="${CSS.escape(oldName)}"]`);
   const next=input?.value.trim();if(!next||next===oldName)return;
   if(data.labels.some(l=>l.toLowerCase()===next.toLowerCase())){notify('A label with that name already exists');return;}
-  mutate(()=>{data.labels=data.labels.map(l=>l===oldName?next:l);for(const n of data.notes)n.labels=n.labels.map(l=>l===oldName?next:l);if(view===`label:${oldName}`)view=`label:${next}`;});
+  if(!mutate(()=>{data.labels=data.labels.map(l=>l===oldName?next:l);for(const n of data.notes)n.labels=n.labels.map(l=>l===oldName?next:l);if(view===`label:${oldName}`)view=`label:${next}`;}))return;
   renderDialog();notify('Label renamed');
 }
 function setWindowClock():void {
@@ -412,10 +426,12 @@ function execute(action:string,button:HTMLElement):void {
     case 'addLabel':{
       const input=$<HTMLInputElement>('#newLabelInput');const name=input?.value.trim();if(!name)return;
       if(data.labels.some(l=>l.toLowerCase()===name.toLowerCase())){notify('That label already exists');return;}
-      mutate(()=>data.labels.push(name));renderDialog();$<HTMLInputElement>('#newLabelInput')?.focus();notify('Label created');break;
+      if(!mutate(()=>data.labels.push(name)))break;
+      renderDialog();$<HTMLInputElement>('#newLabelInput')?.focus();notify('Label created');break;
     }
     case 'renameLabel':renameLabel(value);break;
-    case 'deleteLabel':confirm('Delete label?',`Remove the “${value}” label from all notes? The notes will remain.`,()=>{mutate(()=>{data.labels=data.labels.filter(l=>l!==value);for(const n of data.notes)n.labels=n.labels.filter(l=>l!==value);if(view===`label:${value}`)view='notes';});dialog='labels';renderDialog();notify('Label deleted');});break;
+    case 'deleteLabel':confirm('Delete label?',`Remove the “${value}” label from all notes? The notes will remain.`,()=>{if(!mutate(()=>{data.labels=data.labels.filter(l=>l!==value);for(const n of data.notes)n.labels=n.labels.filter(l=>l!==value);if(view===`label:${value}`)view='notes';}))return;
+      dialog='labels';renderDialog();notify('Label deleted');});break;
     case 'chooseColor':{
       updateTarget(n=>n.color=value);if(popup.target==='draft'){$<HTMLElement>('#editorPaper')?.style.setProperty('--note-color',value);}
       closePopup();break;
@@ -437,21 +453,24 @@ function execute(action:string,button:HTMLElement):void {
     case 'archive':mutationWithUndo('Note moved',()=>{const n=getNote(noteId);if(n){n.archived=!n.archived;n.updatedAt=now();}});closePopup();break;
     case 'delete':mutationWithUndo('Moved to Recycle Bin',()=>{const n=getNote(noteId);if(n){n.trashed=true;n.archived=false;n.updatedAt=now();}});closePopup();break;
     case 'restore':mutationWithUndo('Note restored',()=>{const n=getNote(noteId);if(n){n.trashed=false;n.updatedAt=now();}});break;
-    case 'deleteForever':confirm('Delete permanently?','This note will be removed permanently. This action cannot be undone.',()=>{mutate(()=>data.notes=data.notes.filter(n=>n.id!==noteId));dialog=null;renderDialog();notify('Note deleted permanently');});break;
-    case 'emptyTrash':confirm('Empty Recycle Bin?','All notes in the Recycle Bin will be permanently deleted. This cannot be undone.',()=>{mutate(()=>data.notes=data.notes.filter(n=>!n.trashed));dialog=null;renderDialog();notify('Recycle Bin emptied');});break;
+    case 'deleteForever':confirm('Delete permanently?','This note will be removed permanently. This action cannot be undone.',()=>{if(!mutate(()=>data.notes=data.notes.filter(n=>n.id!==noteId)))return;
+      dialog=null;renderDialog();notify('Note deleted permanently');});break;
+    case 'emptyTrash':confirm('Empty Recycle Bin?','All notes in the Recycle Bin will be permanently deleted. This cannot be undone.',()=>{if(!mutate(()=>data.notes=data.notes.filter(n=>!n.trashed)))return;
+      dialog=null;renderDialog();notify('Recycle Bin emptied');});break;
     case 'duplicate':{
-      const n=getNote(popup.target??'');if(n){const copy=structuredClone(n);copy.id=id();copy.title=n.title;copy.createdAt=now();copy.updatedAt=now();copy.pinned=false;copy.items=copy.items.map(i=>({...i,id:id()}));mutate(()=>data.notes.unshift(copy));notify('Note duplicated');}closePopup();break;
+      const n=getNote(popup.target??'');if(n){const copy=structuredClone(n);copy.id=id();copy.title=n.title;copy.createdAt=now();copy.updatedAt=now();copy.pinned=false;copy.items=copy.items.map(i=>({...i,id:id()}));if(mutate(()=>data.notes.unshift(copy)))notify('Note duplicated');}closePopup();break;
     }
     case 'export':closePopup();exportData();break;
     case 'import':closePopup();$<HTMLInputElement>('#importInput')?.click();break;
-    case 'reset':confirm('Restore sample notes?','This replaces all your notes and labels with the sample set. Export a JSON backup first if you want to keep your notes.',()=>{data=seed();persist();dialog=null;view='notes';search='';const field=$<HTMLInputElement>('#searchInput');if(field)field.value='';renderDialog();render();notify('Sample notes restored');});break;
+    case 'reset':confirm('Restore sample notes?','This replaces all your notes and labels with the sample set. Export a JSON backup first if you want to keep your notes.',()=>{if(!mutate(()=>{data=seed();}))return;
+      dialog=null;view='notes';search='';const field=$<HTMLInputElement>('#searchInput');if(field)field.value='';renderDialog();render();notify('Sample notes restored');});break;
     case 'confirm':{const fn=confirmAction;confirmAction=null;dialog=null;renderDialog();fn?.();break;}
     case 'toggleView':mutate(()=>{data.list=!data.list;});closePopup();break;
     case 'toggleNight':mutate(()=>{data.dark=!data.dark;});closePopup();if(dialog==='settings')renderDialog();break;
     case 'toggleListFromSettings':mutate(()=>{data.list=!data.list;});renderDialog();break;
     case 'clearSearch':search='';{const field=$<HTMLInputElement>('#searchInput');if(field){field.value='';field.focus();}}render();break;
     case 'dismissToast':{const root=$('#toastRoot');if(root)root.innerHTML='';break;}
-    case 'undo':if(undo){data.notes=undo;undo=null;persist();render();notify('Undone');}break;
+    case 'undo':if(undo){const snapshot=structuredClone(undo);if(mutate(()=>{data.notes=snapshot;})){undo=null;notify('Undone');}}break;
     case 'minimize':minimized=true;mobileMenu=false;closePopup();render();break;
     case 'maximize':maximized=!maximized;render();break;
     case 'taskApp':minimized=!minimized;render();break;
@@ -484,8 +503,8 @@ app.addEventListener('change',event=>{
     updateTarget(n=>{n.labels=input.checked?[...new Set([...n.labels,label])]:n.labels.filter(l=>l!==label);});
     renderPopup();
   }
-  if(action==='toggleNight'){data.dark=input.checked;persist();render();}
-  if(action==='toggleListFromSettings'){data.list=input.checked;persist();render();}
+  if(action==='toggleNight')mutate(()=>{data.dark=input.checked;});
+  if(action==='toggleListFromSettings')mutate(()=>{data.list=input.checked;});
 });
 app.addEventListener('input',event=>{
   const node=event.target as HTMLInputElement;
@@ -531,8 +550,9 @@ if(importInput)importInput.addEventListener('change',async()=>{
     const used=new Set(data.notes.map(n=>n.id));
     incoming.forEach(n=>{if(used.has(n.id))n.id=id();used.add(n.id);});
     const labels=('labels' in parsed && Array.isArray(parsed.labels)) ? parsed.labels.filter((x:unknown):x is string=>typeof x==='string').slice(0,200) : [];
-    mutate(()=>{data.notes.unshift(...incoming);data.labels=Array.from(new Set([...data.labels,...labels,...incoming.flatMap(n=>n.labels)])).slice(0,200);});
-    dialog=null;renderDialog();notify(`${incoming.length} notes imported`);
+    if(mutate(()=>{data.notes.unshift(...incoming);data.labels=Array.from(new Set([...data.labels,...labels,...incoming.flatMap(n=>n.labels)])).slice(0,200);})){
+      dialog=null;renderDialog();notify(`${incoming.length} notes imported`);
+    }
   }catch{notify('Invalid JSON notes backup');}
   importInput.value='';
 });

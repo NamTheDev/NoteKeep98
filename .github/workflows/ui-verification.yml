@@ -1,0 +1,53 @@
+name: NoteKeep98 UI verification
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Typecheck, build, and Chromium browser tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Bun dependencies and check TypeScript
+        run: |
+          bun install --frozen-lockfile
+          bun run typecheck
+          bun run build
+      - name: Install Playwright Chromium
+        run: |
+          python -m pip install playwright==1.56.1
+          python -m playwright install --with-deps chromium
+      - name: Run browser regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          NODE_ENV=production PORT=3000 bun run start > /tmp/notekeep98-server.log 2>&1 &
+          APP_PID=$!
+          trap 'kill "$APP_PID" 2>/dev/null || true' EXIT
+          for i in {1..30}; do
+            if curl --fail --silent --output /dev/null http://127.0.0.1:3000/; then break; fi
+            if ! kill -0 "$APP_PID" 2>/dev/null; then cat /tmp/notekeep98-server.log; exit 1; fi
+            sleep 1
+          done
+          curl --fail http://127.0.0.1:3000/ > /dev/null
+          python tests/browser_test.py
+      - name: Upload screenshots and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: notekeep98-browser-evidence
+          path: |
+            test-results/
+          if-no-files-found: ignore

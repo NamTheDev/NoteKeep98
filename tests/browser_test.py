@@ -1,22 +1,26 @@
-"""Chromium smoke test. Uses transpiled TS inline because local loopback navigation is blocked in sandbox."""
+"""Portable Playwright browser tests against a running NoteKeep98 server.
+
+Run `bun run build && NODE_ENV=production bun run start` separately, then execute
+`python -m pip install playwright==1.56.1`,
+`python -m playwright install chromium`, and `python tests/browser_test.py`.
+"""
 from pathlib import Path
 from playwright.sync_api import sync_playwright
-import re
+import os
+
 root=Path(__file__).resolve().parent.parent
-js_data=(root/'.preview/data.js').read_text().replace('export ','').replace('const now =','const dataNow =').replace('now()','dataNow()').replace('Date.dataNow()','Date.now()')
-js_main=(root/'.preview/main.js').read_text()
-js_main=re.sub(r'^import \{[^\n]+\} from [^\n]+;\n','',js_main,count=1)
-html=(root/'index.html').read_text().replace('<link rel="stylesheet" href="/style.css" />','<style>'+(root/'src/style.css').read_text()+'</style>').replace('<script src="/app.js" type="module" defer></script>','')
-html=html.replace('</body>','<script>'+js_data+'\n'+js_main+'</script></body>')
+base_url=os.environ.get('NOTEKEEP_BASE_URL','http://127.0.0.1:3000')
+results=root/'test-results'
+results.mkdir(exist_ok=True)
 with sync_playwright() as p:
-    browser=p.chromium.launch(headless=True,executable_path='/usr/bin/chromium',args=['--no-sandbox','--disable-dev-shm-usage'])
+    browser=p.chromium.launch(headless=True)
     page=browser.new_page(viewport={'width':1440,'height':900},device_scale_factor=1,accept_downloads=True)
     errors=[]
     page.on('pageerror',lambda e:errors.append(str(e)))
-    page.set_content(html,wait_until='load')
+    page.goto(base_url,wait_until='load')
     page.wait_for_timeout(300)
     print('title',page.title(),'notes',page.locator('.note-window').count(), 'errors:',errors)
-    page.screenshot(path=str(root/'desktop.png'),full_page=True)
+    page.screenshot(path=str(results/'desktop.png'),full_page=True)
     # open and save note
     page.locator('.quick-bar [data-action="newNote"]').click()
     assert page.locator('#editTitle').count()==1
@@ -113,12 +117,33 @@ with sync_playwright() as p:
     # mobile
     mobile=browser.new_page(viewport={'width':390,'height':844})
     mobile.on('pageerror',lambda e:errors.append('mobile: '+str(e)))
-    mobile.set_content(html,wait_until='load')
+    mobile.goto(base_url,wait_until='load')
     mobile.wait_for_timeout(200)
-    mobile.screenshot(path=str(root/'mobile.png'),full_page=True)
+    mobile.screenshot(path=str(results/'mobile.png'),full_page=True)
     print('mobile horizontal overflow:',mobile.evaluate('document.documentElement.scrollWidth > window.innerWidth'))
     print('errors',errors)
     assert not errors, errors
     assert mobile.evaluate('document.documentElement.scrollWidth <= window.innerWidth')
+    # Storage quota/denial regression: no false "Note saved" and editor stays open.
+    blocked=browser.new_page(viewport={'width':1280,'height':800})
+    blocked.add_init_script("""(() => {
+      const original = Storage.prototype.setItem;
+      Storage.prototype.setItem = function(key, value) {
+        if (key === 'notekeep98-v1') throw new DOMException('Storage quota exceeded', 'QuotaExceededError');
+        return original.call(this, key, value);
+      };
+    })();""")
+    blocked.goto(base_url, wait_until='load')
+    blocked.locator('.quick-bar [data-action="newNote"]').click()
+    blocked.locator('#editTitle').fill('Must Not Claim Saved')
+    blocked.locator('#editBody').fill('Keep the draft visible')
+    blocked.locator('[data-action="saveEditor"]').click()
+    assert blocked.locator('#editTitle').is_visible(), "Editor closed after storage failure"
+    assert blocked.locator('#editTitle').input_value()=='Must Not Claim Saved'
+    assert 'Could not save to browser storage' in blocked.locator('#toastRoot').inner_text()
+    assert 'Note saved' not in blocked.locator('#toastRoot').inner_text()
+    blocked.reload(wait_until='load')
+    assert blocked.locator('.note-window').filter(has_text='Must Not Claim Saved').count()==0
+    blocked.close()
     print('ALL BROWSER TESTS PASSED')
     browser.close()
