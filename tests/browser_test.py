@@ -1,7 +1,7 @@
 """Portable Playwright browser tests against a running NoteKeep98 server.
 
 Run `bun run build && NODE_ENV=production bun run start` separately, then execute
-`python -m pip install playwright==1.56.1`,
+`python -m pip install playwright==1.56.0`,
 `python -m playwright install chromium`, and `python tests/browser_test.py`.
 """
 from pathlib import Path

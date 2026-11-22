@@ -120,7 +120,7 @@ The browser test runs against the actual Bun server (no generated `.preview` fil
 bun install --frozen-lockfile
 bun run typecheck
 bun run build
-python -m pip install playwright==1.56.1
+python -m pip install playwright==1.56.0
 python -m playwright install chromium
 NODE_ENV=production bun run start &
 python tests/browser_test.py
