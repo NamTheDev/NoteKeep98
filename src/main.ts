@@ -117,9 +117,11 @@ function persist(): boolean {
 function getNote(noteId: string): Note | undefined {return data.notes.find(n=>n.id===noteId);}
 function mutate(fn:()=>void): boolean {
   const previous=structuredClone(data);
+  const previousView=view;
   fn();
   if(!persist()){
     data=previous;
+    view=previousView;
     render();
     notify('Could not save to browser storage. Your change was not applied. Free up space or export a backup.');
     return false;
