@@ -62,6 +62,7 @@ A **standalone HTML preview** is also provided with the downloadable package for
 ```text
 NoteKeep98/
 ├── .gitignore
+├── AI_DISCLAIMER.md    # AI usage and project-specific disclosure
 ├── CREDITS.md           # Design attribution and AI disclosure
 ├── LICENSE              # MIT license
 ├── README.md            # Documentation
@@ -97,6 +98,8 @@ See [CREDITS.md](CREDITS.md) for the attribution. Google Keep is a Google produc
 **NoteKeep 98 was developed with assistance from OpenAI's ChatGPT.** AI was used to generate and refine the application code, Windows 95/98-inspired interface, and project documentation. AI-generated output may contain errors, limitations, or security issues; the project has not undergone an independent security audit. Review and test the code before relying on it in production.
 
 This disclosure acknowledges AI assistance, not authorship or endorsement by Chris Lemke, Google, Microsoft, or OpenAI.
+
+See [AI_DISCLAIMER.md](AI_DISCLAIMER.md) for the complete AI usage notice.
 
 ## Testing
 
