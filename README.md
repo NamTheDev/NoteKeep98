@@ -4,6 +4,14 @@ A Windows 95/98-inspired, **local-first Google Keep-style notes app**, written i
 
 This is an independent recreation. It is **not** Google Keep and does not synchronize with Google or other devices.
 
+## Use online (GitHub Pages)
+
+**Web app:** [Open NoteKeep98](https://namthedev.github.io/NoteKeep98/)
+
+This hosted version is a static site—visitors do not need Bun or an account. All notes are stored in the current browser's `localStorage`, **not on GitHub or in a cloud database**. Notes created at `localhost:3000` do not appear automatically on the hosted site. Use **Export backup** and **Import notes** to transfer them between origins or devices. Browser data can be lost if storage is cleared; retain regular backups. The app is not intended as an encrypted password or secret vault.
+
+Publishing is automated by [Deploy NoteKeep98 to GitHub Pages](.github/workflows/deploy-pages.yml) on pushes to `main`. If GitHub Pages has not been activated for this repository, an administrator must first select **Settings → Pages → Build and deployment → Source: GitHub Actions**. The published URL becomes available after the deployment succeeds.
+
 ## Run with Bun
 
 Requires [Bun](https://bun.sh/) 1.1+.
@@ -61,6 +69,7 @@ A **standalone HTML preview** is also provided with the downloadable package for
 
 ```text
 NoteKeep98/
+├── .github/workflows/deploy-pages.yml    # GitHub Pages static deployment
 ├── .github/workflows/ui-verification.yml  # Build and browser test CI
 ├── .gitignore
 ├── AI_DISCLAIMER.md    # AI usage and project-specific disclosure
