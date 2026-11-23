@@ -1,8 +1,6 @@
 import { createHash } from 'node:crypto';
 const root = new URL('../', import.meta.url).pathname;
-await Bun.import { createHash } from 'node:crypto';
-const root = new URL('../', import.meta.url).pathname;
-mkdir -p ${root}dist`;
+await Bun.$`mkdir -p ${root}dist`;
 const build = await Bun.build({
   entrypoints: [`${root}src/main.ts`],
   target: 'browser',
