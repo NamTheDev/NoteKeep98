@@ -41,7 +41,7 @@ with sync_playwright() as p:
     page.locator('.editor-check-row .item-check').last.check()
     editor_rows=page.locator('.editor-check-row')
     assert editor_rows.count()==2, f'Expected two editor checklist rows, got {editor_rows.count()}'
-    editor_values=page.locator('.editor-check-row .item-text').all_input_values()
+    editor_values=page.locator('.editor-check-row .item-text').evaluate_all('(nodes) => nodes.map(node => node.value)')
     assert editor_values==['one','two'], f'Checklist input values changed before save: {editor_values}'
     page.locator('[data-action="saveEditor"]').click()
     saved_checks=page.locator('.note-window').filter(has_text='QA List 98').locator('input[data-action="checkItem"]')
