@@ -159,9 +159,11 @@ with sync_playwright() as p:
     page.locator('[data-view="trash"]').first.click()
     assert page.locator('.note-window').filter(has_text='QA Note 98').count()==1
     page.locator('.note-window').filter(has_text='QA Note 98').locator('[data-action="restore"]').click()
-    # export
+    # Export is available through Settings after removal of the redundant toolbar.
+    page.locator('[data-action="settings"]').first.click()
     with page.expect_download() as d:
-        page.locator('[data-action="export"]').first.click()
+        page.locator('.dialog-window [data-action="export"]').click()
+    page.locator('[data-action="closeDialog"]').last.click()
     assert d.value.suggested_filename.endswith('.json')
     # reminders and reminder filtering
     page.locator('[data-view="notes"]').first.click()
