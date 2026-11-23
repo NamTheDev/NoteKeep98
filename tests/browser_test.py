@@ -39,7 +39,7 @@ with sync_playwright() as p:
         title:snapshot('.title-bar')
       };
     }""")
-    assert light_system['desktop']['bg']=='rgb(0, 128, 128)',light_system
+    assert light_system['desktop']['bg']=='rgb(192, 192, 192)',light_system
     assert light_system['desktop']['image']=='none',light_system
     assert light_system['window']['bg']=='rgb(192, 192, 192)',light_system
     assert light_system['content']['bg']=='rgb(255, 255, 255)',light_system
@@ -106,7 +106,7 @@ with sync_playwright() as p:
         originalColor:JSON.parse(localStorage.getItem('notekeep98-v1')).notes[0].color
       };
     }""")
-    assert system['desktop']['bg']=='rgb(24, 24, 24)', system
+    assert system['desktop']['bg']=='rgb(48, 48, 48)', system
     assert system['window']['bg']=='rgb(48, 48, 48)', system
     assert system['paper']['bg']=='rgb(27, 27, 27)', system
     assert system['desktopImage']=='none', 'Only system title bars may use gradients'
