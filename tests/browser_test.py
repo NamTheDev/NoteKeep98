@@ -72,7 +72,9 @@ with sync_playwright() as p:
     page.locator('.quick-bar [data-action="newChecklist"]').click()
     page.locator('#editTitle').fill('QA List 98')
     page.locator('.editor-check-row .item-text').first.fill('one')
+    assert page.locator('.editor-check-row .item-text').first.input_value()=='one'
     page.locator('[data-action="addItem"]').click()
+    assert page.locator('.editor-check-row .item-text').first.input_value()=='one', 'Adding a checklist item must not discard existing text'
     page.locator('.editor-check-row .item-text').last.fill('two')
     page.locator('.editor-check-row .item-check').last.check()
     editor_rows=page.locator('.editor-check-row')

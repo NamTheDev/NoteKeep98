@@ -263,8 +263,8 @@ function syncDraft():void {
   const title=$<HTMLInputElement>('#editTitle');const body=$<HTMLTextAreaElement>('#editBody');
   if(title)draft.title=title.value;
   if(body)draft.body=body.value;
-  $$('.editor-check-row').forEach(row=>{
-    const item=draft?.items.find(i=>i.id===row.getAttribute('data-item'));
+  $('.editor-check-row').forEach((row,index)=>{
+    const item=draft?.items.find(i=>i.id===row.getAttribute('data-item')) ?? draft?.items[index];
     if (!item)return;
     const input=$<HTMLInputElement>('.item-text',row);
     const checked=$<HTMLInputElement>('.item-check',row);
@@ -516,11 +516,21 @@ app.addEventListener('change',event=>{
     updateTarget(n=>{n.labels=input.checked?[...new Set([...n.labels,label])]:n.labels.filter(l=>l!==label);});
     renderPopup();
   }
+  if(dialog==='editor' && draft && input.matches('.editor-check-row .item-check')){
+    const row=input.closest<HTMLElement>('.editor-check-row');
+    const item=draft.items.find(i=>i.id===row?.getAttribute('data-item'));
+    if(item)item.checked=input.checked;
+  }
   if(action==='toggleDarkMode')mutate(()=>{data.dark=input.checked;});
   if(action==='toggleListFromSettings')mutate(()=>{data.list=input.checked;});
 });
 app.addEventListener('input',event=>{
   const node=event.target as HTMLInputElement;
+  if(dialog==='editor' && draft && node.matches('.editor-check-row .item-text')){
+    const row=node.closest<HTMLElement>('.editor-check-row');
+    const item=draft.items.find(i=>i.id===row?.getAttribute('data-item'));
+    if(item)item.text=node.value;
+  }
   if(node.id==='searchInput') {search=node.value;render();}
 });
 app.addEventListener('keydown',event=>{
