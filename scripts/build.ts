@@ -20,11 +20,14 @@ const template=await Bun.file(`${root}index.html`).text();
 const html=template
   .replace('href="./style.css"',`href="./style.css?v=${cssHash}"`)
   .replace('src="./app.js"',`src="./app.js?v=${appHash}"`);
+const baseFavicon=await Bun.file(`${root}node_modules/lucide-static/icons/notebook-pen.svg`).text();
+const adaptiveFavicon=baseFavicon.replace(/(<svg\\b[^>]*>)/, (tag)=>tag+
+  '<style>:root{color:#252525}@media (prefers-color-scheme:dark){:root{color:#f1f1f1}}</style>');
 const names=["file-text","folder","pencil","square-check","search","archive","trash-2","rotate-ccw","pin","bell","palette","tag","list","layout-grid","ellipsis","x","settings","save","upload","download","copy","info","triangle-alert","notebook-pen","clock","star","menu","sparkles","chevron-right"];
 await Promise.all([
   Bun.write(`${root}dist/index.html`,html),
   Bun.write(`${root}dist/style.css`,css),
-  Bun.write(`${root}dist/favicon.svg`,await Bun.file(`${root}node_modules/lucide-static/icons/notebook-pen.svg`).text()),
+  Bun.write(`${root}dist/favicon.svg`,adaptiveFavicon),
   ...names.map(async name=>Bun.write(`${root}dist/icons/${name}.svg`,await Bun.file(`${root}node_modules/lucide-static/icons/${name}.svg`).text()))
 ]);
 console.log(`Built ${build.outputs.length} JS bundle and ${names.length} Lucide icons in dist/`);
