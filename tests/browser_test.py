@@ -284,6 +284,16 @@ with sync_playwright() as p:
     assert mobile_close.evaluate('(e)=>getComputedStyle(e).stroke')=='rgb(240, 240, 240)', 'Mobile X must be white in dark mode'
     control_colors=mobile.evaluate("""() => [...document.querySelectorAll('#mainWindow .window-controls .win-control')].map((e) => getComputedStyle(e).color)""")
     assert control_colors==['rgb(240, 240, 240)']*3, control_colors
+    icon_colors=mobile.evaluate("""() => ({
+      navigation:getComputedStyle(document.querySelector('.mobile-nav-toggle svg path')).stroke,
+      search:getComputedStyle(document.querySelector('.search-box svg path')).stroke,
+      list:getComputedStyle(document.querySelector('#viewToggle svg path')).stroke
+    })""")
+    assert all(color=='rgb(240, 240, 240)' for color in icon_colors.values()),icon_colors
+    mobile.locator('[data-action="settings"]').first.click()
+    backdrop=mobile.locator('.dialog-backdrop').evaluate('(e)=>getComputedStyle(e).backgroundColor')
+    assert backdrop=='rgba(0, 0, 0, 0.28)',backdrop
+    mobile.locator('.dialog-window [data-action="closeDialog"]').last.click()
     mobile.screenshot(path=str(results/'mobile-dark.png'),full_page=True)
     mobile.reload(wait_until='load')
     assert mobile_close.evaluate('(e)=>getComputedStyle(e).stroke')=='rgb(240, 240, 240)', 'Mobile dark X must survive reload'

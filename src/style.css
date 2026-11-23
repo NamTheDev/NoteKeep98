@@ -169,7 +169,7 @@ button svg { pointer-events:none; }
 .popup-check-label:hover { background:#dcdcdc; }
 .popup-check-label input { accent-color:navy; }
 .popup-label-actions { display:flex; justify-content:flex-end; padding:6px; border-top:1px solid gray; margin-top:5px; }
-.dialog-backdrop { position:fixed; inset:0; z-index:55; background:rgba(0,0,0,.39); display:grid; place-items:center; padding:15px; }
+.dialog-backdrop { position:fixed; inset:0; z-index:55; background:rgba(0,0,0,.20); display:grid; place-items:center; padding:15px; }
 .dialog-window { width:min(550px,100%); max-height:min(90vh,790px); display:flex; flex-direction:column; }
 .dialog-window.medium { width:min(465px,100%); }
 .dialog-window .title-bar { height:31px; }
@@ -265,6 +265,14 @@ textarea.win-input { resize:vertical; line-height:1.6; min-height:150px; }
   stroke:var(--sys-text);
 }
 .desktop.dark-mode :is(.win-control svg,.note-foot svg,.nav-btn svg) { filter:brightness(1.5); }
+/* Hard-coded vector strokes must not disappear on neutral dark toolbar wells. */
+.desktop.dark-mode .mobile-nav-toggle svg path,
+.desktop.dark-mode #viewToggle svg path,
+.desktop.dark-mode .search-box svg path,
+.desktop.dark-mode .search-box svg circle {
+  stroke:var(--sys-text);
+}
+.desktop.dark-mode .search-box svg circle { fill:none; }
 .desktop.dark-mode :is(.menu-bar,.toolbar,.workspace,.content-heading,.status-bar,.address-bar,.dialog-footer,.label-row) { border-color:var(--shadow); }
 .desktop.dark-mode :is(.menu-btn:hover,.menu-btn.is-active,.tool-btn:hover,.note-top-btn:hover,.note-foot .mini-tool:hover,.editor-check-row .mini-tool:hover,.popup-check-label:hover) {
   background:var(--light2);
@@ -323,7 +331,7 @@ textarea.win-input { resize:vertical; line-height:1.6; min-height:150px; }
 .desktop.dark-mode :is(.popup-item.disabled,.popup-title) { color:var(--sys-muted); }
 .desktop.dark-mode .popup-item.disabled:hover { background:transparent; color:var(--sys-muted); }
 .desktop.dark-mode :is(.popup-check-label input,.simple-choice input,.editor-check-row input[type=checkbox]) { accent-color:#c6d9f1; }
-.desktop.dark-mode .dialog-backdrop { background:rgba(0,0,0,.72); }
+.desktop.dark-mode .dialog-backdrop { background:rgba(0,0,0,.28); }
 .desktop.dark-mode .start-rail { background:var(--shadow); }
 .desktop.dark-mode .desktop-shortcut { text-shadow:1px 1px var(--dark); }
 .desktop.dark-mode :is(.desktop-shortcut:hover,.desktop-shortcut:focus-visible) { background:var(--sys-pane); }
