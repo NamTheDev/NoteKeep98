@@ -60,7 +60,7 @@ export function seed(): AppData {
       sample('Favorite color combinations', 'Teal + navy + warm gray\nDusty lilac + soft cream\nForest green + paper white',{color:'#ffd8c9',labels:['Ideas'],createdAt:recent(7),updatedAt:recent(3)}),
       sample('A note to future me', 'Keep making things. Keep asking questions. Save the interesting bits.',{color:'#ffffff',createdAt:recent(7),updatedAt:recent(4)})
     ],
-    labels:['Personal','Work','Ideas'],list:false,collapsed:false,dark:false
+    labels:['Personal','Work','Ideas'],list:false,collapsed:false,dark:true
   };
 }
 function obj(value: unknown): Record<string, unknown> {
