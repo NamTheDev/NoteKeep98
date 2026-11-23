@@ -351,7 +351,7 @@ with sync_playwright() as p:
       };
     })();""")
     blocked.goto(base_url, wait_until='load')
-    seed_card=blocked.locator('.note-window').filter(has_text='Welcome to NoteKeep 98!')
+    seed_card=blocked.locator('.note-window').filter(has_text='Welcome to keep!')
     assert seed_card.locator('.pinned').count()==1
     seed_card.locator('[data-action="pin"]').click()
     assert seed_card.locator('.pinned').count()==1, "Failed storage write modified an existing note"
