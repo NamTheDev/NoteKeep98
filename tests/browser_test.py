@@ -36,8 +36,8 @@ with sync_playwright() as p:
         }, signal
     assert_theme_signal('dark')
     assert page.locator('.note-window').count() > 0
-    assert page.locator('img.ui-icon').count() > 12
-    assert page.locator('.tool-btn .ui-icon').first.evaluate('(e)=>e.complete && e.naturalWidth>0')
+    assert page.locator('.material-symbols-rounded').count() > 12
+    assert page.locator('.tool-btn .ui-icon').first.evaluate('(e)=>e.textContent.trim().length>0')
     visual=page.evaluate("""() => {
       const style=s=>getComputedStyle(document.querySelector(s));
       return {bg:style('.desktop').backgroundColor,
@@ -220,7 +220,7 @@ with sync_playwright() as p:
     assert abs(bounds['x'])<=1 and abs(bounds['width']-390)<=2, bounds
     expect(mobile.locator('#desktop')).to_have_class('desktop dark-mode')
     icon_filter=mobile.locator('.mobile-nav-toggle .ui-icon').evaluate('(e)=>getComputedStyle(e).filter')
-    assert 'invert(1)' in icon_filter, icon_filter
+    assert icon_filter == 'none', icon_filter
     mobile.locator('[data-action="settings"]').first.click()
     backdrop=mobile.locator('.dialog-backdrop').evaluate('(e)=>getComputedStyle(e).backgroundColor')
     assert backdrop=='rgba(0, 0, 0, 0.733)',backdrop
