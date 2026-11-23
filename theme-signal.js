@@ -10,15 +10,15 @@
     root.dataset.theme = scheme;
     root.style.colorScheme = scheme;
     schemeMeta?.setAttribute('content', scheme);
-    themeColor?.setAttribute('content', dark ? '#181818' : '#008080');
+    themeColor?.setAttribute('content', dark ? '#121212' : '#fafafa');
   }
   window.addEventListener('app-theme-change', (event) => {
     signal(event.detail?.dark === true);
   });
   try {
     const saved = JSON.parse(localStorage.getItem('notekeep98-v1') || 'null');
-    signal(saved?.dark === true);
+    signal(saved?.dark !== false);
   } catch {
-    signal(false);
+    signal(true);
   }
 })();
