@@ -9,37 +9,16 @@ const $ = <T extends Element = HTMLElement>(selector: string, root: ParentNode =
 const $$ = <T extends Element = HTMLElement>(selector: string, root: ParentNode = document): T[] => Array.from(root.querySelectorAll<T>(selector));
 const html = (v: unknown): string => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c] ?? c));
 const iconNames: Record<string,string> = {
-  "note": "file-text",
-  "folder": "folder",
-  "pencil": "pencil",
-  "check": "square-check",
-  "search": "search",
-  "archive": "archive",
-  "trash": "trash-2",
-  "restore": "rotate-ccw",
-  "pin": "pin",
-  "bell": "bell",
-  "palette": "palette",
-  "label": "tag",
-  "list": "list",
-  "grid": "layout-grid",
-  "more": "ellipsis",
-  "x": "x",
-  "settings": "settings",
-  "save": "save",
-  "upload": "upload",
-  "download": "download",
-  "copy": "copy",
-  "info": "info",
-  "warning": "triangle-alert",
-  "computer": "notebook-pen",
-  "clock": "clock",
-  "star": "star",
-  "menu": "menu",
-  "sparkle": "sparkles",
-  "arrow": "chevron-right"
+  note:"description",folder:"folder",pencil:"edit",check:"check_box",search:"search",
+  archive:"archive",trash:"delete",restore:"restore_from_trash",pin:"push_pin",
+  bell:"notifications",palette:"palette",label:"label",list:"view_list",
+  grid:"grid_view",more:"more_horiz",x:"close",settings:"settings",
+  save:"save",upload:"upload",download:"download",copy:"content_copy",
+  info:"info",warning:"warning",computer:"edit_note",clock:"schedule",
+  star:"star",menu:"menu",sparkle:"auto_awesome",arrow:"chevron_right"
 };
-const icon = (name: string): string => `<img class="ui-icon" src="./icons/${iconNames[name] ?? 'file-text'}.svg" alt="" aria-hidden="true">`;
+const icon = (name: string): string =>
+  `<span class="ui-icon material-symbols-rounded" aria-hidden="true">${iconNames[name] ?? 'description'}</span>`;
 const now = (): string => new Date().toISOString();
 const dateLabel = (value: string | null): string => {
   if (!value) return '';
