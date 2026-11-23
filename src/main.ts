@@ -263,7 +263,7 @@ function syncDraft():void {
   const title=$<HTMLInputElement>('#editTitle');const body=$<HTMLTextAreaElement>('#editBody');
   if(title)draft.title=title.value;
   if(body)draft.body=body.value;
-  $('.editor-check-row').forEach((row,index)=>{
+  document.querySelectorAll<HTMLElement>('.editor-check-row').forEach((row,index)=>{
     const item=draft?.items.find(i=>i.id===row.getAttribute('data-item')) ?? draft?.items[index];
     if (!item)return;
     const input=$<HTMLInputElement>('.item-text',row);
