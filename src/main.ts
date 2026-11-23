@@ -1,32 +1,18 @@
-import {blankNote, COLORS, id, LEGACY_KEY, load, normalizeNote, seed, STORAGE_KEY, type AppData, type Note} from './data';
+import {blankNote, COLORS, id, LEGACY_KEY, load, normalizeNote, seed, STORAGE_KEY, type AppData, type Note} from './features/notes/data';
+import {selectNotes, type View} from './features/notes/selectors';
+import {noteHTML as renderNoteCard} from './features/notes/note-card';
+import {html,now,dateLabel} from './utils/format';
+import {icon} from './ui/icons';
+import {renderShell} from './ui/shell';
+import {expandQuickComposer,resetQuickComposer,resizeQuickText} from './ui/quick-composer';
+import {downloadBackup} from './features/notes/backup';
 
-type View = 'notes' | 'reminders' | 'archive' | 'trash' | `label:${string}`;
 type Dialog = 'editor' | 'reminder' | 'labels' | 'settings' | 'about' | 'confirm' | null;
-type PopupKind = 'file' | 'edit' | 'view' | 'help' | 'start' | 'color' | 'labels' | 'more' | null;
+type PopupKind = 'color' | 'labels' | 'more' | null;
 interface PopupState { kind: PopupKind; target: string | null; anchor: HTMLElement | null; }
 
 const $ = <T extends Element = HTMLElement>(selector: string, root: ParentNode = document): T | null => root.querySelector<T>(selector);
 const $$ = <T extends Element = HTMLElement>(selector: string, root: ParentNode = document): T[] => Array.from(root.querySelectorAll<T>(selector));
-const html = (v: unknown): string => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c] ?? c));
-const iconNames: Record<string,string> = {
-  note:"description",folder:"folder",pencil:"edit",check:"check_box",search:"search",
-  archive:"archive",trash:"delete",restore:"restore_from_trash",pin:"push_pin",
-  bell:"notifications",palette:"palette",label:"label",list:"view_list",
-  grid:"grid_view",more:"more_horiz",x:"close",settings:"settings",
-  save:"save",upload:"upload",download:"download",copy:"content_copy",
-  info:"info",warning:"warning",computer:"edit_note",clock:"schedule",
-  star:"star",menu:"menu",sparkle:"auto_awesome",arrow:"chevron_right"
-};
-const icon = (name: string): string =>
-  `<span class="ui-icon material-symbols-rounded" aria-hidden="true">${iconNames[name] ?? 'description'}</span>`;
-const now = (): string => new Date().toISOString();
-const dateLabel = (value: string | null): string => {
-  if (!value) return '';
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return '';
-  return parsed.toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
-};
-
 let data: AppData = load();
 let view: View = 'notes';
 let search = '';
@@ -53,51 +39,7 @@ if (hadTracking) window.history.replaceState(null, '', canonicalUrl);
 
 const app = $('#app');
 if (!app) throw new Error('Missing #app root');
-app.innerHTML = `
-<div class="desktop" id="desktop">
-
-  <main class="main-window window" id="mainWindow" aria-label="keep application window">
-    <header class="title-bar app-header"><span class="app-icon">${icon('note')}</span><span class="title-text">keep — My Notes</span></header>
-    <div class="menu-bar" role="menubar"><button class="menu-btn" data-action="menu" data-value="file">File</button><button class="menu-btn" data-action="menu" data-value="edit">Edit</button><button class="menu-btn" data-action="menu" data-value="view">View</button><button class="menu-btn" data-action="menu" data-value="help">Help</button></div>
-    <div class="toolbar">
-      <button class="tool-btn mobile-nav-toggle" data-action="toggleNav" title="Folders" aria-label="Toggle folders">${icon('menu')}</button>
-      <button class="tool-btn" data-action="newNote" title="New note">${icon('note')}<span>New Note</span></button>
-      <button class="tool-btn" data-action="newChecklist" title="New checklist">${icon('check')}<span>Checklist</span></button>
-      <span class="tool-separator"></span>
-      <button class="tool-btn" data-action="manageLabels" title="Manage labels">${icon('label')}<span>Labels</span></button>
-      <button class="tool-btn" data-action="export" title="Export JSON backup">${icon('save')}<span>Backup</span></button>
-      <span class="tool-separator"></span>
-      <button class="tool-btn" data-action="settings" title="Settings">${icon('settings')}<span>Settings</span></button>
-      <span class="toolbar-spacer"></span><span class="toolbar-caption">LOCAL MODE &nbsp;•&nbsp; ALL CHANGES SAVED</span>
-    </div>
-    <div class="address-bar"><span class="address-label">Address</span><div class="address-input">${icon('folder')}<span class="address-path" id="addressPath">My Computer \\ My Notes</span></div><span class="address-badge">keep</span></div>
-    <div class="workspace">
-      <aside class="sidebar" id="sidebar"><div id="navRoot"></div><div class="sidebar-foot">${icon('info')}<span>Private, local-first notes. No account required, no cloud syncing.</span></div></aside>
-      <div class="mobile-scrim" id="mobileScrim" data-action="closeNav"></div>
-      <section class="content-pane" aria-label="Notes">
-        <div class="content-heading"><div class="heading-copy"><div><div class="page-kicker" id="pageKicker">YOUR DESKTOP NOTES</div><h1 class="page-title" id="pageTitle">All Notes</h1><div class="page-desc" id="pageDescription">A little space for everything on your mind.</div></div></div>
-          <div class="content-actions"><label class="search-box">${icon('search')}<input type="search" id="searchInput" aria-label="Search notes" placeholder="Search notes..." autocomplete="off"><button class="search-clear" id="clearSearch" data-action="clearSearch" aria-label="Clear search" hidden>×</button></label><button class="chrome-btn" id="viewToggle" data-action="toggleView" title="Toggle grid or list view" aria-label="Toggle list view">${icon('list')}</button></div>
-        </div>
-        <div class="quick-bar" id="quickBar" role="group" aria-label="Quick note">
-          <div class="quick-composer" id="quickComposer">
-            <input class="quick-title" id="quickNoteTitle" type="text" maxlength="10000" placeholder="Title (optional)" aria-label="Quick note title" hidden>
-            <textarea class="quick-text" id="quickNoteText" rows="1" maxlength="100000" placeholder="Take a note..." aria-label="Quick note text"></textarea>
-            <div class="quick-actions" id="quickActions" hidden>
-              <span class="quick-hint">Ctrl+Enter to save</span>
-              <button class="chrome-btn" data-action="cancelQuickNote">Cancel</button>
-              <button class="chrome-btn primary" data-action="saveQuickNote">${icon('save')} Save note</button>
-            </div>
-          </div>
-          <div class="quick-buttons"><button class="chrome-btn primary" data-action="newNote">${icon('note')} New note</button><button class="chrome-btn" data-action="newChecklist">${icon('check')} List</button></div>
-        </div>
-        <div class="board-scroll" id="boardScroll"><div id="boardRoot"></div></div>
-      </section>
-    </div>
-    <div class="status-bar"><div class="status-cell" id="statusText">Ready</div><div class="status-cell" id="statusCount">0 notes</div><div class="status-cell">LOCAL STORAGE</div></div>
-  </main>
-  <div id="popupRoot"></div><div id="dialogRoot"></div><div id="toastRoot" role="status" aria-live="polite"></div>
-  <input type="file" id="importInput" accept=".json,application/json" hidden>
-</div>`;
+app.innerHTML = renderShell(icon);
 
 function persist(): boolean {
   try {localStorage.setItem(STORAGE_KEY,JSON.stringify(data));return true;}
@@ -138,18 +80,7 @@ function counts(): Record<string,number> {
     trash:data.notes.filter(n=>n.trashed).length
   };
 }
-function filterNotes(): Note[] {
-  const found = data.notes.filter(n=>{
-    if (view==='trash') return n.trashed;
-    if (view==='archive') return n.archived&&!n.trashed;
-    if (view==='reminders') return !!n.reminder&&!n.archived&&!n.trashed;
-    if (view.startsWith('label:')) return n.labels.includes(view.slice(6))&&!n.archived&&!n.trashed;
-    return !n.archived&&!n.trashed;
-  });
-  const q = search.trim().toLocaleLowerCase();
-  return found.filter(n=>!q || [n.title,n.body,...n.items.map(i=>i.text),...n.labels].join(' ').toLocaleLowerCase().includes(q))
-    .sort((a,b)=>Number(b.pinned)-Number(a.pinned)||new Date(b.updatedAt).getTime()-new Date(a.updatedAt).getTime());
-}
+function filterNotes(): Note[] { return selectNotes(data,view,search); }
 function setView(next: View): void {
   view=next;mobileMenu=false;closePopup();render();
   $('#boardScroll')?.scrollTo({top:0});
@@ -175,25 +106,7 @@ function renderNav():void {
     <button class="nav-btn sub" data-action="manageLabels">${icon('pencil')}<span>Edit labels...</span></button>
     </div>`;
 }
-function noteHTML(n:Note):string {
-  const isTrash = view==='trash';
-  const body = n.checklist ? `<div class="note-checks">${n.items.slice(0,12).map(item=>`<label class="check-item ${item.checked?'done':''}"><input type="checkbox" data-action="checkItem" data-id="${html(n.id)}" data-item="${html(item.id)}" ${item.checked?'checked':''} ${isTrash?'disabled':''}><span>${html(item.text)}</span></label>`).join('')}</div>` : `<p class="note-text">${html(n.body || (n.title ? '' : 'Empty note'))}</p>`;
-  const tags = n.labels.length ? `<div class="note-tags">${n.labels.map(l=>`<span class="note-tag">${html(l)}</span>`).join('')}</div>` : '';
-  const reminder = n.reminder ? `<div class="note-reminder">${icon('bell')} ${html(dateLabel(n.reminder))}</div>` : '';
-  const footer = isTrash ? `<button class="mini-tool" title="Restore" aria-label="Restore" data-action="restore" data-id="${html(n.id)}">${icon('restore')}</button><button class="mini-tool" title="Delete permanently" aria-label="Delete permanently" data-action="deleteForever" data-id="${html(n.id)}">${icon('trash')}</button>` : `
-    <button class="mini-tool" title="Edit note" aria-label="Edit note" data-action="editNote" data-id="${html(n.id)}">${icon('pencil')}</button>
-    <button class="mini-tool" title="Change color" aria-label="Change color" data-action="popup" data-kind="color" data-id="${html(n.id)}">${icon('palette')}</button>
-    <button class="mini-tool" title="Add reminder" aria-label="Add reminder" data-action="reminder" data-id="${html(n.id)}">${icon('bell')}</button>
-    <button class="mini-tool" title="Edit labels" aria-label="Edit labels" data-action="popup" data-kind="labels" data-id="${html(n.id)}">${icon('label')}</button>
-    <button class="mini-tool" title="${n.archived?'Unarchive':'Archive'}" aria-label="${n.archived?'Unarchive':'Archive'}" data-action="archive" data-id="${html(n.id)}">${icon(n.archived?'restore':'archive')}</button>
-    <button class="mini-tool" title="More options" aria-label="More options" data-action="popup" data-kind="more" data-id="${html(n.id)}">${icon('more')}</button>`;
-  return `<article class="note-window" data-note="${html(n.id)}" style="--note-color:${html(n.color)}">
-    <div class="note-titlebar">${icon(n.checklist?'check':'note')}<span class="note-titlebar-text">NOTE_${html(n.id.slice(0,6).toUpperCase())}.TXT</span><button class="note-top-btn ${n.pinned?'pinned':''}" data-action="pin" data-id="${html(n.id)}" title="${n.pinned?'Unpin':'Pin'}" aria-label="${n.pinned?'Unpin':'Pin'}" ${isTrash?'disabled':''}>${icon('pin')}</button></div>
-    <div class="note-paper" data-action="editNote" data-id="${html(n.id)}" role="button" tabindex="0" aria-label="Open ${html(n.title || 'untitled note')}">
-      ${n.title?`<h2 class="note-heading">${html(n.title)}</h2>`:''}${body}${tags}${reminder}</div>
-    <div class="note-foot">${footer}<span class="date">${html(dateLabel(n.updatedAt))}</span></div>
-  </article>`;
-}
+function noteHTML(n:Note):string { return renderNoteCard(n,view); }
 function noteGroup(notes: Note[],heading:string):string {return `<div class="board-label">${html(heading)}</div><div class="note-grid ${data.list?'is-list':''}">${notes.map(noteHTML).join('')}</div>`;}
 function renderBoard():void {
   const root=$('#boardRoot');if (!root)return;
@@ -219,10 +132,8 @@ function render():void {
   const meta=viewMeta();
   const setText=(sel:string,text:string)=>{const el=$(sel);if(el)el.textContent=text;};
   setText('#pageTitle',meta.title);setText('#pageDescription',meta.subtitle);setText('#pageKicker',meta.kicker);
-  setText('#addressPath',`My Computer \\ keep \\ ${meta.path}`);
   setText('#statusCount',`${filterNotes().length} ${filterNotes().length===1?'note':'notes'}`);
   setText('#statusText',`${data.notes.filter(n=>!n.trashed).length} saved notes  |  Click a note to edit  |  Ctrl+K to search`);
-  setText('.title-text',`keep — ${meta.title}`);
   const viewBtn=$('#viewToggle'); if (viewBtn) {viewBtn.innerHTML=icon(data.list?'grid':'list');viewBtn.title=data.list?'Grid view':'List view';viewBtn.setAttribute('aria-pressed',String(data.list));}
   const quick=$('#quickBar');if(quick)quick.hidden=view==='trash'||view==='archive';
   const clear=$('#clearSearch');if(clear)clear.hidden=!search;
@@ -233,24 +144,6 @@ function render():void {
   window.dispatchEvent(new CustomEvent('app-theme-change',{detail:{dark:data.dark}}));
 }
 
-function expandQuickComposer():void {
-  const bar=$('#quickBar');
-  if (!bar || bar.classList.contains('is-editing'))return;
-  bar.classList.add('is-editing');
-  const title=$<HTMLInputElement>('#quickNoteTitle');
-  const actions=$('#quickActions');
-  if (title)title.hidden=false;
-  if (actions)actions.hidden=false;
-}
-function resetQuickComposer():void {
-  const text=$<HTMLTextAreaElement>('#quickNoteText');
-  const title=$<HTMLInputElement>('#quickNoteTitle');
-  const actions=$('#quickActions');
-  if(text){text.value='';text.style.height='';}
-  if(title){title.value='';title.hidden=true;}
-  if(actions)actions.hidden=true;
-  $('#quickBar')?.classList.remove('is-editing');
-}
 function saveQuickNote():void {
   const input=$<HTMLTextAreaElement>('#quickNoteText');
   const title=$<HTMLInputElement>('#quickNoteTitle');
@@ -267,10 +160,6 @@ function saveQuickNote():void {
   if(!mutate(()=>{data.notes.unshift(note);}))return;
   resetQuickComposer();
   notify('Note saved');
-}
-function resizeQuickText(text:HTMLTextAreaElement):void {
-  text.style.height='auto';
-  text.style.height=Math.min(text.scrollHeight,Math.max(160,window.innerHeight*0.3))+'px';
 }
 function syncDraft():void {
   if (!draft||dialog!=='editor') return;
@@ -372,7 +261,7 @@ function renderDialog():void {
   }
 }
 function confirm(title:string,message:string,action:()=>void):void {confirmTitle=title;confirmMessage=message;confirmAction=action;dialog='confirm';closePopup();renderDialog();}
-function closePopup():void {popup={kind:null,target:null,anchor:null};const root=$('#popupRoot');if(root)root.innerHTML='';$$('.menu-btn').forEach(btn=>btn.classList.remove('is-active'));}
+function closePopup():void {popup={kind:null,target:null,anchor:null};const root=$('#popupRoot');if(root)root.innerHTML='';}
 function popupItem(action:string,name:string,glyph:string,extra=''):string{return `<button class="popup-item" data-action="${action}" ${extra}>${icon(glyph)}<span>${html(name)}</span></button>`;}
 function openPopup(kind:PopupKind,target:string|null,anchor:HTMLElement):void {
   if(popup.kind===kind && popup.target===target){closePopup();return;}
@@ -383,19 +272,12 @@ function renderPopup():void {
   const root=$('#popupRoot');if(!root||!popup.kind||!popup.anchor)return;
   const kind=popup.kind;
   const target=popup.target==='draft'?draft:popup.target?getNote(popup.target):null;
-  const menu:Record<string,string> = {
-    file:`${popupItem('newNote','New note','note')}${popupItem('newChecklist','New checklist','check')}<div class="popup-divider"></div>${popupItem('import','Import notes...','upload')}${popupItem('export','Export backup...','download')}<div class="popup-divider"></div>${popupItem('settings','Settings...','settings')}`,
-    edit:`${popupItem('manageLabels','Manage labels...','label')}${popupItem('newNote','Create new note','pencil')}<div class="popup-divider"></div>${popupItem('reset','Reset sample notes...','restore')}`,
-    view:`${popupItem('toggleView',data.list?'Switch to grid':'Switch to list',data.list?'grid':'list')}${popupItem('view','All notes','folder','data-view="notes"')}${popupItem('view','Archive','archive','data-view="archive"')}${popupItem('view','Recycle Bin','trash','data-view="trash"')}<div class="popup-divider"></div>${popupItem('toggleDarkMode',data.dark?'Switch to light mode':'Switch to dark mode','palette')}`,
-    help:`${popupItem('about','About keep','info')}${popupItem('settings','Data & privacy','settings')}`,
-    start:`${popupItem('reopen','Open My Notes','folder','data-view="notes"')}${popupItem('newNote','New note','note')}${popupItem('newChecklist','New checklist','check')}<div class="popup-divider"></div>${popupItem('settings','Settings','settings')}${popupItem('about','About','info')}`
-  };
   let body='';
   if (kind==='color' && target){body=`<div class="popup-title">Background color</div><div class="palette-grid">${COLORS.map(c=>`<button class="swatch ${target.color===c.value?'selected':''}" title="${html(c.name)}" aria-label="${html(c.name)}" style="background:${c.value}" data-action="chooseColor" data-value="${c.value}"></button>`).join('')}</div>`;}
   else if(kind==='labels' && target){body=`<div class="popup-title">Add / remove labels</div>${data.labels.map(l=>`<label class="popup-check-label"><input type="checkbox" data-action="toggleLabel" data-value="${html(l)}" ${target.labels.includes(l)?'checked':''}>${html(l)}</label>`).join('')}${data.labels.length?'':'<p style="padding:5px 9px">No labels yet.</p>'}<div class="popup-label-actions"><button class="chrome-btn" data-action="manageLabels">Edit labels...</button></div>`;}
   else if(kind==='more'&&target){body=`${popupItem('duplicate','Make a copy','copy')}${popupItem('archive',target.archived?'Unarchive':'Archive',target.archived?'restore':'archive',`data-id="${html(target.id)}"`)}<div class="popup-divider"></div>${popupItem('delete','Move to Recycle Bin','trash',`data-id="${html(target.id)}"`)}`;}
-  else body=menu[kind]??'';
-  root.innerHTML=kind==='start'?`<div class="start-menu"><div class="start-rail"><span>keep</span></div><div class="start-links">${body}</div></div>`:`<div class="popup" role="menu" id="activePopup">${body}</div>`;
+  else return;
+  root.innerHTML=`<div class="popup" role="menu" id="activePopup">${body}</div>`;
   const el=$<HTMLElement>('.popup',root);
   if(el){
     const r=popup.anchor.getBoundingClientRect();
@@ -405,7 +287,6 @@ function renderPopup():void {
     el.style.top=`${Math.max(8,top)}px`;
     el.style.left=`${Math.min(Math.max(8,r.left),innerWidth-b.width-8)}px`;
   }
-  if (['file','edit','view','help'].includes(kind))$$('.menu-btn').forEach(btn=>btn.classList.toggle('is-active',btn.getAttribute('data-value')===kind));
 }
 function updateTarget(action:(n:Note)=>void,target:string|null=popup.target):boolean {
   if(target==='draft'&&draft){action(draft);return true;}
@@ -419,14 +300,7 @@ function setReminder(value:string|null):void {
   if(reminderReturn==='editor') renderDialog();
   notify(value?'Reminder set':'Reminder removed');
 }
-function exportData():void {
-  const payload={version:2,app:'keep',exportedAt:now(),notes:data.notes,labels:data.labels};
-  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);const anchor=document.createElement('a');
-  anchor.href=url;anchor.download=`keep-${new Date().toISOString().slice(0,10)}.json`;
-  document.body.appendChild(anchor);anchor.click();anchor.remove();
-  window.setTimeout(()=>URL.revokeObjectURL(url),2500);notify('JSON backup exported');
-}
+function exportData():void { downloadBackup(data); notify('JSON backup exported'); }
 function renameLabel(oldName:string):void {
   const input=$<HTMLInputElement>(`.rename-input[data-old="${CSS.escape(oldName)}"]`);
   const next=input?.value.trim();if(!next||next===oldName)return;
@@ -438,8 +312,6 @@ function execute(action:string,button:HTMLElement):void {
   const noteId=button.getAttribute('data-id')??'';
   const value=button.getAttribute('data-value')??'';
   switch(action){
-    case 'menu':openPopup(value as PopupKind,null,button);break;
-    case 'start':openPopup('start',null,button);break;
     case 'popup':openPopup(button.getAttribute('data-kind') as PopupKind,noteId,button);break;
     case 'view':setView(button.getAttribute('data-view') as View || 'notes');break;
     case 'newNote':openEditor(null,false);break;
@@ -569,7 +441,7 @@ app.addEventListener('keydown',event=>{
 });
 document.addEventListener('click',event=>{
   const target=event.target as Element;
-  if(popup.kind&&!target.closest('#popupRoot')&&!target.closest('[data-action="popup"],[data-action="menu"],[data-action="start"]'))closePopup();
+  if(popup.kind&&!target.closest('#popupRoot')&&!target.closest('[data-action="popup"]'))closePopup();
 });
 document.addEventListener('keydown',event=>{
   const focused=event.target as HTMLElement;

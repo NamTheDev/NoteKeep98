@@ -37,7 +37,8 @@ with sync_playwright() as p:
     assert_theme_signal('dark')
     assert page.locator('.note-window').count() > 0
     assert page.locator('.material-symbols-rounded').count() > 12
-    assert page.locator('.tool-btn .ui-icon').first.evaluate('(e)=>e.textContent.trim().length>0')
+    assert page.locator('.chrome-btn .ui-icon').first.evaluate('(e)=>e.textContent.trim().length>0')
+    assert page.locator('.toolbar, .menu-bar').count() == 0
     visual=page.evaluate("""() => {
       const style=s=>getComputedStyle(document.querySelector(s));
       return {bg:style('.desktop').backgroundColor,
@@ -58,8 +59,9 @@ with sync_playwright() as p:
     page.locator('[data-action="settings"]').first.click()
     assert page.locator('input[data-action="toggleDarkMode"]').is_checked()
     page.locator('[data-action="closeDialog"]').last.click()
-    page.locator('[data-action="menu"][data-value="view"]').click()
-    page.locator('.popup-item[data-action="toggleDarkMode"]').click()
+    page.locator('[data-action="settings"]').first.click()
+    page.locator('input[data-action="toggleDarkMode"]').uncheck()
+    page.locator('[data-action="closeDialog"]').last.click()
     assert_theme_signal('light')
     assert page.evaluate("JSON.parse(localStorage.getItem('notekeep98-v1')).dark") is False
     page.reload(wait_until='load')
@@ -183,8 +185,7 @@ with sync_playwright() as p:
     assert page.locator('[data-action="toggleDraftPin"]').get_attribute('aria-pressed')=='true'
     page.locator('[data-action="saveEditor"]').click()
     # view menu and layout toggle
-    page.locator('[data-action="menu"][data-value="view"]').click()
-    page.locator('.popup-item[data-action="toggleView"]').click()
+    page.locator('#viewToggle').click()
     assert page.locator('.note-grid.is-list').count()>0
     page.locator('#viewToggle').click()
     # The application fills the viewport without a simulated OS window manager.
@@ -227,8 +228,9 @@ with sync_playwright() as p:
     mobile.locator('.dialog-window [data-action="closeDialog"]').last.click()
     mobile.screenshot(path=str(results/'mobile-dark.png'),full_page=True)
     mobile.reload(wait_until='load')
-    mobile.locator('[data-action="menu"][data-value="view"]').click()
-    mobile.locator('.popup-item[data-action="toggleDarkMode"]').click()
+    mobile.locator('[data-action="settings"]').first.click()
+    mobile.locator('input[data-action="toggleDarkMode"]').uncheck()
+    mobile.locator('[data-action="closeDialog"]').last.click()
     # Mobile quick composer expands without horizontal overflow and allows cancel.
     mobile_quick=mobile.locator('#quickNoteText')
     mobile_quick.fill('Mobile quick draft')
