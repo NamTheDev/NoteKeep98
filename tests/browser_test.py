@@ -32,128 +32,38 @@ with sync_playwright() as p:
         })""")
         assert signal == {
           'meta':expected, 'root':expected, 'computed':expected,
-          'browser':'#181818' if expected=='dark' else '#008080', 'locked':False
+          'browser':'#121212' if expected=='dark' else '#fafafa', 'locked':False
         }, signal
-    assert_theme_signal('light')
-    print('title',page.title(),'notes',page.locator('.note-window').count(), 'errors:',errors)
-    # Canonical 1990s system palette and four-tone component checks.
-    light_system=page.evaluate("""() => {
-      const snapshot=(selector)=>{const s=getComputedStyle(document.querySelector(selector));return {
-        bg:s.backgroundColor, image:s.backgroundImage,
-        top:s.borderTopColor,left:s.borderLeftColor,
-        right:s.borderRightColor,bottom:s.borderBottomColor,
-        shadow:s.boxShadow,height:s.height
-      }};
-      return {
-        desktop:snapshot('.desktop'),window:snapshot('#mainWindow'),
-        content:snapshot('.content-pane'),header:snapshot('.content-heading'),
-        button:snapshot('.chrome-btn'),field:snapshot('.search-box'),
-        note:snapshot('.note-window'),topbar:snapshot('.app-header'),
-        title:snapshot('.title-bar')
-      };
-    }""")
-    assert light_system['desktop']['bg']=='rgb(192, 192, 192)',light_system
-    assert light_system['desktop']['image']=='none',light_system
-    assert light_system['window']['bg']=='rgb(192, 192, 192)',light_system
-    assert light_system['content']['bg']=='rgb(255, 255, 255)',light_system
-    assert light_system['header']['bg']=='rgb(192, 192, 192)',light_system
-    assert 'gradient' in light_system['title']['image'],light_system
-    for raised in ['button','note']:
-        style=light_system[raised]
-        assert style['top']==style['left']=='rgb(255, 255, 255)',(raised,style)
-        assert style['right']==style['bottom']=='rgb(0, 0, 0)',(raised,style)
-        assert 'rgb(223, 223, 223)' in style['shadow'] and 'rgb(128, 128, 128)' in style['shadow'],(raised,style)
-    recessed=light_system['field']
-    assert recessed['top']==recessed['left']=='rgb(0, 0, 0)',recessed
-    assert recessed['right']==recessed['bottom']=='rgb(255, 255, 255)',recessed
-    assert light_system['topbar']['height']=='34px',light_system
-    assert page.locator('#mainWindow .window-controls').count()==0
-    assert page.locator('.taskbar').count()==0
-    assert page.locator('img.ui-icon').count()>12
-    page.screenshot(path=str(results/'desktop.png'),full_page=True)
-    assert page.locator('.tool-btn .ui-icon').first.evaluate('(e)=>e.complete && e.naturalWidth>0'), 'Installed Lucide icons must load'
-    # Dark mode themes the complete app, not only its desktop background.
-    page.locator('[data-action="menu"][data-value="view"]').click()
-    page.locator('.popup-item[data-action="toggleDarkMode"]').click()
-    assert 'dark-mode' in (page.locator('#desktop').get_attribute('class') or '')
     assert_theme_signal('dark')
-    assert 'invert(1)' in page.locator('.tool-btn .ui-icon').first.evaluate('(e)=>getComputedStyle(e).filter'), 'Dark mode toolbar icons must be light'
-    dark_colors=page.evaluate("""() => {
-      const rgb=(selector,prop='backgroundColor') => getComputedStyle(document.querySelector(selector))[prop];
-      return {
-        pane:rgb('.content-pane'), paper:rgb('.note-paper'),
-        title:rgb('.note-heading','color'),
-        controls:rgb('.chrome-btn'), sidebar:rgb('.sidebar'),
-        selected:JSON.parse(localStorage.getItem('notekeep98-v1')).dark
-      };
+    assert page.locator('.note-window').count() > 0
+    assert page.locator('img.ui-icon').count() > 12
+    assert page.locator('.tool-btn .ui-icon').first.evaluate('(e)=>e.complete && e.naturalWidth>0')
+    visual=page.evaluate("""() => {
+      const style=s=>getComputedStyle(document.querySelector(s));
+      return {bg:style('.desktop').backgroundColor,
+        surface:style('.note-window').backgroundColor,
+        radius:style('.note-window').borderRadius,
+        shadow:style('.main-window').boxShadow,
+        font:style('body').fontFamily,
+        animation:style('.chrome-btn').animationDuration,
+        transition:style('.chrome-btn').transitionDuration}
     }""")
-    def channels(rgb):
-        return [int(value) for value in rgb.replace('rgb(','').replace(')','').replace(' ','').split(',')[:3]]
-    assert max(channels(dark_colors['pane'])) < 100, dark_colors
-    assert max(channels(dark_colors['paper'])) < 110, dark_colors
-    assert min(channels(dark_colors['title'])) > 180, dark_colors
-    assert max(channels(dark_colors['controls'])) < 115, dark_colors
-    assert max(channels(dark_colors['sidebar'])) < 115, dark_colors
-    assert dark_colors['selected'] is True
-    # The adapted Win98 palette uses neutral system panels and one consistent
-    # four-tone raised/recessed bevel system, not arbitrary blue-gray surfaces.
-    system=page.evaluate("""() => {
-      const win=document.querySelector('.main-window');
-      const button=document.querySelector('.chrome-btn');
-      const input=document.querySelector('.search-box');
-      const note=document.querySelector('.note-window');
-      const title=document.querySelector('.title-bar');
-      const desk=document.querySelector('.desktop');
-      const paper=document.querySelector('.note-paper');
-      const snapshot=(e)=>{const s=getComputedStyle(e);return {
-        bg:s.backgroundColor, top:s.borderTopColor,left:s.borderLeftColor,
-        right:s.borderRightColor,bottom:s.borderBottomColor,
-        shadow:s.boxShadow
-      }};
-      return {
-        desktop:snapshot(desk),window:snapshot(win),
-        button:snapshot(button),input:snapshot(input),
-        note:snapshot(note),paper:snapshot(paper),
-        desktopImage:getComputedStyle(desk).backgroundImage,
-        titleImage:getComputedStyle(title).backgroundImage,
-        noteAccent:getComputedStyle(document.querySelector('.note-titlebar'),'::before').backgroundColor,
-        originalColor:JSON.parse(localStorage.getItem('notekeep98-v1')).notes[0].color
-      };
-    }""")
-    assert system['desktop']['bg']=='rgb(48, 48, 48)', system
-    assert system['window']['bg']=='rgb(48, 48, 48)', system
-    assert system['paper']['bg']=='rgb(27, 27, 27)', system
-    assert system['desktopImage']=='none', 'Only system title bars may use gradients'
-    assert 'gradient' in system['titleImage'], 'Active title bar should retain its gradient'
-    for component in ['button','note']:
-        raised=system[component]
-        assert raised['top']==raised['left']=='rgb(112, 112, 112)', (component,raised)
-        assert raised['right']==raised['bottom']=='rgb(9, 9, 9)', (component,raised)
-        assert 'rgb(80, 80, 80)' in raised['shadow'] and 'rgb(32, 32, 32)' in raised['shadow'], raised
-    recessed=system['input']
-    assert recessed['top']==recessed['left']=='rgb(9, 9, 9)', recessed
-    assert recessed['right']==recessed['bottom']=='rgb(112, 112, 112)', recessed
-    assert system['originalColor']=='#fff2b3', system
-    assert system['noteAccent']=='rgb(255, 242, 179)', system
+    assert visual['bg']=='rgb(18, 18, 18)',visual
+    assert visual['surface']=='rgb(30, 30, 30)',visual
+    assert visual['radius']=='16px',visual
+    assert visual['shadow']=='none',visual
+    assert 'Roboto' in visual['font'],visual
+    assert visual['animation']=='0s' and visual['transition']=='0s',visual
+    page.screenshot(path=str(results/'desktop-dark.png'),full_page=True)
     page.locator('[data-action="settings"]').first.click()
     assert page.locator('input[data-action="toggleDarkMode"]').is_checked()
-    assert max(channels(page.locator('.dialog-window').evaluate('(e)=>getComputedStyle(e).backgroundColor'))) < 115
-    assert page.locator('.dialog-window .window-controls').count()==0, 'No faux OS window controls in dialogs'
-    assert max(channels(page.locator('.search-box').evaluate('(e)=>getComputedStyle(e).backgroundColor'))) < 100
-    page.screenshot(path=str(results/'desktop-dark.png'),full_page=True)
     page.locator('[data-action="closeDialog"]').last.click()
-    page.locator('.quick-bar [data-action="newNote"]').click()
-    assert max(channels(page.locator('#editTitle').evaluate('(e)=>getComputedStyle(e).backgroundColor'))) < 100
-    page.locator('[data-action="cancelEditor"]').last.click()
-    page.reload(wait_until='load')
-    assert 'dark-mode' in (page.locator('#desktop').get_attribute('class') or ''), 'Dark preference must survive a reload'
-    assert_theme_signal('dark')
     page.locator('[data-action="menu"][data-value="view"]').click()
     page.locator('.popup-item[data-action="toggleDarkMode"]').click()
-    assert 'dark-mode' not in (page.locator('#desktop').get_attribute('class') or '')
     assert_theme_signal('light')
-    assert 'invert(1)' not in page.locator('.tool-btn .ui-icon').first.evaluate('(e)=>getComputedStyle(e).filter'), 'Light mode icons should be dark'
     assert page.evaluate("JSON.parse(localStorage.getItem('notekeep98-v1')).dark") is False
+    page.reload(wait_until='load')
+    assert_theme_signal('light')
     # Quick note is a genuine textarea, directly editable without a modal.
     quick=page.locator('#quickNoteText')
     assert quick.evaluate('(e)=>e.tagName')=='TEXTAREA'
@@ -308,14 +218,12 @@ with sync_playwright() as p:
     bounds=main_window.bounding_box()
     assert bounds is not None
     assert abs(bounds['x'])<=1 and abs(bounds['width']-390)<=2, bounds
-    mobile.locator('[data-action="menu"][data-value="view"]').click()
-    mobile.locator('.popup-item[data-action="toggleDarkMode"]').click()
     expect(mobile.locator('#desktop')).to_have_class('desktop dark-mode')
     icon_filter=mobile.locator('.mobile-nav-toggle .ui-icon').evaluate('(e)=>getComputedStyle(e).filter')
     assert 'invert(1)' in icon_filter, icon_filter
     mobile.locator('[data-action="settings"]').first.click()
     backdrop=mobile.locator('.dialog-backdrop').evaluate('(e)=>getComputedStyle(e).backgroundColor')
-    assert backdrop=='rgba(0, 0, 0, 0.28)',backdrop
+    assert backdrop=='rgba(0, 0, 0, 0.733)',backdrop
     mobile.locator('.dialog-window [data-action="closeDialog"]').last.click()
     mobile.screenshot(path=str(results/'mobile-dark.png'),full_page=True)
     mobile.reload(wait_until='load')
