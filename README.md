@@ -49,7 +49,7 @@ A **standalone HTML preview** is also provided with the downloadable package for
 - Archive/unarchive, move to Recycle Bin, restore or permanently delete
 - Undo for reversible move/delete actions
 - Grid/list layouts, teal/midnight desktop backgrounds, mobile folder pane
-- Working menus, Start menu, taskbar, window minimize/maximize controls
+- Working menus, Start menu, taskbar, and desktop window controls; mobile window stays maximized with its maximize control disabled
 - Auto-save local note changes to browser `localStorage`
 - Import/export notes as JSON and restore example data
 - Automatically imports notes created in the earlier standalone HTML app **when both apps run under the same browser origin**

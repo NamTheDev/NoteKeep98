@@ -119,6 +119,25 @@ with sync_playwright() as p:
     mobile.on('pageerror',lambda e:errors.append('mobile: '+str(e)))
     mobile.goto(base_url,wait_until='load')
     mobile.wait_for_timeout(200)
+    main_window=mobile.locator('#mainWindow')
+    maximize_button=mobile.locator('#mainWindow [data-action="maximize"]')
+    assert main_window.is_visible()
+    assert 'is-maximized' in (main_window.get_attribute('class') or ''), 'Mobile window must always be maximized'
+    assert maximize_button.is_disabled(), 'Mobile maximize control must be disabled'
+    bounds=main_window.bounding_box()
+    assert bounds is not None
+    assert abs(bounds['x']) <= 1 and abs(bounds['width']-390) <= 2, f'Mobile window must fill available width: {bounds}'
+    # Switching between mobile and desktop must preserve desktop maximize behavior.
+    mobile.set_viewport_size({'width':751,'height':844})
+    assert maximize_button.is_enabled(), 'Desktop maximize control must be usable'
+    assert 'is-maximized' not in (main_window.get_attribute('class') or ''), 'Desktop starts restored'
+    maximize_button.click()
+    assert 'is-maximized' in (main_window.get_attribute('class') or ''), 'Desktop maximize remains functional'
+    maximize_button.click()
+    assert 'is-maximized' not in (main_window.get_attribute('class') or ''), 'Desktop restore remains functional'
+    mobile.set_viewport_size({'width':390,'height':844})
+    assert maximize_button.is_disabled()
+    assert 'is-maximized' in (main_window.get_attribute('class') or ''), 'Returning to mobile must maximize'
     mobile.screenshot(path=str(results/'mobile.png'),full_page=True)
     print('mobile horizontal overflow:',mobile.evaluate('document.documentElement.scrollWidth > window.innerWidth'))
     print('errors',errors)

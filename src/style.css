@@ -40,6 +40,7 @@ button svg { pointer-events:none; }
 .win-control { width:22px; height:20px; padding:0; display:grid; place-items:center; background:var(--face); border:1px solid; border-color:white black black white; box-shadow:inset -1px -1px var(--shadow), inset 1px 1px var(--light2); color:black; font-weight:700; font-size:13px; line-height:1; }
 .win-control:active, .win-control[aria-pressed="true"] { border-color:black white white black; box-shadow:inset 1px 1px var(--shadow); padding:2px 0 0 2px; }
 .win-control svg { width:12px; height:12px; }
+.win-control:disabled { opacity:.55; cursor:default; }
 .menu-bar { display:flex; align-items:center; gap:2px; min-height:29px; padding:2px 4px; border-bottom:1px solid var(--shadow); flex-shrink:0; }
 .menu-btn { padding:5px 9px; border:1px solid transparent; background:transparent; font-size:12px; }
 .menu-btn:hover, .menu-btn.is-active { border-color:#fff #808080 #808080 #fff; background:#d3d3d3; }

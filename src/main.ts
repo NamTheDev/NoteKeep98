@@ -62,6 +62,7 @@ let confirmTitle = '';
 let confirmMessage = '';
 let minimized = false;
 let maximized = false;
+const mobileWindowMedia = window.matchMedia('(max-width: 750px)');
 let mobileMenu = false;
 let undo: Note[] | null = null;
 let toastTimer: number | undefined;
@@ -225,6 +226,16 @@ function renderBoard():void {
     (view==='notes' && !search.trim() && pinned.length ? noteGroup(pinned,`Pinned notes · ${pinned.length}`) : '')+
     (view==='notes' && !search.trim() && pinned.length ? (other.length?noteGroup(other,`Other notes · ${other.length}`):'') : noteGroup(notes,`${notes.length} ${notes.length===1?'item':'items'}`));
 }
+function syncWindowMode():void {
+  const mobile = mobileWindowMedia.matches;
+  $('#mainWindow')?.classList.toggle('is-maximized',mobile||maximized);
+  const maximizeButton=$<HTMLButtonElement>('#mainWindow [data-action="maximize"]');
+  if(maximizeButton){
+    maximizeButton.disabled=mobile;
+    maximizeButton.setAttribute('aria-pressed',String(mobile||maximized));
+    maximizeButton.title=mobile?'Already maximized on mobile':maximized?'Restore window':'Maximize';
+  }
+}
 function render():void {
   renderNav();renderBoard();
   const meta=viewMeta();
@@ -237,7 +248,7 @@ function render():void {
   const viewBtn=$('#viewToggle'); if (viewBtn) {viewBtn.innerHTML=icon(data.list?'grid':'list');viewBtn.title=data.list?'Grid view':'List view';viewBtn.setAttribute('aria-pressed',String(data.list));}
   const quick=$('#quickBar');if(quick)quick.hidden=view==='trash'||view==='archive';
   const clear=$('#clearSearch');if(clear)clear.hidden=!search;
-  $('#mainWindow')?.classList.toggle('is-maximized',maximized);
+  syncWindowMode();
   $('#mainWindow')?.classList.toggle('is-minimized',minimized);
   const main=$('#mainWindow');if(main)main.hidden=minimized;
   const hint=$('#desktopHint');if(hint)hint.hidden=!minimized;
@@ -474,7 +485,7 @@ function execute(action:string,button:HTMLElement):void {
     case 'dismissToast':{const root=$('#toastRoot');if(root)root.innerHTML='';break;}
     case 'undo':if(undo){const snapshot=structuredClone(undo);if(mutate(()=>{data.notes=snapshot;})){undo=null;notify('Undone');}}break;
     case 'minimize':minimized=true;mobileMenu=false;closePopup();render();break;
-    case 'maximize':maximized=!maximized;render();break;
+    case 'maximize':if(!mobileWindowMedia.matches){maximized=!maximized;render();}break;
     case 'taskApp':minimized=!minimized;render();break;
     case 'reopen':minimized=false;setView(button.getAttribute('data-view') as View||'notes');render();break;
     case 'toggleNav':mobileMenu=!mobileMenu;render();break;
@@ -559,4 +570,5 @@ if(importInput)importInput.addEventListener('change',async()=>{
   importInput.value='';
 });
 setWindowClock();window.setInterval(setWindowClock,30000);
+mobileWindowMedia.addEventListener('change',syncWindowMode);
 render();
