@@ -40,7 +40,7 @@ with sync_playwright() as p:
     page.locator('.editor-check-row .item-text').last.fill('two')
     page.locator('.editor-check-row .item-check').last.check()
     page.locator('[data-action="saveEditor"]').click()
-    assert page.locator('.note-window').filter(has_text='QA List 98').locator('input[data-action="checkItem"]').count()==2
+    expect(page.locator('.note-window').filter(has_text='QA List 98').locator('input[data-action="checkItem"]')).to_have_count(2)
     # pin
     card=page.locator('.note-window').filter(has_text='QA Note 98')
     card.locator('[data-action="pin"]').click()
