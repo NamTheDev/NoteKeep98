@@ -255,7 +255,7 @@ function render():void {
   $('.task-app')?.classList.toggle('is-open',!minimized);
   $('#sidebar')?.classList.toggle('mobile-open',mobileMenu);
   $('#mobileScrim')?.classList.toggle('show',mobileMenu);
-  $('.desktop')?.classList.toggle('night',data.dark);
+  $('.desktop')?.classList.toggle('dark-mode',data.dark);
 }
 
 function syncDraft():void {
@@ -339,7 +339,7 @@ function renderDialog():void {
     root.innerHTML=`<div class="dialog-backdrop"><section class="dialog-window window medium" role="dialog" aria-modal="true" aria-label="Settings">${windowHeader('NoteKeep 98 — Settings','closeDialog')}
       <div class="dialog-body"><h3>Notes and data</h3><p class="dialog-note">Notes are saved in this browser on this device. NoteKeep 98 is not affiliated with Google Keep, and does not offer cloud synchronization.</p>
       <div style="display:flex;flex-direction:column;gap:9px"><button class="chrome-btn" data-action="export" style="justify-content:flex-start">${icon('download')} Export JSON backup</button><button class="chrome-btn" data-action="import" style="justify-content:flex-start">${icon('upload')} Import JSON notes</button><button class="chrome-btn" data-action="reset" style="justify-content:flex-start">${icon('restore')} Restore sample notes</button></div>
-      <h3 style="margin-top:24px">Desktop preferences</h3><label class="simple-choice"><input type="checkbox" data-action="toggleNight" ${data.dark?'checked':''}> Midnight desktop background</label><label class="simple-choice"><input type="checkbox" data-action="toggleListFromSettings" ${data.list?'checked':''}> List layout</label>
+      <h3 style="margin-top:24px">Appearance</h3><label class="simple-choice"><input type="checkbox" data-action="toggleDarkMode" ${data.dark?'checked':''}> Dark mode</label><label class="simple-choice"><input type="checkbox" data-action="toggleListFromSettings" ${data.list?'checked':''}> List layout</label>
       <p class="dialog-note" style="margin-top:17px">Data storage key: <code>${STORAGE_KEY}</code><br>Previous notes from <code>${LEGACY_KEY}</code> are imported automatically on first use.</p></div>
       <div class="dialog-footer"><button class="chrome-btn primary" data-action="closeDialog">OK</button></div></section></div>`;return;
   }
@@ -367,7 +367,7 @@ function renderPopup():void {
   const menu:Record<string,string> = {
     file:`${popupItem('newNote','New note','note')}${popupItem('newChecklist','New checklist','check')}<div class="popup-divider"></div>${popupItem('import','Import notes...','upload')}${popupItem('export','Export backup...','download')}<div class="popup-divider"></div>${popupItem('settings','Settings...','settings')}`,
     edit:`${popupItem('manageLabels','Manage labels...','label')}${popupItem('newNote','Create new note','pencil')}<div class="popup-divider"></div>${popupItem('reset','Reset sample notes...','restore')}`,
-    view:`${popupItem('toggleView',data.list?'Switch to grid':'Switch to list',data.list?'grid':'list')}${popupItem('view','All notes','folder','data-view="notes"')}${popupItem('view','Archive','archive','data-view="archive"')}${popupItem('view','Recycle Bin','trash','data-view="trash"')}<div class="popup-divider"></div>${popupItem('toggleNight',data.dark?'Teal desktop':'Midnight desktop','palette')}`,
+    view:`${popupItem('toggleView',data.list?'Switch to grid':'Switch to list',data.list?'grid':'list')}${popupItem('view','All notes','folder','data-view="notes"')}${popupItem('view','Archive','archive','data-view="archive"')}${popupItem('view','Recycle Bin','trash','data-view="trash"')}<div class="popup-divider"></div>${popupItem('toggleDarkMode',data.dark?'Switch to light mode':'Switch to dark mode','palette')}`,
     help:`${popupItem('about','About NoteKeep 98','info')}${popupItem('settings','Data & privacy','settings')}`,
     start:`${popupItem('reopen','Open My Notes','folder','data-view="notes"')}${popupItem('newNote','New note','note')}${popupItem('newChecklist','New checklist','check')}<div class="popup-divider"></div>${popupItem('settings','Settings','settings')}${popupItem('about','About','info')}`
   };
@@ -479,7 +479,7 @@ function execute(action:string,button:HTMLElement):void {
       dialog=null;view='notes';search='';const field=$<HTMLInputElement>('#searchInput');if(field)field.value='';renderDialog();render();notify('Sample notes restored');});break;
     case 'confirm':{const fn=confirmAction;confirmAction=null;dialog=null;renderDialog();fn?.();break;}
     case 'toggleView':mutate(()=>{data.list=!data.list;});closePopup();break;
-    case 'toggleNight':mutate(()=>{data.dark=!data.dark;});closePopup();if(dialog==='settings')renderDialog();break;
+    case 'toggleDarkMode':mutate(()=>{data.dark=!data.dark;});closePopup();if(dialog==='settings')renderDialog();break;
     case 'toggleListFromSettings':mutate(()=>{data.list=!data.list;});renderDialog();break;
     case 'clearSearch':search='';{const field=$<HTMLInputElement>('#searchInput');if(field){field.value='';field.focus();}}render();break;
     case 'dismissToast':{const root=$('#toastRoot');if(root)root.innerHTML='';break;}
@@ -497,7 +497,7 @@ app.addEventListener('click',event=>{
   const button=(event.target as Element).closest<HTMLElement>('[data-action]');
   if(button){
     const action=button.getAttribute('data-action')??'';
-    if(['toggleLabel','checkItem','toggleNight','toggleListFromSettings'].includes(action) && button.matches('input'))return;
+    if(['toggleLabel','checkItem','toggleDarkMode','toggleListFromSettings'].includes(action) && button.matches('input'))return;
     if(action==='backdrop')return;
     execute(action,button);
   }
@@ -516,7 +516,7 @@ app.addEventListener('change',event=>{
     updateTarget(n=>{n.labels=input.checked?[...new Set([...n.labels,label])]:n.labels.filter(l=>l!==label);});
     renderPopup();
   }
-  if(action==='toggleNight')mutate(()=>{data.dark=input.checked;});
+  if(action==='toggleDarkMode')mutate(()=>{data.dark=input.checked;});
   if(action==='toggleListFromSettings')mutate(()=>{data.list=input.checked;});
 });
 app.addEventListener('input',event=>{

@@ -21,6 +21,39 @@ with sync_playwright() as p:
     page.wait_for_timeout(300)
     print('title',page.title(),'notes',page.locator('.note-window').count(), 'errors:',errors)
     page.screenshot(path=str(results/'desktop.png'),full_page=True)
+    # Dark mode themes the complete app, not only its desktop background.
+    page.locator('[data-action="menu"][data-value="view"]').click()
+    page.locator('.popup-item[data-action="toggleDarkMode"]').click()
+    assert 'dark-mode' in (page.locator('#desktop').get_attribute('class') or '')
+    dark_colors=page.evaluate("""() => {
+      const rgb=(selector,prop='backgroundColor') => getComputedStyle(document.querySelector(selector))[prop];
+      return {
+        pane:rgb('.content-pane'), paper:rgb('.note-paper'),
+        title:rgb('.note-heading','color'),
+        controls:rgb('.chrome-btn'), sidebar:rgb('.sidebar'),
+        selected:JSON.parse(localStorage.getItem('notekeep98-v1')).dark
+      };
+    }""")
+    def channels(rgb):
+        return [int(value) for value in rgb.replace('rgb(','').replace(')','').replace(' ','').split(',')[:3]]
+    assert max(channels(dark_colors['pane'])) < 100, dark_colors
+    assert max(channels(dark_colors['paper'])) < 110, dark_colors
+    assert min(channels(dark_colors['title'])) > 180, dark_colors
+    assert max(channels(dark_colors['controls'])) < 115, dark_colors
+    assert max(channels(dark_colors['sidebar'])) < 115, dark_colors
+    assert dark_colors['selected'] is True
+    page.locator('[data-action="settings"]').first.click()
+    assert page.locator('input[data-action="toggleDarkMode"]').is_checked()
+    assert max(channels(page.locator('.dialog-window').evaluate('(e)=>getComputedStyle(e).backgroundColor'))) < 115
+    assert max(channels(page.locator('.win-input').first.evaluate('(e)=>getComputedStyle(e).backgroundColor'))) < 100
+    page.screenshot(path=str(results/'desktop-dark.png'),full_page=True)
+    page.locator('[data-action="closeDialog"]').last.click()
+    page.reload(wait_until='load')
+    assert 'dark-mode' in (page.locator('#desktop').get_attribute('class') or ''), 'Dark preference must survive a reload'
+    page.locator('[data-action="menu"][data-value="view"]').click()
+    page.locator('.popup-item[data-action="toggleDarkMode"]').click()
+    assert 'dark-mode' not in (page.locator('#desktop').get_attribute('class') or '')
+    assert page.evaluate("JSON.parse(localStorage.getItem('notekeep98-v1')).dark") is False
     # open and save note
     page.locator('.quick-bar [data-action="newNote"]').click()
     assert page.locator('#editTitle').count()==1

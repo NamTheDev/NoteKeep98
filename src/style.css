@@ -205,8 +205,124 @@ textarea.win-input { resize:vertical; line-height:1.6; min-height:150px; }
 .start-links .popup-item { min-height:41px; font-size:12px; }
 .mobile-nav-toggle { display:none; }
 .mobile-scrim { display:none; }
-.night { --desktop:#111b31; --content:#efefef; }
-.night .desktop { background-color:var(--desktop); }
+/* Full dark theme. Retain legacy data.dark storage, but theme every UI surface. */
+.desktop.dark-mode {
+  color-scheme:dark;
+  color:#e7edf5;
+  --desktop:#171e28;
+  --face:#303947;
+  --light:#68778a;
+  --light2:#505d6e;
+  --shadow:#1b2430;
+  --dark:#0c121c;
+  --navy:#244d7c;
+  --blue:#346a9a;
+  --content:#26303c;
+  --soft:#26303c;
+}
+.desktop.dark-mode button:disabled { color:#a4afbd; text-shadow:none; }
+.desktop.dark-mode :is(button,a,input,textarea,select,[tabindex]):focus-visible { outline-color:#b5d8ff; }
+.desktop.dark-mode ::selection { background:#5d89bb; color:#fff; }
+.desktop.dark-mode .desktop-shortcut:hover,
+.desktop.dark-mode .desktop-shortcut:focus-visible { background:#27394b; }
+.desktop.dark-mode .desktop-shortcut { text-shadow:1px 1px #080d15; }
+.desktop.dark-mode :is(.window,.note-window,.chrome-btn,.win-control,.popup,.start-menu,.toast) {
+  border-color:var(--light) var(--dark) var(--dark) var(--light);
+}
+.desktop.dark-mode :is(.chrome-btn,.win-control,.popup,.start-menu,.toast) {
+  box-shadow:inset 1px 1px var(--light2),inset -1px -1px var(--shadow);
+}
+.desktop.dark-mode .win-control { color:#f0f3f8; }
+.desktop.dark-mode .win-control svg,
+.desktop.dark-mode .note-foot svg,
+.desktop.dark-mode .nav-btn svg { filter:brightness(1.65); }
+.desktop.dark-mode :is(.menu-bar,.toolbar,.workspace,.content-heading,.status-bar,.address-bar) {
+  border-color:#495565;
+}
+.desktop.dark-mode :is(.menu-btn:hover,.menu-btn.is-active,.tool-btn:hover,.note-top-btn:hover,.note-foot .mini-tool:hover,.editor-check-row .mini-tool:hover,.popup-check-label:hover) {
+  background:#465266;
+  border-color:#788598 #1a2430 #1a2430 #788598;
+}
+.desktop.dark-mode :is(.tool-btn.is-active,.task-app.is-open) {
+  background:#48566a;
+  box-shadow:inset 1px 1px #1b2430,inset -1px -1px #6a788a;
+}
+.desktop.dark-mode .tool-separator,
+.desktop.dark-mode .sidebar-divider { background:#1b2531; box-shadow:1px 1px #667488; }
+.desktop.dark-mode :is(.address-input,.search-box,.win-input,.label-list) {
+  background:#1e2632;
+  color:#edf3fc;
+  border-color:#1c2531 #6a7788 #6a7788 #1c2531;
+  box-shadow:inset 1px 1px #101720,inset -1px -1px #455366;
+}
+.desktop.dark-mode :is(.win-input,.search-box input)::placeholder { color:#aebbc9; opacity:1; }
+.desktop.dark-mode :is(.search-clear,.search-box svg,.address-label,.address-badge,.toolbar-caption) { color:#c2cddd; }
+.desktop.dark-mode .sidebar-heading,
+.desktop.dark-mode .nav-btn .nav-count,
+.desktop.dark-mode .page-kicker,
+.desktop.dark-mode .page-desc,
+.desktop.dark-mode .board-label,
+.desktop.dark-mode .quick-copy span,
+.desktop.dark-mode .note-titlebar-text,
+.desktop.dark-mode .note-foot .date,
+.desktop.dark-mode .popup-title,
+.desktop.dark-mode .dialog-note,
+.desktop.dark-mode .dialog-footer .footer-left { color:#b9c7d7; }
+.desktop.dark-mode .nav-btn:hover { background:#455164; border-color:#79869a #1a2532 #1a2532 #79869a; }
+.desktop.dark-mode .nav-btn.active { background:#275f94; color:#fff; border-color:#b9d4f1; }
+.desktop.dark-mode .nav-btn.active .nav-count { color:#f1f6fb; }
+.desktop.dark-mode .sidebar-foot { background:#293442; color:#d2dce8; border-color:#1d2633 #697789 #697789 #1d2633; box-shadow:inset 1px 1px #182230; }
+.desktop.dark-mode .content-pane { background:#202936; }
+.desktop.dark-mode .content-heading { background:#283341; }
+.desktop.dark-mode .quick-bar {
+  background:#323d4c;
+  border-color:#6c798b #15202b #15202b #6c798b;
+  box-shadow:inset 1px 1px #536174,inset -1px -1px #1b2532;
+}
+.desktop.dark-mode .quick-tile { background:#bd9c54; border-color:#64583f; box-shadow:2px 2px #111922; }
+.desktop.dark-mode .board-scroll,
+.desktop.dark-mode :is(.sidebar,.toolbar,.dialog-body,.label-list) { scrollbar-color:#64748a #222d3b; }
+.desktop.dark-mode .board-label::after { background:#4a5667; }
+.desktop.dark-mode .note-titlebar { background:#3e495a; border-color:#667386; }
+.desktop.dark-mode .note-top-btn.pinned { color:#b7d5fb; }
+.desktop.dark-mode :is(.note-paper,.dialog-paper) {
+  /* Saved pastel colors become an accent instead of a glaring background. */
+  background:#283441;
+  color:#f0f5fb;
+  border-color:#15202a #66778b #66778b var(--note-color,#d3dbe8);
+  border-left-width:4px;
+  box-shadow:inset 1px 1px #1b2531;
+}
+.desktop.dark-mode .note-paper:hover { filter:brightness(1.08); }
+.desktop.dark-mode .check-item input { background:#202a36; color:#f2f8ff; border-color:#14202d #728298 #728298 #14202d; box-shadow:inset 1px 1px #17212b; }
+.desktop.dark-mode .check-item.done span { color:#b4c2d0; }
+.desktop.dark-mode .note-tag { background:#35475b; border-color:#708096; color:#edf3fb; }
+.desktop.dark-mode .note-reminder { color:#c6d6e7; }
+.desktop.dark-mode .empty-state { color:#bcc9d9; }
+.desktop.dark-mode .empty-state h2 { color:#edf2fa; }
+.desktop.dark-mode .empty-illustration { background:#344254; border-color:#768397 #1a2530 #1a2530 #768397; }
+.desktop.dark-mode .status-cell,
+.desktop.dark-mode .task-clock { background:#343f4f; border-color:#1b2531 #738095 #738095 #1b2531; box-shadow:inset 1px 1px #182331; }
+.desktop.dark-mode .taskbar { border-color:#758195; }
+.desktop.dark-mode .taskbar-divider { border-color:#1d2632 #758294; }
+.desktop.dark-mode .popup-item:hover,
+.desktop.dark-mode .popup-item:focus-visible { background:#285f95; color:#fff; }
+.desktop.dark-mode .popup-item.disabled { color:#bac4d1; }
+.desktop.dark-mode .popup-divider,
+.desktop.dark-mode .popup-label-actions,
+.desktop.dark-mode .dialog-footer,
+.desktop.dark-mode .label-row { border-color:#576476; }
+.desktop.dark-mode :is(.popup-check-label input,.simple-choice input,.editor-check-row input[type=checkbox]) { accent-color:#77b8fa; }
+.desktop.dark-mode .dialog-backdrop { background:rgba(7,12,20,.75); }
+.desktop.dark-mode .start-rail { background:linear-gradient(0deg,#1c446d,#516177); }
+.desktop.dark-mode .desktop-hint { text-shadow:1px 1px #090f18; }
+.desktop.dark-mode :is(.dialog-icon-message svg,.sidebar-foot svg) { filter:brightness(1.35); }
+.desktop.dark-mode ::-webkit-scrollbar-track { background:#222d3b; border-color:#536074; }
+.desktop.dark-mode ::-webkit-scrollbar-thumb {
+  background:#58687c;
+  border-color:#8a99ac #192431 #192431 #8a99ac;
+  box-shadow:inset 1px 1px #6c7a8a,inset -1px -1px #1b2430;
+}
 /* Classic 17px native-like scrollbars with a single handle; no arrow buttons. */
 .sidebar, .board-scroll, .toolbar, .dialog-body, .label-list { scrollbar-width:auto; scrollbar-color:#b9b9b9 #e6e6e6; }
 ::-webkit-scrollbar { width:17px; height:17px; }
