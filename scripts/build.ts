@@ -27,6 +27,7 @@ const names=["file-text","folder","pencil","square-check","search","archive","tr
 await Promise.all([
   Bun.write(`${root}dist/index.html`,html),
   Bun.write(`${root}dist/style.css`,css),
+  Bun.write(`${root}dist/theme-signal.js`,await Bun.file(`${root}theme-signal.js`).text()),
   Bun.write(`${root}dist/favicon.svg`,adaptiveFavicon),
   ...names.map(async name=>Bun.write(`${root}dist/icons/${name}.svg`,await Bun.file(`${root}node_modules/lucide-static/icons/${name}.svg`).text()))
 ]);

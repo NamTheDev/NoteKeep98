@@ -22,6 +22,19 @@ with sync_playwright() as p:
     assert page.locator('link[rel="icon"]').get_attribute('href') == './favicon.svg'
     assert 'utm_source' not in page.url, 'Remove tracking parameters from the canonical address'
     page.wait_for_timeout(300)
+    def assert_theme_signal(expected):
+        signal=page.evaluate("""() => ({
+          meta:document.querySelector('meta[name="color-scheme"]')?.content,
+          root:document.documentElement.dataset.theme,
+          computed:getComputedStyle(document.documentElement).colorScheme,
+          browser:document.querySelector('meta[name="theme-color"]')?.content,
+          locked:!!document.querySelector('meta[name="darkreader-lock"]')
+        })""")
+        assert signal == {
+          'meta':expected, 'root':expected, 'computed':expected,
+          'browser':'#181818' if expected=='dark' else '#008080', 'locked':False
+        }, signal
+    assert_theme_signal('light')
     print('title',page.title(),'notes',page.locator('.note-window').count(), 'errors:',errors)
     # Canonical 1990s system palette and four-tone component checks.
     light_system=page.evaluate("""() => {
@@ -63,6 +76,7 @@ with sync_playwright() as p:
     page.locator('[data-action="menu"][data-value="view"]').click()
     page.locator('.popup-item[data-action="toggleDarkMode"]').click()
     assert 'dark-mode' in (page.locator('#desktop').get_attribute('class') or '')
+    assert_theme_signal('dark')
     assert 'invert(1)' in page.locator('.tool-btn .ui-icon').first.evaluate('(e)=>getComputedStyle(e).filter'), 'Dark mode toolbar icons must be light'
     dark_colors=page.evaluate("""() => {
       const rgb=(selector,prop='backgroundColor') => getComputedStyle(document.querySelector(selector))[prop];
@@ -133,9 +147,11 @@ with sync_playwright() as p:
     page.locator('[data-action="cancelEditor"]').last.click()
     page.reload(wait_until='load')
     assert 'dark-mode' in (page.locator('#desktop').get_attribute('class') or ''), 'Dark preference must survive a reload'
+    assert_theme_signal('dark')
     page.locator('[data-action="menu"][data-value="view"]').click()
     page.locator('.popup-item[data-action="toggleDarkMode"]').click()
     assert 'dark-mode' not in (page.locator('#desktop').get_attribute('class') or '')
+    assert_theme_signal('light')
     assert 'invert(1)' not in page.locator('.tool-btn .ui-icon').first.evaluate('(e)=>getComputedStyle(e).filter'), 'Light mode icons should be dark'
     assert page.evaluate("JSON.parse(localStorage.getItem('notekeep98-v1')).dark") is False
     # Quick note is a genuine textarea, directly editable without a modal.

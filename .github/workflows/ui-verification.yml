@@ -58,6 +58,7 @@ jobs:
           done
           curl --fail http://127.0.0.1:8765/keep/app.js > /dev/null
           curl --fail http://127.0.0.1:8765/keep/style.css > /dev/null
+          curl --fail http://127.0.0.1:8765/keep/theme-signal.js > /dev/null
           curl --fail http://127.0.0.1:8765/keep/icons/settings.svg > /dev/null
           KEEP_BASE_URL=http://127.0.0.1:8765/keep/ python tests/browser_test.py
       - name: Upload screenshots and diagnostics

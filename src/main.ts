@@ -250,6 +250,8 @@ function render():void {
   $('#sidebar')?.classList.toggle('mobile-open',mobileMenu);
   $('#mobileScrim')?.classList.toggle('show',mobileMenu);
   $('.desktop')?.classList.toggle('dark-mode',data.dark);
+  // Keep root color-scheme and extension detection in sync with native preferences.
+  window.dispatchEvent(new CustomEvent('app-theme-change',{detail:{dark:data.dark}}));
 }
 
 function expandQuickComposer():void {
