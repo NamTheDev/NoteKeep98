@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto';
 const root = new URL('../', import.meta.url).pathname;
-await Bun.$`mkdir -p ${root}dist/icons`;
+await Bun.import { createHash } from 'node:crypto';
+const root = new URL('../', import.meta.url).pathname;
+mkdir -p ${root}dist`;
 const build = await Bun.build({
   entrypoints: [`${root}src/main.ts`],
   target: 'browser',
@@ -23,12 +25,10 @@ const html=template
 const baseFavicon=await Bun.file(`${root}node_modules/lucide-static/icons/notebook-pen.svg`).text();
 const adaptiveFavicon=baseFavicon.replace(/(<svg\b[^>]*>)/, (tag)=>tag+
   '<style>:root{color:#252525}@media (prefers-color-scheme:dark){:root{color:#f1f1f1}}</style>');
-const names=["file-text","folder","pencil","square-check","search","archive","trash-2","rotate-ccw","pin","bell","palette","tag","list","layout-grid","ellipsis","x","settings","save","upload","download","copy","info","triangle-alert","notebook-pen","clock","star","menu","sparkles","chevron-right"];
 await Promise.all([
   Bun.write(`${root}dist/index.html`,html),
   Bun.write(`${root}dist/style.css`,css),
   Bun.write(`${root}dist/theme-signal.js`,await Bun.file(`${root}theme-signal.js`).text()),
-  Bun.write(`${root}dist/favicon.svg`,adaptiveFavicon),
-  ...names.map(async name=>Bun.write(`${root}dist/icons/${name}.svg`,await Bun.file(`${root}node_modules/lucide-static/icons/${name}.svg`).text()))
+  Bun.write(`${root}dist/favicon.svg`,adaptiveFavicon)
 ]);
-console.log(`Built ${build.outputs.length} JS bundle and ${names.length} Lucide icons in dist/`);
+console.log(`Built ${build.outputs.length} JS bundle with Material Symbols Rounded UI icons in dist/`);
