@@ -85,26 +85,48 @@ function setView(next: View): void {
   view=next;mobileMenu=false;closePopup();render();
   $('#boardScroll')?.scrollTo({top:0});
 }
-const viewMeta = (): {title:string,subtitle:string,kicker:string,path:string} => {
-  switch(view) {
-    case 'reminders': return {title:'Reminders',subtitle:'The notes you need to remember.',kicker:'YOUR PLANNED NOTES',path:'Reminders'};
-    case 'archive': return {title:'Archive',subtitle:'Out of sight, not forgotten.',kicker:'YOUR SAVED NOTES',path:'Archive'};
-    case 'trash': return {title:'Recycle Bin',subtitle:'Deleted notes can be restored here.',kicker:'RECENTLY DELETED',path:'Recycle Bin'};
-    case 'notes': return {title:'All Notes',subtitle:'A little space for everything on your mind.',kicker:'YOUR DESKTOP NOTES',path:'All Notes'};
-    default: {const label = view.slice(6);return {title:label,subtitle:'Notes filed under '+label+'.',kicker:'YOUR CUSTOM FOLDER',path:'Labels \\ '+label};}
-  }
-};
+function viewTitle():string {
+  if(view==='notes')return 'All Notes';
+  if(view==='reminders')return 'Reminders';
+  if(view==='archive')return 'Archive';
+  if(view==='trash')return 'Recycle Bin';
+  return view.startsWith('label:')?view.slice(6):'All Notes';
+}
 function navButton(dest:View,name:string,iconName:string,count?:number,sub=false):string {
   return `<button class="nav-btn ${view===dest?'active':''} ${sub?'sub':''}" data-action="view" data-view="${html(dest)}" aria-current="${view===dest?'page':'false'}">${icon(iconName)}<span>${html(name)}</span>${count!==undefined?`<span class="nav-count">${count}</span>`:''}</button>`;
 }
 function renderNav():void {
-  const c=counts();const root=$('#navRoot');if (!root)return;
-  root.innerHTML=`<div class="sidebar-heading">Folders</div><div class="sidebar-group">
-    ${navButton('notes','All Notes','folder',c.notes)}${navButton('reminders','Reminders','bell',c.reminders)}${navButton('archive','Archive','archive',c.archive)}${navButton('trash','Recycle Bin','trash',c.trash)}
-    </div><div class="sidebar-divider"></div><div class="sidebar-heading">My Labels</div><div class="sidebar-group">
+  const c=counts();const root=$('#navRoot');if(!root)return;
+  root.innerHTML=`
+  <div class="sidebar-heading">Navigation</div>
+  <nav class="sidebar-group" aria-label="Notes navigation">
+    ${navButton('notes','All Notes','folder',c.notes)}
+    ${navButton('reminders','Reminders','bell',c.reminders)}
+    ${navButton('archive','Archive','archive',c.archive)}
+    ${navButton('trash','Recycle Bin','trash',c.trash)}
+  </nav>
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-heading">Labels</div>
+  <nav class="sidebar-group" aria-label="Note labels">
     ${data.labels.map(label=>navButton(`label:${label}`,label,'label',data.notes.filter(n=>n.labels.includes(label)&&!n.trashed&&!n.archived).length,true)).join('')}
-    <button class="nav-btn sub" data-action="manageLabels">${icon('pencil')}<span>Edit labels...</span></button>
-    </div>`;
+    <button class="nav-btn" data-action="manageLabels">${icon('pencil')}<span>Manage labels</span></button>
+  </nav>
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-heading">Actions</div>
+  <nav class="sidebar-group" aria-label="Note actions">
+    <button class="nav-btn" data-action="newNote">${icon('note')}<span>New note</span></button>
+    <button class="nav-btn" data-action="newChecklist">${icon('check')}<span>New checklist</span></button>
+    <button class="nav-btn" id="viewToggle" data-action="toggleView" aria-pressed="${data.list}" aria-label="${data.list?'Switch to grid':'Switch to list'}">${icon(data.list?'grid':'list')}<span>${data.list?'Grid view':'List view'}</span></button>
+  </nav>
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-heading">Preferences</div>
+  <nav class="sidebar-group" aria-label="Settings and data">
+    <button class="nav-btn" data-action="settings">${icon('settings')}<span>Settings</span></button>
+    <button class="nav-btn" data-action="import">${icon('upload')}<span>Import notes</span></button>
+    <button class="nav-btn" data-action="export">${icon('download')}<span>Export backup</span></button>
+    <button class="nav-btn" data-action="reset">${icon('restore')}<span>Restore samples</span></button>
+    <button class="nav-btn" data-action="about">${icon('info')}<span>About</span></button>
+  </nav>`;
 }
 function noteHTML(n:Note):string { return renderNoteCard(n,view); }
 function noteGroup(notes: Note[],heading:string):string {return `<div class="board-label">${html(heading)}</div><div class="note-grid ${data.list?'is-list':''}">${notes.map(noteHTML).join('')}</div>`;}
@@ -129,16 +151,15 @@ function renderBoard():void {
 }
 function render():void {
   renderNav();renderBoard();
-  const meta=viewMeta();
   const setText=(sel:string,text:string)=>{const el=$(sel);if(el)el.textContent=text;};
-  setText('#pageTitle',meta.title);setText('#pageDescription',meta.subtitle);setText('#pageKicker',meta.kicker);
+  setText('#pageTitle',viewTitle());
   setText('#statusCount',`${filterNotes().length} ${filterNotes().length===1?'note':'notes'}`);
-  setText('#statusText',`${data.notes.filter(n=>!n.trashed).length} saved notes  |  Click a note to edit  |  Ctrl+K to search`);
-  const viewBtn=$('#viewToggle'); if (viewBtn) {viewBtn.innerHTML=icon(data.list?'grid':'list');viewBtn.title=data.list?'Grid view':'List view';viewBtn.setAttribute('aria-pressed',String(data.list));}
+  setText('#statusText','Ready');
   const quick=$('#quickBar');if(quick)quick.hidden=view==='trash'||view==='archive';
   const clear=$('#clearSearch');if(clear)clear.hidden=!search;
   $('#sidebar')?.classList.toggle('mobile-open',mobileMenu);
   $('#mobileScrim')?.classList.toggle('show',mobileMenu);
+  $('[data-action="toggleNav"]')?.setAttribute('aria-expanded',String(mobileMenu));
   $('.desktop')?.classList.toggle('dark-mode',data.dark);
   // Keep root color-scheme and extension detection in sync with native preferences.
   window.dispatchEvent(new CustomEvent('app-theme-change',{detail:{dark:data.dark}}));
@@ -245,15 +266,14 @@ function renderDialog():void {
   }
   if(dialog==='settings'){
     root.innerHTML=`<div class="dialog-backdrop"><section class="dialog-window window medium" role="dialog" aria-modal="true" aria-label="Settings">${windowHeader('keep — Settings','closeDialog')}
-      <div class="dialog-body"><h3>Notes and data</h3><p class="dialog-note">Notes are saved in this browser on this device. keep is not affiliated with Google Keep, and does not offer cloud synchronization.</p>
-      <div style="display:flex;flex-direction:column;gap:9px"><button class="chrome-btn" data-action="export" style="justify-content:flex-start">${icon('download')} Export JSON backup</button><button class="chrome-btn" data-action="import" style="justify-content:flex-start">${icon('upload')} Import JSON notes</button><button class="chrome-btn" data-action="reset" style="justify-content:flex-start">${icon('restore')} Restore sample notes</button></div>
+      <div class="dialog-body"><h3>Preferences</h3><p class="dialog-note">Notes are saved in this browser on this device. keep is not affiliated with Google Keep, and does not offer cloud synchronization.</p>
       <fieldset class="settings-group"><legend>Appearance</legend><label class="simple-choice"><input type="checkbox" data-action="toggleDarkMode" ${data.dark?'checked':''}> Dark mode</label></fieldset><fieldset class="settings-group"><legend>Notes layout</legend><label class="simple-choice"><input type="checkbox" data-action="toggleListFromSettings" ${data.list?'checked':''}> List layout</label></fieldset>
       <p class="dialog-note" style="margin-top:17px">Settings and notes remain in this browser. Existing notes from earlier app versions are preserved automatically.</p></div>
       <div class="dialog-footer"><button class="chrome-btn primary" data-action="closeDialog">OK</button></div></section></div>`;return;
   }
   if(dialog==='about'){
     root.innerHTML=`<div class="dialog-backdrop"><section class="dialog-window window medium" role="dialog" aria-modal="true" aria-label="About keep">${windowHeader('About keep','closeDialog')}
-      <div class="dialog-body"><div class="dialog-icon-message">${icon('computer')}<div><h3 style="margin:0 0 5px">keep</h3><p>Version 1.0<br>TypeScript + Bun.js<br>Independent local-first notes application</p></div></div><p class="dialog-note">Windows 95/98-inspired visual language. Notes are stored only in your browser; this is not Google Keep and does not connect to Google.</p></div><div class="dialog-footer"><button class="chrome-btn primary" data-action="closeDialog">OK</button></div></section></div>`;return;
+      <div class="dialog-body"><div class="dialog-icon-message">${icon('computer')}<div><h3 style="margin:0 0 5px">keep</h3><p>Version 1.0<br>TypeScript + Bun.js<br>Independent local-first notes application</p></div></div><p class="dialog-note">Compact monochrome Material Design 3 visual language. Notes are stored only in your browser; this is not Google Keep and does not connect to Google.</p></div><div class="dialog-footer"><button class="chrome-btn primary" data-action="closeDialog">OK</button></div></section></div>`;return;
   }
   if(dialog==='confirm'){
     root.innerHTML=`<div class="dialog-backdrop"><section class="dialog-window window medium" role="alertdialog" aria-modal="true" aria-label="${html(confirmTitle)}">${windowHeader(confirmTitle,'closeDialog')}
@@ -309,6 +329,7 @@ function renameLabel(oldName:string):void {
   renderDialog();notify('Label renamed');
 }
 function execute(action:string,button:HTMLElement):void {
+  if(button.closest('#sidebar') && mobileMenu){mobileMenu=false;$('#sidebar')?.classList.remove('mobile-open');$('#mobileScrim')?.classList.remove('show');}
   const noteId=button.getAttribute('data-id')??'';
   const value=button.getAttribute('data-value')??'';
   switch(action){

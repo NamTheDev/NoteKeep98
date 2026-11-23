@@ -11,7 +11,7 @@
 - `src/ui/icons.ts` — Material Symbols Rounded semantic icon mapping.
 - `src/ui/quick-composer.ts` — standalone quick-composer DOM behavior.
 - `src/utils/format.ts` — safe HTML escaping and date/time formatting.
-- `src/style.css` — shared MD3 stylesheet; canonical for clipboard's sync workflow.
+- `src/style.css` — vendored copy of [`util/css/material_design.css`](https://github.com/NamTheDev/util/blob/main/css/material_design.css), the canonical style source.
 - `scripts/build.ts` — Bun JS bundling and versioned CSS/JS output.
 
 ## Boundaries
@@ -21,3 +21,7 @@ Do not make pure note helpers depend on the UI coordinator. Keep storage format 
 ## Verification
 
 Run `bun run typecheck`, `bun run build`, and the Playwright UI workflow. Existing note editing, search, labels, import/export, checklist, reminders, archive/trash, keyboard shortcuts, theme persistence and mobile navigation must survive.
+
+## Sidebar and typography
+
+Both apps use the same navigation group classes, compact layout tokens and Material Symbols Rounded. keep groups Notes, Labels, Actions and Preferences in its sidebar. Only the view title and search remain in the content header; decorative kicker and duplicate creation controls were removed. On mobile, selecting a sidebar action closes the drawer.

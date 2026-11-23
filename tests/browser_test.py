@@ -37,8 +37,10 @@ with sync_playwright() as p:
     assert_theme_signal('dark')
     assert page.locator('.note-window').count() > 0
     assert page.locator('.material-symbols-rounded').count() > 12
-    assert page.locator('.chrome-btn .ui-icon').first.evaluate('(e)=>e.textContent.trim().length>0')
+    assert page.locator('#navRoot .ui-icon').first.evaluate('(e)=>e.textContent.trim().length>0')
     assert page.locator('.toolbar, .menu-bar').count() == 0
+    assert page.locator('.page-kicker, .page-desc').count() == 0
+    assert page.locator('#navRoot [data-action="settings"]').is_visible()
     visual=page.evaluate("""() => {
       const style=s=>getComputedStyle(document.querySelector(s));
       return {bg:style('.desktop').backgroundColor,
@@ -91,7 +93,7 @@ with sync_playwright() as p:
     page.reload(wait_until='load')
     assert page.locator('.note-window').filter(has_text='Quick capture').count()==1
     # open and save note
-    page.locator('.quick-bar [data-action="newNote"]').click()
+    page.locator('#navRoot [data-action="newNote"]').click()
     assert page.locator('#editTitle').count()==1
     page.locator('#editTitle').fill('QA Note 98')
     page.locator('#editBody').fill('Testing notes')
@@ -102,7 +104,7 @@ with sync_playwright() as p:
     assert page.locator('.note-window').count()==1
     page.locator('#clearSearch').click()
     # checklist
-    page.locator('.quick-bar [data-action="newChecklist"]').click()
+    page.locator('#navRoot [data-action="newChecklist"]').click()
     page.locator('#editTitle').fill('QA List 98')
     page.locator('.editor-check-row .item-text').first.fill('one')
     assert page.locator('.editor-check-row .item-text').first.input_value()=='one'
@@ -159,11 +161,9 @@ with sync_playwright() as p:
     page.locator('[data-view="trash"]').first.click()
     assert page.locator('.note-window').filter(has_text='QA Note 98').count()==1
     page.locator('.note-window').filter(has_text='QA Note 98').locator('[data-action="restore"]').click()
-    # Export is available through Settings after removal of the redundant toolbar.
-    page.locator('[data-action="settings"]').first.click()
+    # Export is a sidebar action, not a toolbar or settings-dialog duplicate.
     with page.expect_download() as d:
-        page.locator('.dialog-window [data-action="export"]').click()
-    page.locator('[data-action="closeDialog"]').last.click()
+        page.locator('#navRoot [data-action="export"]').click()
     assert d.value.suggested_filename.endswith('.json')
     # reminders and reminder filtering
     page.locator('[data-view="notes"]').first.click()
@@ -224,13 +224,15 @@ with sync_playwright() as p:
     expect(mobile.locator('#desktop')).to_have_class('desktop dark-mode')
     icon_filter=mobile.locator('.mobile-nav-toggle .ui-icon').evaluate('(e)=>getComputedStyle(e).filter')
     assert icon_filter == 'none', icon_filter
-    mobile.locator('[data-action="settings"]').first.click()
+    mobile.locator('[data-action="toggleNav"]').click()
+    mobile.locator('#navRoot [data-action="settings"]').click()
     backdrop=mobile.locator('.dialog-backdrop').evaluate('(e)=>getComputedStyle(e).backgroundColor')
     assert backdrop=='rgba(0, 0, 0, 0.733)',backdrop
     mobile.locator('.dialog-window [data-action="closeDialog"]').last.click()
     mobile.screenshot(path=str(results/'mobile-dark.png'),full_page=True)
     mobile.reload(wait_until='load')
-    mobile.locator('[data-action="settings"]').first.click()
+    mobile.locator('[data-action="toggleNav"]').click()
+    mobile.locator('#navRoot [data-action="settings"]').click()
     mobile.locator('input[data-action="toggleDarkMode"]').uncheck()
     mobile.locator('[data-action="closeDialog"]').last.click()
     # Mobile quick composer expands without horizontal overflow and allows cancel.
@@ -261,7 +263,7 @@ with sync_playwright() as p:
     assert seed_card.locator('.pinned').count()==1
     seed_card.locator('[data-action="pin"]').click()
     assert seed_card.locator('.pinned').count()==1, "Failed storage write modified an existing note"
-    blocked.locator('.quick-bar [data-action="newNote"]').click()
+    blocked.locator('#navRoot [data-action="newNote"]').click()
     blocked.locator('#editTitle').fill('Must Not Claim Saved')
     blocked.locator('#editBody').fill('Keep the draft visible')
     blocked.locator('[data-action="saveEditor"]').click()

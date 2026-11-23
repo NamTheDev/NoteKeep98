@@ -6,9 +6,9 @@ A local-first notes app with a compact, monochrome, dark-first Material Design 3
 
 ## Using keep
 
-Create a note or checklist from the quick composer; search, switch grid/list view, and open Settings alongside the notes heading. The folder sidebar contains All Notes, Reminders, Archive, Recycle Bin and custom labels. On smaller screens, use the folder-menu button to open the drawer. The redundant File/Edit/View/Help menu and separate top toolbar have been removed.
+Use the quick composer to capture notes; create notes/checklists, switch grid/list view, manage backups and open Settings from the sidebar. Search stays next to the current view title. The sidebar also contains All Notes, Reminders, Archive, Recycle Bin and custom labels. On smaller screens, use the folder-menu button to open the drawer. The redundant File/Edit/View/Help menu and separate top toolbar have been removed.
 
-Features include editing, pinning, colors, labels, reminders, checklists, duplication, archive/trash, undo, and JSON backup import/export. Import, export, appearance and reset are available in **Settings**. Keyboard shortcuts include Ctrl+K for search, Ctrl+Enter to save, and N outside text fields to create a note.
+Features include editing, pinning, colors, labels, reminders, checklists, duplication, archive/trash, undo, and JSON backup import/export. Import, export and sample restore are sidebar actions. Appearance preferences are in **Settings**. Keyboard shortcuts include Ctrl+K for search, Ctrl+Enter to save, and N outside text fields to create a note.
 
 ## Privacy and compatibility
 
@@ -16,7 +16,7 @@ Notes and settings stay in this browser's `localStorage`; no account or cloud sy
 
 ## Design system
 
-Both [keep](https://github.com/NamTheDev/keep) and [clipboard](https://github.com/NamTheDev/clipboard) use the shared monochrome Material Design 3 system: Roboto, Material Symbols Rounded, dark-first/light-toggle themes, compact spacing, 16px baseline rounding, hybrid tonal/outlined surfaces, and no UI animations. `src/style.css` is the canonical shared stylesheet; clipboard synchronizes this file using its design-sync workflow. Each app has its own layout and behavior. The icon font loads from Google Fonts, with sans-serif fallback; the favicon is a separate graphic.
+Both [keep](https://github.com/NamTheDev/keep) and [clipboard](https://github.com/NamTheDev/clipboard) use the shared monochrome Material Design 3 system: Roboto, Material Symbols Rounded, dark-first/light-toggle themes, compact spacing, 16px baseline rounding, hybrid tonal/outlined surfaces, and no UI animations. [`NamTheDev/util/css/material_design.css`](https://github.com/NamTheDev/util/blob/main/css/material_design.css) is the canonical stylesheet. Both apps vendor identical copies and synchronize from that source. Each app has its own layout and behavior. The icon font loads from Google Fonts, with sans-serif fallback; the favicon is a separate graphic.
 
 Legacy Windows 95/98 reference documents in `docs/` record earlier design work; they do not describe the current UI.
 
