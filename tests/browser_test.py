@@ -235,6 +235,21 @@ with sync_playwright() as p:
     mobile.set_viewport_size({'width':390,'height':844})
     expect(maximize_button).to_be_disabled()
     assert 'is-maximized' in (main_window.get_attribute('class') or ''), 'Returning to mobile must maximize'
+    # The mobile close X and window controls must be visible in both modes.
+    mobile_close=mobile.locator('#mainWindow [aria-label="Close window"] svg path')
+    assert mobile_close.evaluate('(e)=>getComputedStyle(e).stroke')=='rgb(0, 0, 0)'
+    mobile.locator('[data-action="menu"][data-value="view"]').click()
+    mobile.locator('.popup-item[data-action="toggleDarkMode"]').click()
+    expect(mobile.locator('#desktop')).to_have_class('desktop dark-mode')
+    assert mobile_close.evaluate('(e)=>getComputedStyle(e).stroke')=='rgb(240, 240, 240)', 'Mobile X must be white in dark mode'
+    control_colors=mobile.evaluate("""() => [...document.querySelectorAll('#mainWindow .window-controls .win-control')].map((e) => getComputedStyle(e).color)""")
+    assert control_colors==['rgb(240, 240, 240)']*3, control_colors
+    mobile.screenshot(path=str(results/'mobile-dark.png'),full_page=True)
+    mobile.reload(wait_until='load')
+    assert mobile_close.evaluate('(e)=>getComputedStyle(e).stroke')=='rgb(240, 240, 240)', 'Mobile dark X must survive reload'
+    mobile.locator('[data-action="menu"][data-value="view"]').click()
+    mobile.locator('.popup-item[data-action="toggleDarkMode"]').click()
+    assert mobile_close.evaluate('(e)=>getComputedStyle(e).stroke')=='rgb(0, 0, 0)'
     mobile.screenshot(path=str(results/'mobile.png'),full_page=True)
     print('mobile horizontal overflow:',mobile.evaluate('document.documentElement.scrollWidth > window.innerWidth'))
     print('errors',errors)

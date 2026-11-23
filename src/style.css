@@ -252,6 +252,12 @@ textarea.win-input { resize:vertical; line-height:1.6; min-height:150px; }
 .desktop.dark-mode ::selection { background:var(--sys-selected); color:#fff; }
 .desktop.dark-mode button:disabled { color:var(--sys-muted); text-shadow:none; }
 .desktop.dark-mode .win-control { color:var(--sys-text); }
+.desktop.dark-mode .title-bar .window-controls .win-control {
+  color:var(--sys-text);
+}
+.desktop.dark-mode .title-bar .window-controls .win-control svg path {
+  stroke:var(--sys-text);
+}
 .desktop.dark-mode :is(.win-control svg,.note-foot svg,.nav-btn svg) { filter:brightness(1.5); }
 .desktop.dark-mode :is(.menu-bar,.toolbar,.workspace,.content-heading,.status-bar,.address-bar,.dialog-footer,.label-row) { border-color:var(--shadow); }
 .desktop.dark-mode :is(.menu-btn:hover,.menu-btn.is-active,.tool-btn:hover,.note-top-btn:hover,.note-foot .mini-tool:hover,.editor-check-row .mini-tool:hover,.popup-check-label:hover) {

@@ -10,7 +10,7 @@ This is an independent recreation. It is **not** Google Keep and does not synchr
 
 This hosted version is a static site—visitors do not need Bun or an account. All notes are stored in the current browser's `localStorage`, **not on GitHub or in a cloud database**. Notes created at `localhost:3000` do not appear automatically on the hosted site. Use **Export backup** and **Import notes** to transfer them between origins or devices. Browser data can be lost if storage is cleared; retain regular backups. The app is not intended as an encrypted password or secret vault.
 
-Publishing is automated by [Deploy NoteKeep98 to GitHub Pages](.github/workflows/deploy-pages.yml) on pushes to `main`. If GitHub Pages has not been activated for this repository, an administrator must first select **Settings → Pages → Build and deployment → Source: GitHub Actions**. The published URL becomes available after the deployment succeeds.
+Publishing is automated by [Deploy NoteKeep98 to GitHub Pages](.github/workflows/deploy-pages.yml) on pushes to `main`. Production JavaScript and CSS URLs carry content fingerprints so browser caches refresh when those files change. If GitHub Pages has not been activated for this repository, an administrator must first select **Settings → Pages → Build and deployment → Source: GitHub Actions**. The published URL becomes available after the deployment succeeds.
 
 ## Run with Bun
 
