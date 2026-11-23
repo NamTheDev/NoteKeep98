@@ -39,6 +39,24 @@ with sync_playwright() as p:
     assert page.locator('.material-symbols-rounded').count() > 12
     assert page.locator('#navRoot .ui-icon').first.evaluate('(e)=>e.textContent.trim().length>0')
     assert page.locator('.toolbar, .menu-bar').count() == 0
+    # Shared design spacing contract: keep and clipboard must agree on these values.
+    spacing=page.evaluate("""() => {
+      const root=getComputedStyle(document.documentElement);
+      const style=(s)=>getComputedStyle(document.querySelector(s));
+      return {
+        gutter:root.getPropertyValue('--content-gutter').trim(),
+        gap:root.getPropertyValue('--content-gap').trim(),
+        cardInset:root.getPropertyValue('--card-inset').trim(),
+        sidebarWidth:style('#sidebar').width,
+        headingLeft:style('.content-heading').paddingLeft,
+        noteInset:style('.note-window .note-paper').paddingLeft,
+        gridGap:style('.note-grid').columnGap
+      };
+    }""")
+    assert spacing=={
+      'gutter':'20px','gap':'12px','cardInset':'14px',
+      'sidebarWidth':'224px','headingLeft':'20px','noteInset':'14px','gridGap':'12px'
+    }, spacing
     assert page.locator('.page-kicker, .page-desc').count() == 0
     assert page.locator('#navRoot [data-action="settings"]').is_visible()
     visual=page.evaluate("""() => {
@@ -205,6 +223,8 @@ with sync_playwright() as p:
     mobile.on('pageerror',lambda e:errors.append('mobile: '+str(e)))
     mobile.goto(base_url,wait_until='load')
     mobile.wait_for_timeout(200)
+    mobile_gutter=mobile.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--content-gutter').trim()")
+    assert mobile_gutter=='12px',mobile_gutter
     main_window=mobile.locator('#mainWindow')
     assert mobile.locator('#mainWindow .window-controls').count()==0
     assert mobile.locator('.taskbar').count()==0
