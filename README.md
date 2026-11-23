@@ -1,4 +1,9 @@
-# NoteKeep 98
+# keep
+
+Formerly **NoteKeep 98**. The GitHub repository and Pages path are now [NamTheDev/keep](https://github.com/NamTheDev/keep) and **https://namthedev.github.io/keep/**.
+
+**Icons:** UI pictograms use grayscale-only vector rendering in both classic and dark Windows 98 themes; note-color swatches and note-paper accents remain distinct user data, not UI icon colors.
+
 
 A Windows 95/98-inspired, **local-first Google Keep-style notes app**, written in **TypeScript**, served and bundled using **Bun.js**. No React, Vite, runtime dependencies, backend database or account required.
 
@@ -6,11 +11,11 @@ This is an independent recreation. It is **not** Google Keep and does not synchr
 
 ## Use online (GitHub Pages)
 
-**Web app:** [Open NoteKeep98](https://namthedev.github.io/NoteKeep98/)
+**Web app:** [Open keep](https://namthedev.github.io/keep/)
 
 This hosted version is a static site—visitors do not need Bun or an account. All notes are stored in the current browser's `localStorage`, **not on GitHub or in a cloud database**. Notes created at `localhost:3000` do not appear automatically on the hosted site. Use **Export backup** and **Import notes** to transfer them between origins or devices. Browser data can be lost if storage is cleared; retain regular backups. The app is not intended as an encrypted password or secret vault.
 
-Publishing is automated by [Deploy NoteKeep98 to GitHub Pages](.github/workflows/deploy-pages.yml) on pushes to `main`. Production JavaScript and CSS URLs carry content fingerprints so browser caches refresh when those files change. If GitHub Pages has not been activated for this repository, an administrator must first select **Settings → Pages → Build and deployment → Source: GitHub Actions**. The published URL becomes available after the deployment succeeds.
+Publishing is automated by [Deploy keep to GitHub Pages](.github/workflows/deploy-pages.yml) on pushes to `main`. Production JavaScript and CSS URLs carry content fingerprints so browser caches refresh when those files change. If GitHub Pages has not been activated for this repository, an administrator must first select **Settings → Pages → Build and deployment → Source: GitHub Actions**. The published URL becomes available after the deployment succeeds.
 
 ## Run with Bun
 
@@ -72,7 +77,7 @@ A **standalone HTML preview** is also provided with the downloadable package for
 ## Project structure
 
 ```text
-NoteKeep98/
+keep/
 ├── .github/workflows/deploy-pages.yml    # GitHub Pages static deployment
 ├── .github/workflows/ui-verification.yml  # Build and browser test CI
 ├── .gitignore
@@ -97,19 +102,19 @@ NoteKeep98/
 
 ## Design credit and attribution
 
-**Windows 95/98 visual design reference by [Chris Lemke](https://github.com/chrislemke).** The look and feel of NoteKeep 98 is inspired by his Windows 95/98 design study:
+**Windows 95/98 visual design reference by [Chris Lemke](https://github.com/chrislemke).** The look and feel of keep is inspired by his Windows 95/98 design study:
 
 - [Windows 95/98 Design Reference — live reference](https://chrislemke.github.io/website_designs/designs/Windows_95_98.html)
 - [Source project — `chrislemke/website_designs`](https://github.com/chrislemke/website_designs/tree/main)
 - [Chris Lemke on GitHub](https://github.com/chrislemke)
 
-The design reference's source repository is [MIT licensed](https://github.com/chrislemke/website_designs/blob/main/LICENSE) (© 2026 Chris Lemke). The NoteKeep 98 interface has been independently implemented with custom CSS and icons, based on its visual styling. This credit recognizes the original reference; it does **not** imply that Chris Lemke created, developed, endorses or maintains this application.
+The design reference's source repository is [MIT licensed](https://github.com/chrislemke/website_designs/blob/main/LICENSE) (© 2026 Chris Lemke). The keep interface has been independently implemented with custom CSS and icons, based on its visual styling. This credit recognizes the original reference; it does **not** imply that Chris Lemke created, developed, endorses or maintains this application.
 
 See [CREDITS.md](CREDITS.md) for the attribution. Google Keep is a Google product; this independent notes app is not affiliated with or endorsed by Google.
 
 ## AI disclaimer
 
-**NoteKeep 98 was developed with assistance from OpenAI's ChatGPT.** AI was used to generate and refine the application code, Windows 95/98-inspired interface, and project documentation. AI-generated output may contain errors, limitations, or security issues; the project has not undergone an independent security audit. Review and test the code before relying on it in production.
+**keep was developed with assistance from OpenAI's ChatGPT.** AI was used to generate and refine the application code, Windows 95/98-inspired interface, and project documentation. AI-generated output may contain errors, limitations, or security issues; the project has not undergone an independent security audit. Review and test the code before relying on it in production.
 
 This disclosure acknowledges AI assistance, not authorship or endorsement by Chris Lemke, Google, Microsoft, or OpenAI.
 
@@ -145,6 +150,6 @@ When browser storage is full or blocked, edits cannot be persisted. The app now 
 
 ## License
 
-NoteKeep 98 is licensed under the [MIT License](LICENSE).
+keep is licensed under the [MIT License](LICENSE).
 
 The Windows 95/98 design reference by [Chris Lemke](https://github.com/chrislemke) is separately licensed under MIT. See [CREDITS.md](CREDITS.md) for attribution.

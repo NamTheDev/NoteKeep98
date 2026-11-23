@@ -473,3 +473,10 @@ textarea.win-input { resize:vertical; line-height:1.6; min-height:150px; }
   .task-clock { padding:0 7px; }
   .taskbar .start-button { width:75px; }
 }
+
+/* Monochrome UI icons across classic and dark themes. The original vector
+   silhouettes and distinct luminance levels remain visible in grayscale.
+   Preserve CSS stroke contrast for Close buttons in both themes. */
+.desktop .monochrome-icon { filter: grayscale(1) !important; }
+.desktop.dark-mode .monochrome-icon { filter: grayscale(1) invert(1) !important; }
+.desktop.dark-mode .win-control .monochrome-icon { filter: grayscale(1) !important; }

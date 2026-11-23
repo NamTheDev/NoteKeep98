@@ -2,7 +2,7 @@
 
 ## AI involvement
 
-NoteKeep 98 was developed with assistance from OpenAI's ChatGPT. AI was used to generate and refine the application code, Windows 95/98-inspired interface, and project documentation.
+keep (formerly NoteKeep 98) was developed with assistance from OpenAI's ChatGPT. AI was used to generate and refine the application code, Windows 95/98-inspired interface, and project documentation.
 
 ## Human oversight and responsibility
 

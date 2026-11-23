@@ -1,4 +1,4 @@
-name: NoteKeep98 UI verification
+name: keep UI verification
 
 on:
   push:
@@ -47,18 +47,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p /tmp/notekeep-pages/NoteKeep98
-          cp -a dist/. /tmp/notekeep-pages/NoteKeep98/
+          mkdir -p /tmp/notekeep-pages/keep
+          cp -a dist/. /tmp/notekeep-pages/keep/
           python -m http.server 8765 --bind 127.0.0.1 --directory /tmp/notekeep-pages > /tmp/notekeep98-pages.log 2>&1 &
           PAGES_PID=$!
           trap 'kill "$PAGES_PID" 2>/dev/null || true' EXIT
           for i in {1..30}; do
-            if curl --fail --silent --output /dev/null http://127.0.0.1:8765/NoteKeep98/; then break; fi
+            if curl --fail --silent --output /dev/null http://127.0.0.1:8765/keep/; then break; fi
             sleep 1
           done
-          curl --fail http://127.0.0.1:8765/NoteKeep98/app.js > /dev/null
-          curl --fail http://127.0.0.1:8765/NoteKeep98/style.css > /dev/null
-          NOTEKEEP_BASE_URL=http://127.0.0.1:8765/NoteKeep98/ python tests/browser_test.py
+          curl --fail http://127.0.0.1:8765/keep/app.js > /dev/null
+          curl --fail http://127.0.0.1:8765/keep/style.css > /dev/null
+          NOTEKEEP_BASE_URL=http://127.0.0.1:8765/keep/ python tests/browser_test.py
       - name: Upload screenshots and diagnostics
         if: always()
         uses: actions/upload-artifact@v4

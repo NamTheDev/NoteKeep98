@@ -1,4 +1,4 @@
-name: Deploy NoteKeep98 to GitHub Pages
+name: Deploy keep to GitHub Pages
 
 on:
   push:

@@ -39,7 +39,7 @@ const glyphs: Record<string,string> = {
   sparkle:'<path d="m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5z" fill="#ffe36b" stroke="#5a501f"/>',
   arrow:'<path d="m9 4 8 8-8 8" fill="none" stroke="#444" stroke-width="2"/>'
 };
-const icon = (name: string): string => `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-linecap="square" stroke-linejoin="miter">${glyphs[name] ?? glyphs.note}</svg>`;
+const icon = (name: string): string => `<svg class="monochrome-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-linecap="square" stroke-linejoin="miter">${glyphs[name] ?? glyphs.note}</svg>`;
 const now = (): string => new Date().toISOString();
 const dateLabel = (value: string | null): string => {
   if (!value) return '';
@@ -75,8 +75,8 @@ app.innerHTML = `
     <button class="desktop-shortcut" data-action="reopen" data-view="notes" title="Open My Notes">${icon('computer')}<span>My Notes</span></button>
     <button class="desktop-shortcut" data-action="reopen" data-view="trash" title="Open Recycle Bin">${icon('trash')}<span>Recycle Bin</span></button>
   </div>
-  <main class="main-window window" id="mainWindow" aria-label="NoteKeep 98 application window">
-    <div class="title-bar"><span class="app-icon">${icon('note')}</span><span class="title-text">NoteKeep 98 — My Notes</span>
+  <main class="main-window window" id="mainWindow" aria-label="keep application window">
+    <div class="title-bar"><span class="app-icon">${icon('note')}</span><span class="title-text">keep — My Notes</span>
       <div class="window-controls"><button class="win-control" data-action="minimize" title="Minimize" aria-label="Minimize">_</button><button class="win-control" data-action="maximize" title="Maximize" aria-label="Maximize">□</button><button class="win-control" data-action="minimize" title="Close window" aria-label="Close window">${icon('x')}</button></div>
     </div>
     <div class="menu-bar" role="menubar"><button class="menu-btn" data-action="menu" data-value="file">File</button><button class="menu-btn" data-action="menu" data-value="edit">Edit</button><button class="menu-btn" data-action="menu" data-value="view">View</button><button class="menu-btn" data-action="menu" data-value="help">Help</button></div>
@@ -91,7 +91,7 @@ app.innerHTML = `
       <button class="tool-btn" data-action="settings" title="Settings">${icon('settings')}<span>Settings</span></button>
       <span class="toolbar-spacer"></span><span class="toolbar-caption">LOCAL MODE &nbsp;•&nbsp; ALL CHANGES SAVED</span>
     </div>
-    <div class="address-bar"><span class="address-label">Address</span><div class="address-input">${icon('folder')}<span class="address-path" id="addressPath">My Computer \\ My Notes</span></div><span class="address-badge">NoteKeep 98</span></div>
+    <div class="address-bar"><span class="address-label">Address</span><div class="address-input">${icon('folder')}<span class="address-path" id="addressPath">My Computer \\ My Notes</span></div><span class="address-badge">keep</span></div>
     <div class="workspace">
       <aside class="sidebar" id="sidebar"><div id="navRoot"></div><div class="sidebar-foot">${icon('info')}<span>Private, local-first notes. No account required, no cloud syncing.</span></div></aside>
       <div class="mobile-scrim" id="mobileScrim" data-action="closeNav"></div>
@@ -118,7 +118,7 @@ app.innerHTML = `
   </main>
   <div id="desktopHint" class="desktop-hint" hidden>NoteKeep is minimized. Open My Notes to continue.</div>
   <div id="popupRoot"></div><div id="dialogRoot"></div><div id="toastRoot" role="status" aria-live="polite"></div>
-  <footer class="taskbar"><button class="chrome-btn start-button" id="startButton" data-action="start">${icon('computer')} Start</button><span class="taskbar-divider"></span><button class="chrome-btn task-app is-open" data-action="taskApp">${icon('note')} NoteKeep 98</button><div class="task-clock">${icon('clock')}<span id="taskClock"></span></div></footer>
+  <footer class="taskbar"><button class="chrome-btn start-button" id="startButton" data-action="start">${icon('computer')} Start</button><span class="taskbar-divider"></span><button class="chrome-btn task-app is-open" data-action="taskApp">${icon('note')} keep</button><div class="task-clock">${icon('clock')}<span id="taskClock"></span></div></footer>
   <input type="file" id="importInput" accept=".json,application/json" hidden>
 </div>`;
 
@@ -252,10 +252,10 @@ function render():void {
   const meta=viewMeta();
   const setText=(sel:string,text:string)=>{const el=$(sel);if(el)el.textContent=text;};
   setText('#pageTitle',meta.title);setText('#pageDescription',meta.subtitle);setText('#pageKicker',meta.kicker);
-  setText('#addressPath',`My Computer \\ NoteKeep 98 \\ ${meta.path}`);
+  setText('#addressPath',`My Computer \\ keep \\ ${meta.path}`);
   setText('#statusCount',`${filterNotes().length} ${filterNotes().length===1?'note':'notes'}`);
   setText('#statusText',`${data.notes.filter(n=>!n.trashed).length} saved notes  |  Click a note to edit  |  Ctrl+K to search`);
-  setText('.title-text',`NoteKeep 98 — ${meta.title}`);
+  setText('.title-text',`keep — ${meta.title}`);
   const viewBtn=$('#viewToggle'); if (viewBtn) {viewBtn.innerHTML=icon(data.list?'grid':'list');viewBtn.title=data.list?'Grid view':'List view';viewBtn.setAttribute('aria-pressed',String(data.list));}
   const quick=$('#quickBar');if(quick)quick.hidden=view==='trash'||view==='archive';
   const clear=$('#clearSearch');if(clear)clear.hidden=!search;
@@ -359,7 +359,7 @@ function renderDialog():void {
   if(!dialog){root.innerHTML='';return;}
   if(dialog==='editor'&&draft){
     root.innerHTML=`<div class="dialog-backdrop" data-action="backdrop"><section class="dialog-window window" role="dialog" aria-modal="true" aria-label="${editingId?'Edit note':'New note'}">
-      ${windowHeader(editingId?'Edit Note — NoteKeep 98':'New Note — NoteKeep 98','cancelEditor')}
+      ${windowHeader(editingId?'Edit Note — keep':'New Note — keep','cancelEditor')}
       <div class="dialog-body">
         <div class="dialog-paper" id="editorPaper" style="--note-color:${html(draft.color)}">
           <div class="field"><label class="field-label" for="editTitle">Title</label><input class="win-input" id="editTitle" type="text" maxlength="10000" value="${html(draft.title)}" placeholder="Untitled note"></div>
@@ -386,16 +386,16 @@ function renderDialog():void {
     </section></div>`;return;
   }
   if(dialog==='settings'){
-    root.innerHTML=`<div class="dialog-backdrop"><section class="dialog-window window medium" role="dialog" aria-modal="true" aria-label="Settings">${windowHeader('NoteKeep 98 — Settings','closeDialog')}
-      <div class="dialog-body"><h3>Notes and data</h3><p class="dialog-note">Notes are saved in this browser on this device. NoteKeep 98 is not affiliated with Google Keep, and does not offer cloud synchronization.</p>
+    root.innerHTML=`<div class="dialog-backdrop"><section class="dialog-window window medium" role="dialog" aria-modal="true" aria-label="Settings">${windowHeader('keep — Settings','closeDialog')}
+      <div class="dialog-body"><h3>Notes and data</h3><p class="dialog-note">Notes are saved in this browser on this device. keep is not affiliated with Google Keep, and does not offer cloud synchronization.</p>
       <div style="display:flex;flex-direction:column;gap:9px"><button class="chrome-btn" data-action="export" style="justify-content:flex-start">${icon('download')} Export JSON backup</button><button class="chrome-btn" data-action="import" style="justify-content:flex-start">${icon('upload')} Import JSON notes</button><button class="chrome-btn" data-action="reset" style="justify-content:flex-start">${icon('restore')} Restore sample notes</button></div>
       <h3 style="margin-top:24px">Appearance</h3><label class="simple-choice"><input type="checkbox" data-action="toggleDarkMode" ${data.dark?'checked':''}> Dark mode</label><label class="simple-choice"><input type="checkbox" data-action="toggleListFromSettings" ${data.list?'checked':''}> List layout</label>
       <p class="dialog-note" style="margin-top:17px">Data storage key: <code>${STORAGE_KEY}</code><br>Previous notes from <code>${LEGACY_KEY}</code> are imported automatically on first use.</p></div>
       <div class="dialog-footer"><button class="chrome-btn primary" data-action="closeDialog">OK</button></div></section></div>`;return;
   }
   if(dialog==='about'){
-    root.innerHTML=`<div class="dialog-backdrop"><section class="dialog-window window medium" role="dialog" aria-modal="true" aria-label="About NoteKeep">${windowHeader('About NoteKeep 98','closeDialog')}
-      <div class="dialog-body"><div class="dialog-icon-message">${icon('computer')}<div><h3 style="margin:0 0 5px">NoteKeep 98</h3><p>Version 1.0<br>TypeScript + Bun.js<br>Independent local-first notes application</p></div></div><p class="dialog-note">Windows 95/98-inspired visual language. Notes are stored only in your browser; this is not Google Keep and does not connect to Google.</p></div><div class="dialog-footer"><button class="chrome-btn primary" data-action="closeDialog">OK</button></div></section></div>`;return;
+    root.innerHTML=`<div class="dialog-backdrop"><section class="dialog-window window medium" role="dialog" aria-modal="true" aria-label="About NoteKeep">${windowHeader('About keep','closeDialog')}
+      <div class="dialog-body"><div class="dialog-icon-message">${icon('computer')}<div><h3 style="margin:0 0 5px">keep</h3><p>Version 1.0<br>TypeScript + Bun.js<br>Independent local-first notes application</p></div></div><p class="dialog-note">Windows 95/98-inspired visual language. Notes are stored only in your browser; this is not Google Keep and does not connect to Google.</p></div><div class="dialog-footer"><button class="chrome-btn primary" data-action="closeDialog">OK</button></div></section></div>`;return;
   }
   if(dialog==='confirm'){
     root.innerHTML=`<div class="dialog-backdrop"><section class="dialog-window window medium" role="alertdialog" aria-modal="true" aria-label="${html(confirmTitle)}">${windowHeader(confirmTitle,'closeDialog')}
@@ -418,7 +418,7 @@ function renderPopup():void {
     file:`${popupItem('newNote','New note','note')}${popupItem('newChecklist','New checklist','check')}<div class="popup-divider"></div>${popupItem('import','Import notes...','upload')}${popupItem('export','Export backup...','download')}<div class="popup-divider"></div>${popupItem('settings','Settings...','settings')}`,
     edit:`${popupItem('manageLabels','Manage labels...','label')}${popupItem('newNote','Create new note','pencil')}<div class="popup-divider"></div>${popupItem('reset','Reset sample notes...','restore')}`,
     view:`${popupItem('toggleView',data.list?'Switch to grid':'Switch to list',data.list?'grid':'list')}${popupItem('view','All notes','folder','data-view="notes"')}${popupItem('view','Archive','archive','data-view="archive"')}${popupItem('view','Recycle Bin','trash','data-view="trash"')}<div class="popup-divider"></div>${popupItem('toggleDarkMode',data.dark?'Switch to light mode':'Switch to dark mode','palette')}`,
-    help:`${popupItem('about','About NoteKeep 98','info')}${popupItem('settings','Data & privacy','settings')}`,
+    help:`${popupItem('about','About keep','info')}${popupItem('settings','Data & privacy','settings')}`,
     start:`${popupItem('reopen','Open My Notes','folder','data-view="notes"')}${popupItem('newNote','New note','note')}${popupItem('newChecklist','New checklist','check')}<div class="popup-divider"></div>${popupItem('settings','Settings','settings')}${popupItem('about','About','info')}`
   };
   let body='';
@@ -426,7 +426,7 @@ function renderPopup():void {
   else if(kind==='labels' && target){body=`<div class="popup-title">Add / remove labels</div>${data.labels.map(l=>`<label class="popup-check-label"><input type="checkbox" data-action="toggleLabel" data-value="${html(l)}" ${target.labels.includes(l)?'checked':''}>${html(l)}</label>`).join('')}${data.labels.length?'':'<p style="padding:5px 9px">No labels yet.</p>'}<div class="popup-label-actions"><button class="chrome-btn" data-action="manageLabels">Edit labels...</button></div>`;}
   else if(kind==='more'&&target){body=`${popupItem('duplicate','Make a copy','copy')}${popupItem('archive',target.archived?'Unarchive':'Archive',target.archived?'restore':'archive',`data-id="${html(target.id)}"`)}<div class="popup-divider"></div>${popupItem('delete','Move to Recycle Bin','trash',`data-id="${html(target.id)}"`)}`;}
   else body=menu[kind]??'';
-  root.innerHTML=kind==='start'?`<div class="start-menu"><div class="start-rail"><span>NoteKeep 98</span></div><div class="start-links">${body}</div></div>`:`<div class="popup" role="menu" id="activePopup">${body}</div>`;
+  root.innerHTML=kind==='start'?`<div class="start-menu"><div class="start-rail"><span>keep</span></div><div class="start-links">${body}</div></div>`:`<div class="popup" role="menu" id="activePopup">${body}</div>`;
   const el=$<HTMLElement>('.popup',root);
   if(el){
     const r=popup.anchor.getBoundingClientRect();
@@ -451,7 +451,7 @@ function setReminder(value:string|null):void {
   notify(value?'Reminder set':'Reminder removed');
 }
 function exportData():void {
-  const payload={version:2,app:'NoteKeep 98',exportedAt:now(),notes:data.notes,labels:data.labels};
+  const payload={version:2,app:'keep',exportedAt:now(),notes:data.notes,labels:data.labels};
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);const anchor=document.createElement('a');
   anchor.href=url;anchor.download=`notekeep98-${new Date().toISOString().slice(0,10)}.json`;
