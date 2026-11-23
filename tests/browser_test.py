@@ -21,10 +21,13 @@ with sync_playwright() as p:
     page.wait_for_timeout(300)
     print('title',page.title(),'notes',page.locator('.note-window').count(), 'errors:',errors)
     page.screenshot(path=str(results/'desktop.png'),full_page=True)
+    close_icon='#mainWindow .win-control[aria-label="Close window"] svg path'
+    assert page.locator(close_icon).evaluate('(e)=>getComputedStyle(e).stroke')=='rgb(0, 0, 0)', 'Light mode close icon should remain black'
     # Dark mode themes the complete app, not only its desktop background.
     page.locator('[data-action="menu"][data-value="view"]').click()
     page.locator('.popup-item[data-action="toggleDarkMode"]').click()
     assert 'dark-mode' in (page.locator('#desktop').get_attribute('class') or '')
+    assert page.locator(close_icon).evaluate('(e)=>getComputedStyle(e).stroke')=='rgb(240, 240, 240)', 'Dark mode close icon must use light system text'
     dark_colors=page.evaluate("""() => {
       const rgb=(selector,prop='backgroundColor') => getComputedStyle(document.querySelector(selector))[prop];
       return {
@@ -85,6 +88,7 @@ with sync_playwright() as p:
     page.locator('[data-action="settings"]').first.click()
     assert page.locator('input[data-action="toggleDarkMode"]').is_checked()
     assert max(channels(page.locator('.dialog-window').evaluate('(e)=>getComputedStyle(e).backgroundColor'))) < 115
+    assert page.locator('.dialog-window .win-control[aria-label="Close"] svg path').evaluate('(e)=>getComputedStyle(e).stroke')=='rgb(240, 240, 240)', 'Dialog close icon must also be light in dark mode'
     assert max(channels(page.locator('.search-box').evaluate('(e)=>getComputedStyle(e).backgroundColor'))) < 100
     page.screenshot(path=str(results/'desktop-dark.png'),full_page=True)
     page.locator('[data-action="closeDialog"]').last.click()
@@ -96,6 +100,7 @@ with sync_playwright() as p:
     page.locator('[data-action="menu"][data-value="view"]').click()
     page.locator('.popup-item[data-action="toggleDarkMode"]').click()
     assert 'dark-mode' not in (page.locator('#desktop').get_attribute('class') or '')
+    assert page.locator(close_icon).evaluate('(e)=>getComputedStyle(e).stroke')=='rgb(0, 0, 0)', 'Switching back to light mode should restore black icon'
     assert page.evaluate("JSON.parse(localStorage.getItem('notekeep98-v1')).dark") is False
     # open and save note
     page.locator('.quick-bar [data-action="newNote"]').click()

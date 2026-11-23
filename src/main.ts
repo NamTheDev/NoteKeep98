@@ -24,7 +24,7 @@ const glyphs: Record<string,string> = {
   list:'<path d="M4 5h3v3H4zM4 11h3v3H4zM4 17h3v3H4z" fill="#e7e7e7" stroke="#444"/><path d="M10 6h11M10 12h11M10 18h11" stroke="#444" stroke-width="2"/>',
   grid:'<rect x="3" y="3" width="8" height="8" fill="#ddd" stroke="#555"/><rect x="13" y="3" width="8" height="8" fill="#ddd" stroke="#555"/><rect x="3" y="13" width="8" height="8" fill="#ddd" stroke="#555"/><rect x="13" y="13" width="8" height="8" fill="#ddd" stroke="#555"/>',
   more:'<circle cx="5" cy="12" r="2" fill="#444"/><circle cx="12" cy="12" r="2" fill="#444"/><circle cx="19" cy="12" r="2" fill="#444"/>',
-  x:'<path d="M5 5 19 19M19 5 5 19" stroke="#111" stroke-width="2.4"/>',
+  x:'<path d="M5 5 19 19M19 5 5 19" stroke="currentColor" stroke-width="2.4"/>',
   settings:'<path d="M10 2h4l1 3 3 1 3-1 2 4-3 2v3l3 2-2 4-3-1-3 1-1 3h-4l-1-3-3-1-3 1-2-4 3-2v-3L1 9l2-4 3 1 3-1z" fill="#ddd" stroke="#444"/><circle cx="12" cy="12" r="4" fill="#fff" stroke="#666"/>',
   save:'<path d="M3 2h16l3 3v17H2V2Z" fill="#eee" stroke="#444"/><path d="M6 3h11v7H6z" fill="#15518b"/><path d="M6 15h12v7H6z" fill="white" stroke="#444"/>',
   upload:'<path d="M4 13v8h16v-8M12 17V3m-5 5 5-5 5 5" fill="none" stroke="#444" stroke-width="2"/>',
