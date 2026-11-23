@@ -261,24 +261,25 @@ with sync_playwright() as p:
     page.locator('.popup-item[data-action="toggleView"]').click()
     assert page.locator('.note-grid.is-list').count()>0
     page.locator('#viewToggle').click()
-    # window minimize / taskbar restore
-    page.locator('[data-action="minimize"]').first.click()
-    assert page.locator('#mainWindow').is_hidden()
-    page.locator('[data-action="taskApp"]').click()
-    assert page.locator('#mainWindow').is_visible()
+    # The application fills the viewport without a simulated OS window manager.
+    assert page.locator('[data-action="minimize"]').count()==0
+    assert page.locator('[data-action="maximize"]').count()==0
+    assert page.locator('.taskbar').count()==0
+    assert page.locator('#mainWindow').evaluate('(e)=>Math.round(e.getBoundingClientRect().height)==innerHeight')
     # Ctrl+K focuses search
     page.keyboard.press('Control+k')
     assert page.locator('#searchInput').evaluate('(e) => document.activeElement === e')
     page.locator('#searchInput').blur()
-    print('additional reminder, duplicate, editor, menu and window tests: PASS')
+    print('additional reminder, duplicate, editor, menu and fullscreen app tests: PASS')
     # mobile
     mobile=browser.new_page(viewport={'width':390,'height':844})
     mobile.on('pageerror',lambda e:errors.append('mobile: '+str(e)))
     mobile.goto(base_url,wait_until='load')
     mobile.wait_for_timeout(200)
     main_window=mobile.locator('#mainWindow')
-    maximize_button=mobile.locator('#mainWindow [data-action="maximize"]')
-    # The sidebar and backdrop align with the workspace after layout changes.
+    assert mobile.locator('#mainWindow .window-controls').count()==0
+    assert mobile.locator('.taskbar').count()==0
+    # The sidebar and backdrop must still work in full-viewport mode.
     mobile.locator('[data-action="toggleNav"]').click()
     assert mobile.locator('#sidebar').evaluate('(e)=>e.classList.contains("mobile-open")')
     workspace_box=mobile.locator('.workspace').bounding_box()
@@ -288,47 +289,22 @@ with sync_playwright() as p:
     mobile.locator('#mobileScrim').click(position={'x':320,'y':15})
     assert not mobile.locator('#sidebar').evaluate('(e)=>e.classList.contains("mobile-open")')
     assert main_window.is_visible()
-    assert 'is-maximized' in (main_window.get_attribute('class') or ''), 'Mobile window must always be maximized'
-    assert maximize_button.is_disabled(), 'Mobile maximize control must be disabled'
     bounds=main_window.bounding_box()
     assert bounds is not None
-    assert abs(bounds['x']) <= 1 and abs(bounds['width']-390) <= 2, f'Mobile window must fill available width: {bounds}'
-    # Switching between mobile and desktop must preserve desktop maximize behavior.
-    mobile.set_viewport_size({'width':751,'height':844})
-    expect(maximize_button).to_be_enabled()  # Media-query change events settle after viewport resize.
-    assert 'is-maximized' not in (main_window.get_attribute('class') or ''), 'Desktop starts restored'
-    maximize_button.click()
-    assert 'is-maximized' in (main_window.get_attribute('class') or ''), 'Desktop maximize remains functional'
-    maximize_button.click()
-    assert 'is-maximized' not in (main_window.get_attribute('class') or ''), 'Desktop restore remains functional'
-    mobile.set_viewport_size({'width':390,'height':844})
-    expect(maximize_button).to_be_disabled()
-    assert 'is-maximized' in (main_window.get_attribute('class') or ''), 'Returning to mobile must maximize'
-    # The mobile close X and window controls must be visible in both modes.
-    mobile_close=mobile.locator('#mainWindow [aria-label="Close window"] svg path')
-    assert mobile_close.evaluate('(e)=>getComputedStyle(e).stroke')=='rgb(0, 0, 0)'
+    assert abs(bounds['x'])<=1 and abs(bounds['width']-390)<=2, bounds
     mobile.locator('[data-action="menu"][data-value="view"]').click()
     mobile.locator('.popup-item[data-action="toggleDarkMode"]').click()
     expect(mobile.locator('#desktop')).to_have_class('desktop dark-mode')
-    assert mobile_close.evaluate('(e)=>getComputedStyle(e).stroke')=='rgb(240, 240, 240)', 'Mobile X must be white in dark mode'
-    control_colors=mobile.evaluate("""() => [...document.querySelectorAll('#mainWindow .window-controls .win-control')].map((e) => getComputedStyle(e).color)""")
-    assert control_colors==['rgb(240, 240, 240)']*3, control_colors
-    icon_colors=mobile.evaluate("""() => ({
-      navigation:getComputedStyle(document.querySelector('.mobile-nav-toggle svg path')).stroke,
-      search:getComputedStyle(document.querySelector('.search-box svg path')).stroke,
-      list:getComputedStyle(document.querySelector('#viewToggle svg path')).stroke
-    })""")
-    assert all(color=='rgb(240, 240, 240)' for color in icon_colors.values()),icon_colors
+    icon_filter=mobile.locator('.mobile-nav-toggle .ui-icon').evaluate('(e)=>getComputedStyle(e).filter')
+    assert 'invert(1)' in icon_filter, icon_filter
     mobile.locator('[data-action="settings"]').first.click()
     backdrop=mobile.locator('.dialog-backdrop').evaluate('(e)=>getComputedStyle(e).backgroundColor')
     assert backdrop=='rgba(0, 0, 0, 0.28)',backdrop
     mobile.locator('.dialog-window [data-action="closeDialog"]').last.click()
     mobile.screenshot(path=str(results/'mobile-dark.png'),full_page=True)
     mobile.reload(wait_until='load')
-    assert mobile_close.evaluate('(e)=>getComputedStyle(e).stroke')=='rgb(240, 240, 240)', 'Mobile dark X must survive reload'
     mobile.locator('[data-action="menu"][data-value="view"]').click()
     mobile.locator('.popup-item[data-action="toggleDarkMode"]').click()
-    assert mobile_close.evaluate('(e)=>getComputedStyle(e).stroke')=='rgb(0, 0, 0)'
     # Mobile quick composer expands without horizontal overflow and allows cancel.
     mobile_quick=mobile.locator('#quickNoteText')
     mobile_quick.fill('Mobile quick draft')
