@@ -5,7 +5,7 @@ Run `bun run build && NODE_ENV=production bun run start` separately, then execut
 `python -m playwright install chromium`, and `python tests/browser_test.py`.
 """
 from pathlib import Path
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
 import os
 
 root=Path(__file__).resolve().parent.parent
@@ -129,14 +129,14 @@ with sync_playwright() as p:
     assert abs(bounds['x']) <= 1 and abs(bounds['width']-390) <= 2, f'Mobile window must fill available width: {bounds}'
     # Switching between mobile and desktop must preserve desktop maximize behavior.
     mobile.set_viewport_size({'width':751,'height':844})
-    assert maximize_button.is_enabled(), 'Desktop maximize control must be usable'
+    expect(maximize_button).to_be_enabled()  # Media-query change events settle after viewport resize.
     assert 'is-maximized' not in (main_window.get_attribute('class') or ''), 'Desktop starts restored'
     maximize_button.click()
     assert 'is-maximized' in (main_window.get_attribute('class') or ''), 'Desktop maximize remains functional'
     maximize_button.click()
     assert 'is-maximized' not in (main_window.get_attribute('class') or ''), 'Desktop restore remains functional'
     mobile.set_viewport_size({'width':390,'height':844})
-    assert maximize_button.is_disabled()
+    expect(maximize_button).to_be_disabled()
     assert 'is-maximized' in (main_window.get_attribute('class') or ''), 'Returning to mobile must maximize'
     mobile.screenshot(path=str(results/'mobile.png'),full_page=True)
     print('mobile horizontal overflow:',mobile.evaluate('document.documentElement.scrollWidth > window.innerWidth'))
