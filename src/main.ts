@@ -581,10 +581,10 @@ app.addEventListener('focusin',event=>{
   if(element.id==='quickNoteText'||element.id==='quickNoteTitle')expandQuickComposer();
 });
 app.addEventListener('input',event=>{
-  const node=event.target as HTMLInputElement;
-  if(node.id==='quickNoteText'){
+  const node=event.target as HTMLInputElement | HTMLTextAreaElement;
+  if(node instanceof HTMLTextAreaElement && node.id==='quickNoteText'){
     expandQuickComposer();
-    resizeQuickText(node as HTMLTextAreaElement);
+    resizeQuickText(node);
   }
   if(dialog==='editor' && draft && node.matches('.editor-check-row .item-text')){
     const row=node.closest<HTMLElement>('.editor-check-row');

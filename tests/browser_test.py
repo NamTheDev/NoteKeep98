@@ -147,10 +147,10 @@ with sync_playwright() as p:
     assert page.locator('#quickNoteTitle').is_hidden()
     assert page.locator('#quickActions').is_hidden()
     # Multiline body and action button; saved after reload.
-    quick.fill('First line\\nSecond line')
+    quick.fill('First line' + chr(10) + 'Second line')
     page.locator('[data-action="saveQuickNote"]').click()
     assert page.locator('.note-window').filter(has_text='First line').count()==1
-    assert page.evaluate("""() => JSON.parse(localStorage.getItem('notekeep98-v1')).notes.some(n=>n.body==='First line\\nSecond line')""")
+    assert page.evaluate("""() => JSON.parse(localStorage.getItem('notekeep98-v1')).notes.some(n=>n.body.split(String.fromCharCode(10)).join('|')==='First line|Second line')""")
     quick.fill('Unsaved text')
     quick.press('Escape')
     assert quick.input_value()==''
