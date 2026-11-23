@@ -45,9 +45,12 @@ with sync_playwright() as p:
     page.locator('[data-action="settings"]').first.click()
     assert page.locator('input[data-action="toggleDarkMode"]').is_checked()
     assert max(channels(page.locator('.dialog-window').evaluate('(e)=>getComputedStyle(e).backgroundColor'))) < 115
-    assert max(channels(page.locator('.win-input').first.evaluate('(e)=>getComputedStyle(e).backgroundColor'))) < 100
+    assert max(channels(page.locator('.search-box').evaluate('(e)=>getComputedStyle(e).backgroundColor'))) < 100
     page.screenshot(path=str(results/'desktop-dark.png'),full_page=True)
     page.locator('[data-action="closeDialog"]').last.click()
+    page.locator('.quick-bar [data-action="newNote"]').click()
+    assert max(channels(page.locator('#editTitle').evaluate('(e)=>getComputedStyle(e).backgroundColor'))) < 100
+    page.locator('[data-action="cancelEditor"]').last.click()
     page.reload(wait_until='load')
     assert 'dark-mode' in (page.locator('#desktop').get_attribute('class') or ''), 'Dark preference must survive a reload'
     page.locator('[data-action="menu"][data-value="view"]').click()
