@@ -39,8 +39,22 @@ with sync_playwright() as p:
     page.locator('[data-action="addItem"]').click()
     page.locator('.editor-check-row .item-text').last.fill('two')
     page.locator('.editor-check-row .item-check').last.check()
+    editor_rows=page.locator('.editor-check-row')
+    assert editor_rows.count()==2, f'Expected two editor checklist rows, got {editor_rows.count()}'
+    editor_values=page.locator('.editor-check-row .item-text').all_input_values()
+    assert editor_values==['one','two'], f'Checklist input values changed before save: {editor_values}'
     page.locator('[data-action="saveEditor"]').click()
-    expect(page.locator('.note-window').filter(has_text='QA List 98').locator('input[data-action="checkItem"]')).to_have_count(2)
+    saved_checks=page.locator('.note-window').filter(has_text='QA List 98').locator('input[data-action="checkItem"]')
+    try:
+        expect(saved_checks).to_have_count(2)
+    except AssertionError:
+        print('Checklist persistence diagnostic:',
+              page.evaluate("""() => {
+                const saved = JSON.parse(localStorage.getItem('notekeep98-v1') || '{}');
+                const list = saved.notes?.find(note => note.title === 'QA List 98');
+                return { items: list?.items, checklist: list?.checklist };
+              }"""))
+        raise
     # pin
     card=page.locator('.note-window').filter(has_text='QA Note 98')
     card.locator('[data-action="pin"]').click()
