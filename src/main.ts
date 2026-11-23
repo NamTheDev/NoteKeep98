@@ -8,38 +8,38 @@ interface PopupState { kind: PopupKind; target: string | null; anchor: HTMLEleme
 const $ = <T extends Element = HTMLElement>(selector: string, root: ParentNode = document): T | null => root.querySelector<T>(selector);
 const $$ = <T extends Element = HTMLElement>(selector: string, root: ParentNode = document): T[] => Array.from(root.querySelectorAll<T>(selector));
 const html = (v: unknown): string => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c] ?? c));
-const glyphs: Record<string,string> = {
-  note:'<path d="M6 2h9l5 5v14H6z" fill="#ffe16e" stroke="#464646"/><path d="M15 2v5h5" fill="#fff7c7" stroke="#464646"/><path d="M9 11h8M9 14h8M9 17h6" stroke="#8c7426"/>',
-  folder:'<path d="M2 7V4h8l2 3h10v14H2z" fill="#d6ac49" stroke="#604821"/><path d="M2 9h20v12H2z" fill="#ffdd7a" stroke="#71532b"/>',
-  pencil:'<path d="M4 18 3 22l5-1L20 9l-4-4z" fill="#f7dc61" stroke="#363636"/><path d="m14 7 4 4M4 18l4 3" stroke="#666"/>',
-  check:'<rect x="3" y="3" width="18" height="18" fill="#fff" stroke="#555"/><path d="m6 12 4 4 8-9" stroke="#008080" stroke-width="2.5" fill="none"/>',
-  search:'<circle cx="10" cy="10" r="6" fill="white" stroke="#484848" stroke-width="2"/><path d="m15 15 7 7" stroke="#484848" stroke-width="3"/>',
-  archive:'<rect x="3" y="7" width="18" height="14" fill="#c7c7c7" stroke="#505050"/><rect x="2" y="4" width="20" height="5" fill="#e7e7e7" stroke="#505050"/><path d="M10 12h4" stroke="#444" stroke-width="2"/>',
-  trash:'<path d="M5 7h14l-1 15H6z" fill="#e5e5e5" stroke="#555"/><path d="M3 6h18M9 3h6M10 10v8m4-8v8" stroke="#555" stroke-width="1.8"/>',
-  restore:'<path d="M7 4v6h6" fill="none" stroke="#444" stroke-width="2"/><path d="M7 10a8 8 0 1 1-1 8" fill="none" stroke="#008080" stroke-width="2.5"/>',
-  pin:'<path d="m8 3 8 0-1 5 3 4v2H6v-2l3-4z" fill="#c4c4c4" stroke="#464646"/><path d="M12 14v8" stroke="#454545" stroke-width="2"/>',
-  bell:'<path d="M17 9a5 5 0 0 0-10 0c0 7-3 7-3 9h16c0-2-3-2-3-9Z" fill="#ffdf6a" stroke="#666"/><path d="M10 21h4" stroke="#444" stroke-width="2"/>',
-  palette:'<path d="M12 2a10 10 0 1 0 0 20h2c2 0 2-3 0-4-1.5-1-1-3 1-3h4c2 0 3-2 3-4A10 10 0 0 0 12 2Z" fill="#fff4c1" stroke="#444"/><circle cx="7" cy="10" r="2" fill="#f66"/><circle cx="11" cy="6" r="2" fill="#79b2fe"/><circle cx="17" cy="8" r="2" fill="#69bb70"/><circle cx="8" cy="16" r="2" fill="#aa85cf"/>',
-  label:'<path d="M3 4h10l9 8-9 8L3 11Z" fill="#d3ebee" stroke="#525252"/><circle cx="8" cy="9" r="2" fill="#555"/>',
-  list:'<path d="M4 5h3v3H4zM4 11h3v3H4zM4 17h3v3H4z" fill="#e7e7e7" stroke="#444"/><path d="M10 6h11M10 12h11M10 18h11" stroke="#444" stroke-width="2"/>',
-  grid:'<rect x="3" y="3" width="8" height="8" fill="#ddd" stroke="#555"/><rect x="13" y="3" width="8" height="8" fill="#ddd" stroke="#555"/><rect x="3" y="13" width="8" height="8" fill="#ddd" stroke="#555"/><rect x="13" y="13" width="8" height="8" fill="#ddd" stroke="#555"/>',
-  more:'<circle cx="5" cy="12" r="2" fill="#444"/><circle cx="12" cy="12" r="2" fill="#444"/><circle cx="19" cy="12" r="2" fill="#444"/>',
-  x:'<path d="M5 5 19 19M19 5 5 19" stroke="currentColor" stroke-width="2.4"/>',
-  settings:'<path d="M10 2h4l1 3 3 1 3-1 2 4-3 2v3l3 2-2 4-3-1-3 1-1 3h-4l-1-3-3-1-3 1-2-4 3-2v-3L1 9l2-4 3 1 3-1z" fill="#ddd" stroke="#444"/><circle cx="12" cy="12" r="4" fill="#fff" stroke="#666"/>',
-  save:'<path d="M3 2h16l3 3v17H2V2Z" fill="#eee" stroke="#444"/><path d="M6 3h11v7H6z" fill="#15518b"/><path d="M6 15h12v7H6z" fill="white" stroke="#444"/>',
-  upload:'<path d="M4 13v8h16v-8M12 17V3m-5 5 5-5 5 5" fill="none" stroke="#444" stroke-width="2"/>',
-  download:'<path d="M4 14v7h16v-7M12 3v14m-5-5 5 5 5-5" fill="none" stroke="#444" stroke-width="2"/>',
-  copy:'<rect x="7" y="6" width="14" height="16" fill="#fff" stroke="#555"/><path d="M3 18V2h14" fill="none" stroke="#555"/>',
-  info:'<circle cx="12" cy="12" r="10" fill="#e9e9e9" stroke="#444"/><path d="M12 10v7m0-11v2" stroke="#000080" stroke-width="3"/>',
-  warning:'<path d="m12 2 11 19H1Z" fill="#ffdd55" stroke="#555"/><path d="M12 8v6m0 3v2" stroke="#222" stroke-width="2.5"/>',
-  computer:'<rect x="2" y="2" width="20" height="16" fill="#ccc" stroke="#222"/><rect x="5" y="5" width="14" height="10" fill="#008080" stroke="#444"/><path d="M9 19h6v3H9z" fill="#bbb" stroke="#333"/>',
-  clock:'<circle cx="12" cy="12" r="10" fill="#fff" stroke="#555"/><path d="M12 5v7l5 4" stroke="#333" stroke-width="2" fill="none"/>',
-  star:'<path d="m12 2 3 7 8 1-6 5 2 8-7-4-7 4 2-8-6-5 8-1z" fill="#ffdb59" stroke="#7d6b25"/>',
-  menu:'<path d="M3 6h18M3 12h18M3 18h18" stroke="#333" stroke-width="2"/>',
-  sparkle:'<path d="m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5z" fill="#ffe36b" stroke="#5a501f"/>',
-  arrow:'<path d="m9 4 8 8-8 8" fill="none" stroke="#444" stroke-width="2"/>'
+const iconNames: Record<string,string> = {
+  "note": "file-text",
+  "folder": "folder",
+  "pencil": "pencil",
+  "check": "square-check",
+  "search": "search",
+  "archive": "archive",
+  "trash": "trash-2",
+  "restore": "rotate-ccw",
+  "pin": "pin",
+  "bell": "bell",
+  "palette": "palette",
+  "label": "tag",
+  "list": "list",
+  "grid": "layout-grid",
+  "more": "ellipsis",
+  "x": "x",
+  "settings": "settings",
+  "save": "save",
+  "upload": "upload",
+  "download": "download",
+  "copy": "copy",
+  "info": "info",
+  "warning": "triangle-alert",
+  "computer": "notebook-pen",
+  "clock": "clock",
+  "star": "star",
+  "menu": "menu",
+  "sparkle": "sparkles",
+  "arrow": "chevron-right"
 };
-const icon = (name: string): string => `<svg class="monochrome-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-linecap="square" stroke-linejoin="miter">${glyphs[name] ?? glyphs.note}</svg>`;
+const icon = (name: string): string => `<img class="ui-icon" src="./icons/${iconNames[name] ?? 'file-text'}.svg" alt="" aria-hidden="true">`;
 const now = (): string => new Date().toISOString();
 const dateLabel = (value: string | null): string => {
   if (!value) return '';
@@ -60,9 +60,6 @@ let reminderReturn: Dialog = null;
 let confirmAction: (()=>void) | null = null;
 let confirmTitle = '';
 let confirmMessage = '';
-let minimized = false;
-let maximized = false;
-const mobileWindowMedia = window.matchMedia('(max-width: 750px)');
 let mobileMenu = false;
 let undo: Note[] | null = null;
 let toastTimer: number | undefined;
@@ -79,14 +76,9 @@ const app = $('#app');
 if (!app) throw new Error('Missing #app root');
 app.innerHTML = `
 <div class="desktop" id="desktop">
-  <div class="desktop-shortcuts" aria-label="Desktop shortcuts">
-    <button class="desktop-shortcut" data-action="reopen" data-view="notes" title="Open My Notes">${icon('computer')}<span>My Notes</span></button>
-    <button class="desktop-shortcut" data-action="reopen" data-view="trash" title="Open Recycle Bin">${icon('trash')}<span>Recycle Bin</span></button>
-  </div>
+
   <main class="main-window window" id="mainWindow" aria-label="keep application window">
-    <div class="title-bar"><span class="app-icon">${icon('note')}</span><span class="title-text">keep — My Notes</span>
-      <div class="window-controls"><button class="win-control" data-action="minimize" title="Minimize" aria-label="Minimize">_</button><button class="win-control" data-action="maximize" title="Maximize" aria-label="Maximize">□</button><button class="win-control" data-action="minimize" title="Close window" aria-label="Close window">${icon('x')}</button></div>
-    </div>
+    <header class="title-bar app-header"><span class="app-icon">${icon('note')}</span><span class="title-text">keep — My Notes</span></header>
     <div class="menu-bar" role="menubar"><button class="menu-btn" data-action="menu" data-value="file">File</button><button class="menu-btn" data-action="menu" data-value="edit">Edit</button><button class="menu-btn" data-action="menu" data-value="view">View</button><button class="menu-btn" data-action="menu" data-value="help">Help</button></div>
     <div class="toolbar">
       <button class="tool-btn mobile-nav-toggle" data-action="toggleNav" title="Folders" aria-label="Toggle folders">${icon('menu')}</button>
@@ -124,9 +116,7 @@ app.innerHTML = `
     </div>
     <div class="status-bar"><div class="status-cell" id="statusText">Ready</div><div class="status-cell" id="statusCount">0 notes</div><div class="status-cell">LOCAL STORAGE</div></div>
   </main>
-  <div id="desktopHint" class="desktop-hint" hidden>keep is minimized. Open My Notes to continue.</div>
   <div id="popupRoot"></div><div id="dialogRoot"></div><div id="toastRoot" role="status" aria-live="polite"></div>
-  <footer class="taskbar"><button class="chrome-btn start-button" id="startButton" data-action="start">${icon('computer')} Start</button><span class="taskbar-divider"></span><button class="chrome-btn task-app is-open" data-action="taskApp">${icon('note')} keep</button><div class="task-clock">${icon('clock')}<span id="taskClock"></span></div></footer>
   <input type="file" id="importInput" accept=".json,application/json" hidden>
 </div>`;
 
@@ -245,16 +235,6 @@ function renderBoard():void {
     (view==='notes' && !search.trim() && pinned.length ? noteGroup(pinned,`Pinned notes · ${pinned.length}`) : '')+
     (view==='notes' && !search.trim() && pinned.length ? (other.length?noteGroup(other,`Other notes · ${other.length}`):'') : noteGroup(notes,`${notes.length} ${notes.length===1?'item':'items'}`));
 }
-function syncWindowMode():void {
-  const mobile = mobileWindowMedia.matches;
-  $('#mainWindow')?.classList.toggle('is-maximized',mobile||maximized);
-  const maximizeButton=$<HTMLButtonElement>('#mainWindow [data-action="maximize"]');
-  if(maximizeButton){
-    maximizeButton.disabled=mobile;
-    maximizeButton.setAttribute('aria-pressed',String(mobile||maximized));
-    maximizeButton.title=mobile?'Already maximized on mobile':maximized?'Restore window':'Maximize';
-  }
-}
 function render():void {
   renderNav();renderBoard();
   const meta=viewMeta();
@@ -267,11 +247,6 @@ function render():void {
   const viewBtn=$('#viewToggle'); if (viewBtn) {viewBtn.innerHTML=icon(data.list?'grid':'list');viewBtn.title=data.list?'Grid view':'List view';viewBtn.setAttribute('aria-pressed',String(data.list));}
   const quick=$('#quickBar');if(quick)quick.hidden=view==='trash'||view==='archive';
   const clear=$('#clearSearch');if(clear)clear.hidden=!search;
-  syncWindowMode();
-  $('#mainWindow')?.classList.toggle('is-minimized',minimized);
-  const main=$('#mainWindow');if(main)main.hidden=minimized;
-  const hint=$('#desktopHint');if(hint)hint.hidden=!minimized;
-  $('.task-app')?.classList.toggle('is-open',!minimized);
   $('#sidebar')?.classList.toggle('mobile-open',mobileMenu);
   $('#mobileScrim')?.classList.toggle('show',mobileMenu);
   $('.desktop')?.classList.toggle('dark-mode',data.dark);
@@ -361,7 +336,7 @@ function dateValue(iso:string|null):{date:string,time:string} {
   return {date:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,time:`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`};
 }
 function closeReminder():void {dialog=reminderReturn;renderDialog();}
-function windowHeader(title:string,closeAction='closeDialog'):string {return `<div class="title-bar"><span class="app-icon">${icon('note')}</span><span class="title-text">${html(title)}</span><div class="window-controls"><button class="win-control" data-action="${html(closeAction)}" aria-label="Close">${icon('x')}</button></div></div>`;}
+function windowHeader(title:string,_closeAction='closeDialog'):string {return `<div class="title-bar dialog-heading"><span class="app-icon">${icon('note')}</span><span class="title-text">${html(title)}</span></div>`;}
 function renderDialog():void {
   const root=$('#dialogRoot');if(!root)return;
   if(!dialog){root.innerHTML='';return;}
@@ -397,7 +372,7 @@ function renderDialog():void {
     root.innerHTML=`<div class="dialog-backdrop"><section class="dialog-window window medium" role="dialog" aria-modal="true" aria-label="Settings">${windowHeader('keep — Settings','closeDialog')}
       <div class="dialog-body"><h3>Notes and data</h3><p class="dialog-note">Notes are saved in this browser on this device. keep is not affiliated with Google Keep, and does not offer cloud synchronization.</p>
       <div style="display:flex;flex-direction:column;gap:9px"><button class="chrome-btn" data-action="export" style="justify-content:flex-start">${icon('download')} Export JSON backup</button><button class="chrome-btn" data-action="import" style="justify-content:flex-start">${icon('upload')} Import JSON notes</button><button class="chrome-btn" data-action="reset" style="justify-content:flex-start">${icon('restore')} Restore sample notes</button></div>
-      <h3 style="margin-top:24px">Appearance</h3><label class="simple-choice"><input type="checkbox" data-action="toggleDarkMode" ${data.dark?'checked':''}> Dark mode</label><label class="simple-choice"><input type="checkbox" data-action="toggleListFromSettings" ${data.list?'checked':''}> List layout</label>
+      <fieldset class="settings-group"><legend>Appearance</legend><label class="simple-choice"><input type="checkbox" data-action="toggleDarkMode" ${data.dark?'checked':''}> Dark mode</label></fieldset><fieldset class="settings-group"><legend>Notes layout</legend><label class="simple-choice"><input type="checkbox" data-action="toggleListFromSettings" ${data.list?'checked':''}> List layout</label></fieldset>
       <p class="dialog-note" style="margin-top:17px">Settings and notes remain in this browser. Existing notes from earlier app versions are preserved automatically.</p></div>
       <div class="dialog-footer"><button class="chrome-btn primary" data-action="closeDialog">OK</button></div></section></div>`;return;
   }
@@ -473,10 +448,6 @@ function renameLabel(oldName:string):void {
   if(!mutate(()=>{data.labels=data.labels.map(l=>l===oldName?next:l);for(const n of data.notes)n.labels=n.labels.map(l=>l===oldName?next:l);if(view===`label:${oldName}`)view=`label:${next}`;}))return;
   renderDialog();notify('Label renamed');
 }
-function setWindowClock():void {
-  const clock=$('#taskClock');if(clock)clock.textContent=new Date().toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
-}
-
 function execute(action:string,button:HTMLElement):void {
   const noteId=button.getAttribute('data-id')??'';
   const value=button.getAttribute('data-value')??'';
@@ -544,10 +515,6 @@ function execute(action:string,button:HTMLElement):void {
     case 'clearSearch':search='';{const field=$<HTMLInputElement>('#searchInput');if(field){field.value='';field.focus();}}render();break;
     case 'dismissToast':{const root=$('#toastRoot');if(root)root.innerHTML='';break;}
     case 'undo':if(undo){const snapshot=structuredClone(undo);if(mutate(()=>{data.notes=snapshot;})){undo=null;notify('Undone');}}break;
-    case 'minimize':minimized=true;mobileMenu=false;closePopup();render();break;
-    case 'maximize':if(!mobileWindowMedia.matches){maximized=!maximized;render();}break;
-    case 'taskApp':minimized=!minimized;render();break;
-    case 'reopen':minimized=false;setView(button.getAttribute('data-view') as View||'notes');render();break;
     case 'toggleNav':mobileMenu=!mobileMenu;render();break;
     case 'closeNav':mobileMenu=false;render();break;
   }
@@ -655,6 +622,4 @@ if(importInput)importInput.addEventListener('change',async()=>{
   }catch{notify('Invalid JSON notes backup');}
   importInput.value='';
 });
-setWindowClock();window.setInterval(setWindowClock,30000);
-mobileWindowMedia.addEventListener('change',syncWindowMode);
 render();

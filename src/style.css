@@ -477,9 +477,46 @@ textarea.win-input { resize:vertical; line-height:1.6; min-height:150px; }
   .taskbar .start-button { width:75px; }
 }
 
-/* Monochrome UI icons across classic and dark themes. The original vector
-   silhouettes and distinct luminance levels remain visible in grayscale.
-   Preserve CSS stroke contrast for Close buttons in both themes. */
-.desktop .monochrome-icon { filter: grayscale(1) !important; }
-.desktop.dark-mode .monochrome-icon { filter: grayscale(1) invert(1) !important; }
-.desktop.dark-mode .win-control .monochrome-icon { filter: grayscale(1) !important; }
+
+
+/* Unified full-viewport application shell.
+   Windows 98 controls and menus are retained; desktop/window manager chrome is not. */
+html,body,#app { width:100%;height:100%;min-height:0;overflow:hidden; }
+.desktop,.desktop.dark-mode { inset:0;width:100%;height:100dvh;min-height:0;padding:0;display:block;background:var(--face); }
+.main-window,.main-window.is-maximized {
+  width:100%;height:100%;max-width:none;min-height:0;margin:0;
+  border:0;box-shadow:none;padding:0;position:relative;
+}
+.app-header { height:34px;min-height:34px;padding:4px 12px;gap:9px; }
+.app-header .app-icon .ui-icon { width:18px;height:18px;filter:brightness(0) invert(1); }
+.desktop-shortcuts,.desktop-hint,.taskbar,.window-controls,.start-menu { display:none!important; }
+.dialog-window { border:2px solid; }
+.dialog-heading {height:29px;min-height:29px;}
+.dialog-heading .app-icon .ui-icon { filter:brightness(0) invert(1); }
+.workspace { min-height:0;flex:1; }
+.status-bar { flex:0 0 auto; }
+.ui-icon { display:inline-block;width:17px;height:17px;flex:none;object-fit:contain;vertical-align:middle;filter:brightness(0);pointer-events:none; }
+.desktop.dark-mode .ui-icon { filter:brightness(0) invert(1); }
+.desktop :is(.nav-btn,.tool-btn,.chrome-btn,.popup-item,.mini-tool,.note-titlebar) .ui-icon { width:17px;height:17px; }
+.desktop .note-titlebar .ui-icon { width:15px;height:15px; }
+.desktop .mini-tool .ui-icon { width:15px;height:15px; }
+.desktop.dark-mode .app-header .ui-icon { filter:brightness(0) invert(1); }
+.desktop .note-paper,.desktop.dark-mode .note-paper { color:inherit; }
+.settings-group { border:2px groove var(--light);padding:10px 12px 12px;margin:0 0 12px; }
+.settings-group legend {padding:0 6px;font-weight:bold;}
+.settings-group .simple-choice {margin:6px 0;}
+.desktop.dark-mode .settings-group {border-color:var(--light);}
+.toast {bottom:16px;}
+@media(max-width:1120px) { .desktop {padding:0;} }
+@media(max-width:750px) {
+  .desktop,.main-window {height:100dvh;padding:0;}
+  .toolbar {overflow-x:auto;}
+  .app-header {height:33px;min-height:33px;}
+  .workspace {min-height:0;}
+  .sidebar {top:0;bottom:0;}
+}
+@media(max-width:490px) {
+  .app-header {padding:3px 10px;}
+  .toolbar .tool-btn {min-width:34px;}
+  .toolbar .tool-btn .ui-icon {width:18px;height:18px;}
+}

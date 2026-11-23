@@ -9,6 +9,10 @@ Bun.serve({
   hostname: '0.0.0.0',
   async fetch(req) {
     const path = new URL(req.url).pathname;
+    if (!production && /^\/icons\/[a-z0-9-]+\.svg$/.test(path)) {
+      const file = Bun.file(`${root}/node_modules/lucide-static${path}`);
+      return (await file.exists()) ? new Response(file,{headers:{'Content-Type':'image/svg+xml'}}) : new Response('Not found',{status:404});
+    }
     if (!production && path === '/app.js') {
       const result = await Bun.build({ entrypoints: [`${root}/src/main.ts`], target: 'browser', minify: false, sourcemap: 'inline' });
       if (!result.success) return new Response(result.logs.map(String).join('\n'), {status: 500});
@@ -16,7 +20,7 @@ Bun.serve({
     }
     const target = production
       ? (path === '/' ? `${root}/dist/index.html` : `${root}/dist${path}`)
-      : (path === '/' ? `${root}/index.html` : path === '/style.css' ? `${root}/src/style.css` : path === '/favicon.svg' ? `${root}/favicon.svg` : `${root}/index.html`);
+      : (path === '/' ? `${root}/index.html` : path === '/style.css' ? `${root}/src/style.css` : path === '/favicon.svg' ? `${root}/node_modules/lucide-static/icons/notebook-pen.svg` : `${root}/index.html`);
     const file = Bun.file(target);
     if (!await file.exists()) return new Response('Not found', {status:404});
     return new Response(file, {headers: {'Content-Type': mime(target), 'Cache-Control': production ? 'public, max-age=3600' : 'no-store'}});

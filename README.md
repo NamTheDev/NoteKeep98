@@ -54,3 +54,7 @@ Your notes reside in browser storage; this is not an encrypted password vault. D
 ## License
 
 MIT. Design attribution and independent implementation credits: [CREDITS.md](CREDITS.md).
+
+## Unified fullscreen app shell and icons
+
+The app fills the browser viewport, not a simulated OS desktop. Its application header, File/Edit/View/Help menus, quick-action toolbar, address strip, notes grid, status strip and beveled dialogs follow [Chris Lemke's Windows 95/98 reference](https://chrislemke.github.io/website_designs/designs/Windows_95_98.html). Fake minimize/maximize/close window controls, desktop shortcuts and the taskbar were removed. Icons and the transparent favicon come from the [Lucide Static icon set](https://lucide.dev/) (ISC license); exact version `1.77.0` is installed at build time and only selected SVGs are copied into the GitHub Pages output. Monochrome assets invert to light strokes in dark mode.

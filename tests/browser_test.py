@@ -35,7 +35,7 @@ with sync_playwright() as p:
         desktop:snapshot('.desktop'),window:snapshot('#mainWindow'),
         content:snapshot('.content-pane'),header:snapshot('.content-heading'),
         button:snapshot('.chrome-btn'),field:snapshot('.search-box'),
-        note:snapshot('.note-window'),taskbar:snapshot('.taskbar'),
+        note:snapshot('.note-window'),topbar:snapshot('.app-header'),
         title:snapshot('.title-bar')
       };
     }""")
@@ -45,7 +45,7 @@ with sync_playwright() as p:
     assert light_system['content']['bg']=='rgb(255, 255, 255)',light_system
     assert light_system['header']['bg']=='rgb(192, 192, 192)',light_system
     assert 'gradient' in light_system['title']['image'],light_system
-    for raised in ['window','button','note']:
+    for raised in ['button','note']:
         style=light_system[raised]
         assert style['top']==style['left']=='rgb(255, 255, 255)',(raised,style)
         assert style['right']==style['bottom']=='rgb(0, 0, 0)',(raised,style)
@@ -53,15 +53,17 @@ with sync_playwright() as p:
     recessed=light_system['field']
     assert recessed['top']==recessed['left']=='rgb(0, 0, 0)',recessed
     assert recessed['right']==recessed['bottom']=='rgb(255, 255, 255)',recessed
-    assert light_system['taskbar']['height']=='34px',light_system
+    assert light_system['topbar']['height']=='34px',light_system
+    assert page.locator('#mainWindow .window-controls').count()==0
+    assert page.locator('.taskbar').count()==0
+    assert page.locator('img.ui-icon').count()>12
     page.screenshot(path=str(results/'desktop.png'),full_page=True)
-    close_icon='#mainWindow .win-control[aria-label="Close window"] svg path'
-    assert page.locator(close_icon).evaluate('(e)=>getComputedStyle(e).stroke')=='rgb(0, 0, 0)', 'Light mode close icon should remain black'
+    assert page.locator('.tool-btn .ui-icon').first.evaluate('(e)=>e.complete && e.naturalWidth>0'), 'Installed Lucide icons must load'
     # Dark mode themes the complete app, not only its desktop background.
     page.locator('[data-action="menu"][data-value="view"]').click()
     page.locator('.popup-item[data-action="toggleDarkMode"]').click()
     assert 'dark-mode' in (page.locator('#desktop').get_attribute('class') or '')
-    assert page.locator(close_icon).evaluate('(e)=>getComputedStyle(e).stroke')=='rgb(240, 240, 240)', 'Dark mode close icon must use light system text'
+    assert 'invert(1)' in page.locator('.tool-btn .ui-icon').first.evaluate('(e)=>getComputedStyle(e).filter'), 'Dark mode toolbar icons must be light'
     dark_colors=page.evaluate("""() => {
       const rgb=(selector,prop='backgroundColor') => getComputedStyle(document.querySelector(selector))[prop];
       return {
@@ -109,7 +111,7 @@ with sync_playwright() as p:
     assert system['paper']['bg']=='rgb(27, 27, 27)', system
     assert system['desktopImage']=='none', 'Only system title bars may use gradients'
     assert 'gradient' in system['titleImage'], 'Active title bar should retain its gradient'
-    for component in ['window','button','note']:
+    for component in ['button','note']:
         raised=system[component]
         assert raised['top']==raised['left']=='rgb(112, 112, 112)', (component,raised)
         assert raised['right']==raised['bottom']=='rgb(9, 9, 9)', (component,raised)
@@ -122,7 +124,7 @@ with sync_playwright() as p:
     page.locator('[data-action="settings"]').first.click()
     assert page.locator('input[data-action="toggleDarkMode"]').is_checked()
     assert max(channels(page.locator('.dialog-window').evaluate('(e)=>getComputedStyle(e).backgroundColor'))) < 115
-    assert page.locator('.dialog-window .win-control[aria-label="Close"] svg path').evaluate('(e)=>getComputedStyle(e).stroke')=='rgb(240, 240, 240)', 'Dialog close icon must also be light in dark mode'
+    assert page.locator('.dialog-window .window-controls').count()==0, 'No faux OS window controls in dialogs'
     assert max(channels(page.locator('.search-box').evaluate('(e)=>getComputedStyle(e).backgroundColor'))) < 100
     page.screenshot(path=str(results/'desktop-dark.png'),full_page=True)
     page.locator('[data-action="closeDialog"]').last.click()
@@ -134,7 +136,7 @@ with sync_playwright() as p:
     page.locator('[data-action="menu"][data-value="view"]').click()
     page.locator('.popup-item[data-action="toggleDarkMode"]').click()
     assert 'dark-mode' not in (page.locator('#desktop').get_attribute('class') or '')
-    assert page.locator(close_icon).evaluate('(e)=>getComputedStyle(e).stroke')=='rgb(0, 0, 0)', 'Switching back to light mode should restore black icon'
+    assert 'invert(1)' not in page.locator('.tool-btn .ui-icon').first.evaluate('(e)=>getComputedStyle(e).filter'), 'Light mode icons should be dark'
     assert page.evaluate("JSON.parse(localStorage.getItem('notekeep98-v1')).dark") is False
     # Quick note is a genuine textarea, directly editable without a modal.
     quick=page.locator('#quickNoteText')

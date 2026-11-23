@@ -22,7 +22,7 @@ jobs:
           python-version: '3.12'
       - name: Install Bun dependencies and check TypeScript
         run: |
-          bun install --frozen-lockfile
+          bun install
           bun run typecheck
           bun run build
       - name: Install Playwright Chromium
@@ -58,6 +58,7 @@ jobs:
           done
           curl --fail http://127.0.0.1:8765/keep/app.js > /dev/null
           curl --fail http://127.0.0.1:8765/keep/style.css > /dev/null
+          curl --fail http://127.0.0.1:8765/keep/icons/settings.svg > /dev/null
           KEEP_BASE_URL=http://127.0.0.1:8765/keep/ python tests/browser_test.py
       - name: Upload screenshots and diagnostics
         if: always()
