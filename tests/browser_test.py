@@ -42,6 +42,46 @@ with sync_playwright() as p:
     assert max(channels(dark_colors['controls'])) < 115, dark_colors
     assert max(channels(dark_colors['sidebar'])) < 115, dark_colors
     assert dark_colors['selected'] is True
+    # The adapted Win98 palette uses neutral system panels and one consistent
+    # four-tone raised/recessed bevel system, not arbitrary blue-gray surfaces.
+    system=page.evaluate("""() => {
+      const win=document.querySelector('.main-window');
+      const button=document.querySelector('.chrome-btn');
+      const input=document.querySelector('.search-box');
+      const note=document.querySelector('.note-window');
+      const title=document.querySelector('.title-bar');
+      const desk=document.querySelector('.desktop');
+      const paper=document.querySelector('.note-paper');
+      const snapshot=(e)=>{const s=getComputedStyle(e);return {
+        bg:s.backgroundColor, top:s.borderTopColor,left:s.borderLeftColor,
+        right:s.borderRightColor,bottom:s.borderBottomColor,
+        shadow:s.boxShadow
+      }};
+      return {
+        desktop:snapshot(desk),window:snapshot(win),
+        button:snapshot(button),input:snapshot(input),
+        note:snapshot(note),paper:snapshot(paper),
+        desktopImage:getComputedStyle(desk).backgroundImage,
+        titleImage:getComputedStyle(title).backgroundImage,
+        noteAccent:getComputedStyle(document.querySelector('.note-titlebar'),'::before').backgroundColor,
+        originalColor:JSON.parse(localStorage.getItem('notekeep98-v1')).notes[0].color
+      };
+    }""")
+    assert system['desktop']['bg']=='rgb(24, 24, 24)', system
+    assert system['window']['bg']=='rgb(48, 48, 48)', system
+    assert system['paper']['bg']=='rgb(27, 27, 27)', system
+    assert system['desktopImage']=='none', 'Only system title bars may use gradients'
+    assert 'gradient' in system['titleImage'], 'Active title bar should retain its gradient'
+    for component in ['window','button','note']:
+        raised=system[component]
+        assert raised['top']==raised['left']=='rgb(112, 112, 112)', (component,raised)
+        assert raised['right']==raised['bottom']=='rgb(9, 9, 9)', (component,raised)
+        assert 'rgb(80, 80, 80)' in raised['shadow'] and 'rgb(32, 32, 32)' in raised['shadow'], raised
+    recessed=system['input']
+    assert recessed['top']==recessed['left']=='rgb(9, 9, 9)', recessed
+    assert recessed['right']==recessed['bottom']=='rgb(112, 112, 112)', recessed
+    assert system['originalColor']=='#fff2b3', system
+    assert system['noteAccent']=='rgb(255, 242, 179)', system
     page.locator('[data-action="settings"]').first.click()
     assert page.locator('input[data-action="toggleDarkMode"]').is_checked()
     assert max(channels(page.locator('.dialog-window').evaluate('(e)=>getComputedStyle(e).backgroundColor'))) < 115
