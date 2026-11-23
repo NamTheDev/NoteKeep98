@@ -14,7 +14,7 @@ A GitHub Pages-only, local-first notes app inspired by classic Windows 95/98. It
 - Switch between classic and dark Windows 98 system themes (persisted locally).
 - Windows-style menus, bevels, modal dialogs, responsive layout, taskbar and desktop shortcuts.
 
-**Storage:** Notes live in the current browser's `localStorage`, not on GitHub or in a remote account. They don't synchronize between browsers. Keep a JSON backup before clearing browser data. The previous storage key `notekeep98-v1` is intentionally retained internally so updates preserve existing users' notes; it is **not the app's display name**.
+**Storage:** Notes live in the current browser's `localStorage`, not on GitHub or in a remote account. They don't synchronize between browsers. Keep a JSON backup before clearing browser data. An existing internal storage key is retained to preserve notes across updates. The application is named **keep** everywhere in its interface and exported backups.
 
 ## One canonical public site
 

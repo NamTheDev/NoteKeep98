@@ -124,7 +124,7 @@ app.innerHTML = `
     </div>
     <div class="status-bar"><div class="status-cell" id="statusText">Ready</div><div class="status-cell" id="statusCount">0 notes</div><div class="status-cell">LOCAL STORAGE</div></div>
   </main>
-  <div id="desktopHint" class="desktop-hint" hidden>NoteKeep is minimized. Open My Notes to continue.</div>
+  <div id="desktopHint" class="desktop-hint" hidden>keep is minimized. Open My Notes to continue.</div>
   <div id="popupRoot"></div><div id="dialogRoot"></div><div id="toastRoot" role="status" aria-live="polite"></div>
   <footer class="taskbar"><button class="chrome-btn start-button" id="startButton" data-action="start">${icon('computer')} Start</button><span class="taskbar-divider"></span><button class="chrome-btn task-app is-open" data-action="taskApp">${icon('note')} keep</button><div class="task-clock">${icon('clock')}<span id="taskClock"></span></div></footer>
   <input type="file" id="importInput" accept=".json,application/json" hidden>
@@ -398,11 +398,11 @@ function renderDialog():void {
       <div class="dialog-body"><h3>Notes and data</h3><p class="dialog-note">Notes are saved in this browser on this device. keep is not affiliated with Google Keep, and does not offer cloud synchronization.</p>
       <div style="display:flex;flex-direction:column;gap:9px"><button class="chrome-btn" data-action="export" style="justify-content:flex-start">${icon('download')} Export JSON backup</button><button class="chrome-btn" data-action="import" style="justify-content:flex-start">${icon('upload')} Import JSON notes</button><button class="chrome-btn" data-action="reset" style="justify-content:flex-start">${icon('restore')} Restore sample notes</button></div>
       <h3 style="margin-top:24px">Appearance</h3><label class="simple-choice"><input type="checkbox" data-action="toggleDarkMode" ${data.dark?'checked':''}> Dark mode</label><label class="simple-choice"><input type="checkbox" data-action="toggleListFromSettings" ${data.list?'checked':''}> List layout</label>
-      <p class="dialog-note" style="margin-top:17px">Data storage key: <code>${STORAGE_KEY}</code><br>Previous notes from <code>${LEGACY_KEY}</code> are imported automatically on first use.</p></div>
+      <p class="dialog-note" style="margin-top:17px">Settings and notes remain in this browser. Existing notes from earlier app versions are preserved automatically.</p></div>
       <div class="dialog-footer"><button class="chrome-btn primary" data-action="closeDialog">OK</button></div></section></div>`;return;
   }
   if(dialog==='about'){
-    root.innerHTML=`<div class="dialog-backdrop"><section class="dialog-window window medium" role="dialog" aria-modal="true" aria-label="About NoteKeep">${windowHeader('About keep','closeDialog')}
+    root.innerHTML=`<div class="dialog-backdrop"><section class="dialog-window window medium" role="dialog" aria-modal="true" aria-label="About keep">${windowHeader('About keep','closeDialog')}
       <div class="dialog-body"><div class="dialog-icon-message">${icon('computer')}<div><h3 style="margin:0 0 5px">keep</h3><p>Version 1.0<br>TypeScript + Bun.js<br>Independent local-first notes application</p></div></div><p class="dialog-note">Windows 95/98-inspired visual language. Notes are stored only in your browser; this is not Google Keep and does not connect to Google.</p></div><div class="dialog-footer"><button class="chrome-btn primary" data-action="closeDialog">OK</button></div></section></div>`;return;
   }
   if(dialog==='confirm'){
@@ -462,7 +462,7 @@ function exportData():void {
   const payload={version:2,app:'keep',exportedAt:now(),notes:data.notes,labels:data.labels};
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);const anchor=document.createElement('a');
-  anchor.href=url;anchor.download=`notekeep98-${new Date().toISOString().slice(0,10)}.json`;
+  anchor.href=url;anchor.download=`keep-${new Date().toISOString().slice(0,10)}.json`;
   document.body.appendChild(anchor);anchor.click();anchor.remove();
   window.setTimeout(()=>URL.revokeObjectURL(url),2500);notify('JSON backup exported');
 }
