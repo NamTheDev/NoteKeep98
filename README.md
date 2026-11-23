@@ -1,64 +1,38 @@
 # keep
 
-**Web app:** https://namthedev.github.io/keep/
+**Website:** https://namthedev.github.io/keep/
 
-A GitHub Pages-only, local-first notes app inspired by classic Windows 95/98. It runs entirely in your browser: **no hosted database, external API, login, Railway service, or sync server**.
+A local-first notes app with a compact, monochrome, dark-first Material Design 3-inspired interface. It runs in the browser and does **not** have a hosted database, login or sync server.
 
-## Features
+## Using keep
 
-- Create, edit, pin and duplicate notes and checklists.
-- Search notes, filter labels, use list/grid layouts, reminders and a quick-note composer.
-- Archive, restore, recycle and permanently remove notes; undo supported actions.
-- Select paper colors and organize notes with tags.
-- Export notes to a JSON backup and import them on another device.
-- Switch between classic and dark Windows 98 system themes (persisted locally).
-- Windows-style menus, bevels, modal dialogs, responsive layout, taskbar and desktop shortcuts.
+Create a note or checklist from the quick composer; search, switch grid/list view, and open Settings alongside the notes heading. The folder sidebar contains All Notes, Reminders, Archive, Recycle Bin and custom labels. On smaller screens, use the folder-menu button to open the drawer. The redundant File/Edit/View/Help menu and separate top toolbar have been removed.
 
-**Storage:** Notes live in the current browser's `localStorage`, not on GitHub or in a remote account. They don't synchronize between browsers. Keep a JSON backup before clearing browser data. An existing internal storage key is retained to preserve notes across updates. The application is named **keep** everywhere in its interface and exported backups.
+Features include editing, pinning, colors, labels, reminders, checklists, duplication, archive/trash, undo, and JSON backup import/export. Import, export, appearance and reset are available in **Settings**. Keyboard shortcuts include Ctrl+K for search, Ctrl+Enter to save, and N outside text fields to create a note.
 
-## One canonical public site
+## Privacy and compatibility
 
-The website is published to GitHub Pages by [.github/workflows/deploy-pages.yml](.github/workflows/deploy-pages.yml) on pushes to `main`. The compiled `dist/` folder contains only `index.html`, `app.js`, `style.css` and `favicon.svg`. Build-time Bun and TypeScript are **not deployed as a server**. `server.ts` remains only as a local development/testing tool.
+Notes and settings stay in this browser's `localStorage`; no account or cloud sync is provided. The existing `notekeep98-v1` key and legacy migration path are intentionally retained so existing users do not lose notes. Clearing site data can permanently erase notes; export a JSON backup first. In-app reminders do not issue system notifications.
 
-Canonical address: **https://namthedev.github.io/keep/**. The browser title and favicon are **keep**; referral `utm_*` parameters are discarded from the displayed address.
+## Design system
 
-## Unified visual design
+Both [keep](https://github.com/NamTheDev/keep) and [clipboard](https://github.com/NamTheDev/clipboard) use the shared monochrome Material Design 3 system: Roboto, Material Symbols Rounded, dark-first/light-toggle themes, compact spacing, 16px baseline rounding, hybrid tonal/outlined surfaces, and no UI animations. `src/style.css` is the canonical shared stylesheet; clipboard synchronizes this file using its design-sync workflow. Each app has its own layout and behavior. The icon font loads from Google Fonts, with sans-serif fallback; the favicon is a separate graphic.
 
-Both [keep](https://namthedev.github.io/keep/) and [clipboard](https://namthedev.github.io/clipboard/) implement [Chris Lemke's Windows 95/98 reference](https://chrislemke.github.io/website_designs/designs/Windows_95_98.html). They use the same teal `#008080` desktop, silver `#c0c0c0` panels, navy-to-blue title bars, square controls, four-tone raised/recessed bevels, compact menu/toolbar and grayscale system pictograms.
+Legacy Windows 95/98 reference documents in `docs/` record earlier design work; they do not describe the current UI.
 
-The neutral dark-mode palette is an adaptation, not an official variant in the reference. Note-card color swatches intentionally remain colorful because they're user content, not system UI icons. See [shared design contract](docs/DESIGN_REFERENCE.md), [design audit](docs/DESIGN_REFERENCE_AUDIT.md) and [credits](CREDITS.md).
+## Source organization
 
-## Development and verification
+See [Architecture](docs/ARCHITECTURE.md). The entrypoint `src/main.ts` coordinates state and events. Note model/storage, filtering, cards and backups live in `src/features/notes/`. Layout, icons and composer helpers live in `src/ui/`; reusable escaping/date formatters live in `src/utils/`.
 
-The published site needs **no runtime server**. Local development/build uses [Bun](https://bun.sh/) 1.1+:
+## Development
+
+Requires Bun 1.1+.
 
 ```sh
 bun install
 bun run dev
-```
-
-Visit `http://localhost:3000`. For a production-style preview:
-
-```sh
 bun run typecheck
 bun run build
-NODE_ENV=production bun run start
 ```
 
-Continuous integration validates TypeScript, the Pages build, Chromium UI behavior on desktop and mobile, and published asset paths. The [commit-format](.github/workflows/commit-message-format.yml) and [AI-disclosure](.github/workflows/ai-disclosure-format.yml) workflows enforce the repository's conventions. See [commit_message_format.txt](commit_message_format.txt) and [AI_DISCLAIMER.md](AI_DISCLAIMER.md). Screenshots are uploaded as CI artifacts; generated screenshots and compiled files are not committed to this repository.
-
-## Security and limitations
-
-Your notes reside in browser storage; this is not an encrypted password vault. Deleting the browser profile, clearing site data, or changing devices can lose notes without backups. Reminder dates are shown inside the app and are not scheduled push notifications. The project is independent of Google, Microsoft and the design-reference creator.
-
-## License
-
-MIT. Design attribution and independent implementation credits: [CREDITS.md](CREDITS.md).
-
-## Unified fullscreen app shell and icons
-
-The app fills the browser viewport, not a simulated OS desktop. Its application header, File/Edit/View/Help menus, quick-action toolbar, address strip, notes grid, status strip and beveled dialogs follow [Chris Lemke's Windows 95/98 reference](https://chrislemke.github.io/website_designs/designs/Windows_95_98.html). Fake minimize/maximize/close window controls, desktop shortcuts and the taskbar were removed. Icons and the transparent favicon come from the [Lucide Static icon set](https://lucide.dev/) (ISC license); exact version `1.77.0` is installed at build time and only selected SVGs are copied into the GitHub Pages output. Monochrome assets invert to light strokes in dark mode.
-
-## Native dark-mode detection for browser extensions
-
-The app advertises its **actual selected theme**, not the OS preference. `theme-signal.js` runs early in `<head>` and sets the standard `<meta name="color-scheme" content="light|dark">`, `<html data-theme="light|dark">`, root `color-scheme` CSS property, and browser theme-color. The note app dispatches `app-theme-change` after a successful theme change. This supports [Dark Reader's recommended native-dark-theme detection](https://github.com/darkreader/darkreader/discussions/15128) and similar extensions. It does not install Dark Reader or use `darkreader-lock`, so extensions can still apply their own transformations in light mode. The theme remains user-controlled and persists in existing local storage.
+The production build in `dist/` is published by [GitHub Pages Actions](.github/workflows/deploy-pages.yml). `server.ts` is for development/testing only. The [UI verification](.github/workflows/ui-verification.yml) workflow exercises the browser on desktop and mobile. Source is MIT-licensed; see [CREDITS.md](CREDITS.md) and [AI_DISCLAIMER.md](AI_DISCLAIMER.md).

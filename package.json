@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "A local-first, Windows 95/98-styled notes app built with TypeScript and Bun",
+  "description": "Local-first notes with compact monochrome Material Design 3",
   "scripts": {
     "dev": "bun --watch server.ts",
     "build": "bun run scripts/build.ts",
