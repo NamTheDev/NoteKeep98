@@ -26,6 +26,7 @@ export interface AppData {
   dark: boolean;
 }
 
+// Preserve the original browser storage key so upgrades never discard existing notes.
 export const STORAGE_KEY = 'notekeep98-v1';
 export const LEGACY_KEY = 'keep-recreation-v1';
 export const COLORS: Array<{name: string, value: string}> = [
@@ -52,7 +53,7 @@ export function seed(): AppData {
   const recent = (days: number): string => new Date(time - days * 86400000).toISOString();
   return {
     notes: [
-      sample('Welcome to NoteKeep 98!', 'Your thoughts, saved the old-fashioned way.\n\nClick a note to edit it, or use the toolbar to create something new. Everything is saved in this browser.', {pinned:true,color:'#fff2b3',labels:['Personal'],createdAt:recent(4),updatedAt:recent(0)}),
+      sample('Welcome to keep!', 'Your thoughts, saved the old-fashioned way.\n\nClick a note to edit it, or use the toolbar to create something new. Everything is saved in this browser.', {pinned:true,color:'#fff2b3',labels:['Personal'],createdAt:recent(4),updatedAt:recent(0)}),
       sample('Ideas for the week', '✳ Sketch a new concept\n✳ Organize reference images\n✳ Make time to experiment\n\nGood ideas start somewhere.', {pinned:true,color:'#d7e8ff',labels:['Ideas'],createdAt:recent(3),updatedAt:recent(1)}),
       sample('Things to do', '', {checklist:true,items:[{id:id(),text:'Review project notes',checked:true},{id:id(),text:'Finish the moodboard',checked:false},{id:id(),text:'Send the final draft',checked:false},{id:id(),text:'Back up important files',checked:false}],color:'#d7edcd',labels:['Work'],createdAt:recent(2),updatedAt:recent(1)}),
       sample('Small reminder', 'Not everything needs to be urgent. Make room for a little quiet between things.',{color:'#e6d9ff',createdAt:recent(5),updatedAt:recent(2)}),

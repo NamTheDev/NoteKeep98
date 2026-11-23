@@ -1,3 +1,6 @@
+/* Shared Windows 95/98 visual system: see docs/DESIGN_REFERENCE.md.
+   Chris Lemke reference: https://chrislemke.github.io/website_designs/designs/Windows_95_98.html
+   Keep the original light system and neutral, four-tone dark adaptation. */
 :root {
   font-family: Tahoma, 'MS Sans Serif', 'Segoe UI', sans-serif;
   font-size: 12px;

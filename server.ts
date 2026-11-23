@@ -2,7 +2,7 @@
 const port = Number(Bun.env.PORT || 3000);
 const production = Bun.env.NODE_ENV === "production";
 const root = import.meta.dir;
-const mime = (path: string) => path.endsWith('.js') ? 'text/javascript; charset=utf-8' : path.endsWith('.css') ? 'text/css; charset=utf-8' : path.endsWith('.html') ? 'text/html; charset=utf-8' : 'application/octet-stream';
+const mime = (path: string) => path.endsWith('.js') ? 'text/javascript; charset=utf-8' : path.endsWith('.css') ? 'text/css; charset=utf-8' : path.endsWith('.html') ? 'text/html; charset=utf-8' : path.endsWith('.svg') ? 'image/svg+xml' : 'application/octet-stream';
 
 Bun.serve({
   port,
@@ -16,10 +16,10 @@ Bun.serve({
     }
     const target = production
       ? (path === '/' ? `${root}/dist/index.html` : `${root}/dist${path}`)
-      : (path === '/' ? `${root}/index.html` : path === '/style.css' ? `${root}/src/style.css` : `${root}/index.html`);
+      : (path === '/' ? `${root}/index.html` : path === '/style.css' ? `${root}/src/style.css` : path === '/favicon.svg' ? `${root}/favicon.svg` : `${root}/index.html`);
     const file = Bun.file(target);
     if (!await file.exists()) return new Response('Not found', {status:404});
     return new Response(file, {headers: {'Content-Type': mime(target), 'Cache-Control': production ? 'public, max-age=3600' : 'no-store'}});
   }
 });
-console.log(`NoteKeep 98 (${production ? 'production' : 'development'}) → http://localhost:${port}`);
+console.log(`keep (${production ? 'production' : 'development'}) → http://localhost:${port}`);

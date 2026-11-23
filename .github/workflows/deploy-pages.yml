@@ -32,6 +32,7 @@ jobs:
           test -s dist/index.html
           test -s dist/app.js
           test -s dist/style.css
+          test -s dist/favicon.svg
           grep -E 'href="\./style\.css\?v=[0-9a-f]{12}"' dist/index.html
           grep -E 'src="\./app\.js\?v=[0-9a-f]{12}"' dist/index.html
       - name: Upload GitHub Pages artifact

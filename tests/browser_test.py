@@ -1,4 +1,4 @@
-"""Portable Playwright browser tests against a running NoteKeep98 server.
+"""Portable Playwright browser tests against a running keep development server.
 
 Run `bun run build && NODE_ENV=production bun run start` separately, then execute
 `python -m pip install playwright==1.56.0`,
@@ -9,7 +9,7 @@ from playwright.sync_api import sync_playwright, expect
 import os
 
 root=Path(__file__).resolve().parent.parent
-base_url=os.environ.get('NOTEKEEP_BASE_URL','http://127.0.0.1:3000')
+base_url=os.environ.get('KEEP_BASE_URL','http://127.0.0.1:3000')
 results=root/'test-results'
 results.mkdir(exist_ok=True)
 with sync_playwright() as p:
@@ -17,7 +17,10 @@ with sync_playwright() as p:
     page=browser.new_page(viewport={'width':1440,'height':900},device_scale_factor=1,accept_downloads=True)
     errors=[]
     page.on('pageerror',lambda e:errors.append(str(e)))
-    page.goto(base_url,wait_until='load')
+    page.goto(base_url + ('&' if '?' in base_url else '?') + 'utm_source=chatgpt.com',wait_until='load')
+    assert page.title() == 'keep', 'The website title must be exactly keep'
+    assert page.locator('link[rel="icon"]').get_attribute('href') == './favicon.svg'
+    assert 'utm_source' not in page.url, 'Remove tracking parameters from the canonical address'
     page.wait_for_timeout(300)
     print('title',page.title(),'notes',page.locator('.note-window').count(), 'errors:',errors)
     # Canonical 1990s system palette and four-tone component checks.

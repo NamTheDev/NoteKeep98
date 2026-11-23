@@ -67,6 +67,14 @@ let mobileMenu = false;
 let undo: Note[] | null = null;
 let toastTimer: number | undefined;
 
+// Normalize inbound ChatGPT/referral tracking without disrupting local notes.
+const canonicalUrl = new URL(window.location.href);
+let hadTracking = false;
+for (const key of [...canonicalUrl.searchParams.keys()]) {
+  if (/^utm_/i.test(key)) { canonicalUrl.searchParams.delete(key); hadTracking = true; }
+}
+if (hadTracking) window.history.replaceState(null, '', canonicalUrl);
+
 const app = $('#app');
 if (!app) throw new Error('Missing #app root');
 app.innerHTML = `

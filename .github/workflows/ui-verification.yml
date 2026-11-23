@@ -33,12 +33,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          NODE_ENV=production PORT=3000 bun run start > /tmp/notekeep98-server.log 2>&1 &
+          NODE_ENV=production PORT=3000 bun run start > /tmp/keep-server.log 2>&1 &
           APP_PID=$!
           trap 'kill "$APP_PID" 2>/dev/null || true' EXIT
           for i in {1..30}; do
             if curl --fail --silent --output /dev/null http://127.0.0.1:3000/; then break; fi
-            if ! kill -0 "$APP_PID" 2>/dev/null; then cat /tmp/notekeep98-server.log; exit 1; fi
+            if ! kill -0 "$APP_PID" 2>/dev/null; then cat /tmp/keep-server.log; exit 1; fi
             sleep 1
           done
           curl --fail http://127.0.0.1:3000/ > /dev/null
@@ -47,9 +47,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p /tmp/notekeep-pages/keep
-          cp -a dist/. /tmp/notekeep-pages/keep/
-          python -m http.server 8765 --bind 127.0.0.1 --directory /tmp/notekeep-pages > /tmp/notekeep98-pages.log 2>&1 &
+          mkdir -p /tmp/keep-pages/keep
+          cp -a dist/. /tmp/keep-pages/keep/
+          python -m http.server 8765 --bind 127.0.0.1 --directory /tmp/keep-pages > /tmp/keep-pages.log 2>&1 &
           PAGES_PID=$!
           trap 'kill "$PAGES_PID" 2>/dev/null || true' EXIT
           for i in {1..30}; do
@@ -58,12 +58,12 @@ jobs:
           done
           curl --fail http://127.0.0.1:8765/keep/app.js > /dev/null
           curl --fail http://127.0.0.1:8765/keep/style.css > /dev/null
-          NOTEKEEP_BASE_URL=http://127.0.0.1:8765/keep/ python tests/browser_test.py
+          KEEP_BASE_URL=http://127.0.0.1:8765/keep/ python tests/browser_test.py
       - name: Upload screenshots and diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: notekeep98-browser-evidence
+          name: keep-browser-evidence
           path: |
             test-results/
           if-no-files-found: ignore

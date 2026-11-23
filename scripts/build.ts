@@ -19,6 +19,7 @@ const html=template
   .replace('src="./app.js"',`src="./app.js?v=${appHash}"`);
 await Promise.all([
   Bun.write(`${root}dist/index.html`,html),
-  Bun.write(`${root}dist/style.css`,css)
+  Bun.write(`${root}dist/style.css`,css),
+  Bun.write(`${root}dist/favicon.svg`,await Bun.file(`${root}favicon.svg`).text())
 ]);
 console.log(`Built ${build.outputs.length} JavaScript bundle and fingerprinted static assets in dist/`);

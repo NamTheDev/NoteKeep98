@@ -2,11 +2,11 @@
 
 Reference: Chris Lemke, [Windows 95/98 — Design Reference](https://chrislemke.github.io/website_designs/designs/Windows_95_98.html) and the [interactive example](https://chrislemke.github.io/website_designs/examples/Windows_95_98.html).
 
-Updated: 23 November 2026. The reference specifies **a light Windows 95/98 system palette**, not a canonical dark theme. NoteKeep98 is an independent notes app, not a reproduction or endorsement.
+Updated: 23 November 2026. The reference specifies **a light Windows 95/98 system palette**, not a canonical dark theme. keep is an independent notes app, not a reproduction or endorsement.
 
 ## Design contract
 
-| Feature | Reference | NoteKeep98 implementation |
+| Feature | Reference | keep implementation |
 | --- | --- | --- |
 | Desktop | Flat teal `#008080` | Plain teal desktop, no dot texture |
 | Face | `#C0C0C0` | Shared panel, menu, toolbar, window and taskbar surface |
@@ -23,7 +23,7 @@ Updated: 23 November 2026. The reference specifies **a light Windows 95/98 syste
 
 ## Dark Mode
 
-The reference provides **no official dark color scheme**. NoteKeep98 keeps the same semantic relationships between four tonal border colors and reuses the window, title, input, selection and menu patterns with a neutral charcoal palette. The existing browser-stored `dark` setting and saved notes are untouched.
+The reference provides **no official dark color scheme**. keep keeps the same semantic relationships between four tonal border colors and reuses the window, title, input, selection and menu patterns with a neutral charcoal palette. The existing browser-stored `dark` setting and saved notes are untouched.
 
 ## Deliberate differences and remaining opportunities
 
