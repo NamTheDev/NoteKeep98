@@ -96,12 +96,18 @@ button svg { pointer-events:none; }
 .chrome-btn:active, .chrome-btn[aria-pressed="true"] { border-color:black white white black; box-shadow:inset 1px 1px #808080; }
 .chrome-btn.primary { font-weight:700; }
 .quick-bar { flex-shrink:0; display:flex; align-items:center; gap:9px; margin:10px 12px 3px; padding:7px; border:1px solid; border-color:var(--light) var(--dark) var(--dark) var(--light); box-shadow:inset 1px 1px var(--light2),inset -1px -1px var(--shadow); background:var(--face); }
-.quick-tile { width:30px; height:30px; flex:none; display:grid; place-items:center; border:1px solid; border-color:var(--light) var(--dark) var(--dark) var(--light); background:#fff2b3; box-shadow:inset 1px 1px #fff7cb,inset -1px -1px #8e813e; }
-.quick-tile svg { width:22px; height:22px; }
-.quick-copy { flex:1; min-width:0; }
-.quick-copy strong { display:block; font-size:13px; font-weight:700; }
-.quick-copy span { display:block; margin-top:3px; font-size:11px; color:#606060; }
-.quick-buttons { display:flex; gap:7px; }
+.quick-composer { flex:1; min-width:0; background:var(--sys-well); border:1px solid; border-color:var(--dark) var(--light) var(--light) var(--dark); box-shadow:inset 1px 1px var(--shadow),inset -1px -1px var(--light2); }
+.quick-title, .quick-text { display:block; box-sizing:border-box; width:100%; border:0; border-radius:0; padding:6px 9px; background:transparent; color:var(--sys-text); font:inherit; outline:0; }
+.quick-title { font-weight:700; font-size:12px; border-bottom:1px solid var(--shadow); }
+.quick-text { min-height:29px; line-height:1.45; resize:none; overflow-y:auto; max-height:30vh; }
+.quick-title::placeholder, .quick-text::placeholder { color:var(--sys-muted); opacity:1; }
+.quick-composer:focus-within { outline:1px dotted var(--sys-text); outline-offset:-3px; }
+.quick-actions { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:7px; padding:5px 6px; border-top:1px solid var(--shadow); background:var(--face); }
+.quick-actions .chrome-btn { height:28px; }
+.quick-hint { margin-right:auto; font-size:11px; color:var(--sys-muted); }
+.quick-bar.is-editing .quick-composer { flex-basis:100%; }
+.quick-bar.is-editing .quick-buttons { display:none; }
+.quick-buttons { display:flex; gap:7px; flex:none; }
 .board-scroll { overflow:auto; min-height:0; flex:1; padding:10px 12px 18px; scrollbar-color:var(--face) var(--light2); }
 .board-label { display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#747474; letter-spacing:1.25px; font-family:'Courier New',monospace; font-weight:700; text-transform:uppercase; margin:5px 0 12px; }
 .board-label::after { content:''; height:1px; flex:1; background:#d1d1ce; margin-left:12px; }
@@ -290,6 +296,9 @@ textarea.win-input { resize:vertical; line-height:1.6; min-height:150px; }
 .desktop.dark-mode .content-pane { background:var(--sys-pane); }
 .desktop.dark-mode .content-heading { background:var(--face); }
 .desktop.dark-mode .quick-bar { background:var(--face); }
+.desktop.dark-mode .quick-composer { background:var(--sys-well); }
+.desktop.dark-mode .quick-title, .desktop.dark-mode .quick-text { color:var(--sys-text); }
+.desktop.dark-mode .quick-actions { background:var(--face); }
 .desktop.dark-mode .quick-tile {
   background:#fff2b3; /* A colored sticky-note illustration is content, not system chrome. */
   border-color:var(--light) var(--dark) var(--dark) var(--light);
@@ -430,7 +439,7 @@ textarea.win-input { resize:vertical; line-height:1.6; min-height:150px; }
   .page-desc { display:none; }
   .search-box { width:clamp(117px,31vw,220px); }
   .quick-bar { margin:12px 14px 0; }
-  .quick-copy span { display:none; }
+  .quick-hint { display:none; }
   .board-scroll { padding:15px 14px 20px; }
   .note-grid { grid-template-columns:repeat(auto-fill,minmax(205px,1fr)); gap:12px; }
   .taskbar { height:40px; }
@@ -451,7 +460,8 @@ textarea.win-input { resize:vertical; line-height:1.6; min-height:150px; }
   .content-actions { margin-top:10px; }
   .search-box { flex:1; width:auto; }
   .quick-bar { margin:12px 10px 0; padding:9px; gap:7px; }
-  .quick-copy strong { font-size:12px; }
+  .quick-text { font-size:12px; }
+  .quick-actions { padding:6px; }
   .quick-buttons { gap:5px; }
   .quick-buttons .chrome-btn { font-size:11px; padding:0 7px; }
   .quick-buttons .chrome-btn svg { display:none; }

@@ -52,7 +52,8 @@ A **standalone HTML preview** is also provided with the downloadable package for
 - Dark Mode uses a restrained four-tone Windows 95/98 bevel system and neutral surfaces, adapted from [Chris Lemke's design reference](https://chrislemke.github.io/website_designs/designs/Windows_95_98.html) (the reference does not specify an official dark palette)
 - Interface styling follows the reference's flat teal desktop, silver system panels, sunken white content areas, compact controls, navy selection, and 1–2px bevel geometry. Note cards, vector icons, and arrowless scrollbars remain deliberate usability/implementation adaptations; see [design audit](docs/DESIGN_REFERENCE_AUDIT.md).
 - Working menus, Start menu, taskbar, and desktop window controls; mobile window stays maximized with its maximize control disabled
-- Auto-save local note changes to browser `localStorage`
+- Quick note textarea for typing directly into the notes board; expands with an optional title and Save/Cancel controls (Ctrl+Enter or Cmd+Enter to save)
+- Save local note changes to browser `localStorage`
 - Import/export notes as JSON and restore example data
 - Automatically imports notes created in the earlier standalone HTML app **when both apps run under the same browser origin**
 
@@ -64,8 +65,9 @@ A **standalone HTML preview** is also provided with the downloadable package for
 |---|---|
 | `N` | New note, outside text fields |
 | `Ctrl+K` or `Cmd+K` | Focus search |
-| `Ctrl+Enter` or `Cmd+Enter` | Save open note |
-| `Esc` | Close popup or dialog |
+| `Ctrl+Enter` or `Cmd+Enter` | Save open note or quick note |
+| `Esc` | Cancel unsaved quick note editing |
+| `Esc` | Close popup or dialog (or cancel quick note editing) |
 
 ## Project structure
 

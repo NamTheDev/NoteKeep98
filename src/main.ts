@@ -99,7 +99,18 @@ app.innerHTML = `
         <div class="content-heading"><div class="heading-copy"><div><div class="page-kicker" id="pageKicker">YOUR DESKTOP NOTES</div><h1 class="page-title" id="pageTitle">All Notes</h1><div class="page-desc" id="pageDescription">A little space for everything on your mind.</div></div></div>
           <div class="content-actions"><label class="search-box">${icon('search')}<input type="search" id="searchInput" aria-label="Search notes" placeholder="Search notes..." autocomplete="off"><button class="search-clear" id="clearSearch" data-action="clearSearch" aria-label="Clear search" hidden>×</button></label><button class="chrome-btn" id="viewToggle" data-action="toggleView" title="Toggle grid or list view" aria-label="Toggle list view">${icon('list')}</button></div>
         </div>
-        <div class="quick-bar" id="quickBar"><div class="quick-tile">${icon('pencil')}</div><div class="quick-copy"><strong>Capture a thought...</strong><span>Ideas, lists, reminders — keep them in one place.</span></div><div class="quick-buttons"><button class="chrome-btn primary" data-action="newNote">${icon('note')} New note</button><button class="chrome-btn" data-action="newChecklist">${icon('check')} List</button></div></div>
+        <div class="quick-bar" id="quickBar" role="group" aria-label="Quick note">
+          <div class="quick-composer" id="quickComposer">
+            <input class="quick-title" id="quickNoteTitle" type="text" maxlength="10000" placeholder="Title (optional)" aria-label="Quick note title" hidden>
+            <textarea class="quick-text" id="quickNoteText" rows="1" maxlength="100000" placeholder="Take a note..." aria-label="Quick note text"></textarea>
+            <div class="quick-actions" id="quickActions" hidden>
+              <span class="quick-hint">Ctrl+Enter to save</span>
+              <button class="chrome-btn" data-action="cancelQuickNote">Cancel</button>
+              <button class="chrome-btn primary" data-action="saveQuickNote">${icon('save')} Save note</button>
+            </div>
+          </div>
+          <div class="quick-buttons"><button class="chrome-btn primary" data-action="newNote">${icon('note')} New note</button><button class="chrome-btn" data-action="newChecklist">${icon('check')} List</button></div>
+        </div>
         <div class="board-scroll" id="boardScroll"><div id="boardRoot"></div></div>
       </section>
     </div>
@@ -258,6 +269,45 @@ function render():void {
   $('.desktop')?.classList.toggle('dark-mode',data.dark);
 }
 
+function expandQuickComposer():void {
+  const bar=$('#quickBar');
+  if (!bar || bar.classList.contains('is-editing'))return;
+  bar.classList.add('is-editing');
+  const title=$<HTMLInputElement>('#quickNoteTitle');
+  const actions=$('#quickActions');
+  if (title)title.hidden=false;
+  if (actions)actions.hidden=false;
+}
+function resetQuickComposer():void {
+  const text=$<HTMLTextAreaElement>('#quickNoteText');
+  const title=$<HTMLInputElement>('#quickNoteTitle');
+  const actions=$('#quickActions');
+  if(text){text.value='';text.style.height='';}
+  if(title){title.value='';title.hidden=true;}
+  if(actions)actions.hidden=true;
+  $('#quickBar')?.classList.remove('is-editing');
+}
+function saveQuickNote():void {
+  const input=$<HTMLTextAreaElement>('#quickNoteText');
+  const title=$<HTMLInputElement>('#quickNoteTitle');
+  if (!input)return;
+  const body=input.value;
+  const heading=title?.value??'';
+  if(!body.trim()&&!heading.trim()){
+    resetQuickComposer();
+    return;
+  }
+  const note=blankNote();
+  note.body=body;
+  note.title=heading;
+  if(!mutate(()=>{data.notes.unshift(note);}))return;
+  resetQuickComposer();
+  notify('Note saved');
+}
+function resizeQuickText(text:HTMLTextAreaElement):void {
+  text.style.height='auto';
+  text.style.height=Math.min(text.scrollHeight,Math.max(160,window.innerHeight*0.3))+'px';
+}
 function syncDraft():void {
   if (!draft||dialog!=='editor') return;
   const title=$<HTMLInputElement>('#editTitle');const body=$<HTMLTextAreaElement>('#editBody');
@@ -431,6 +481,8 @@ function execute(action:string,button:HTMLElement):void {
     case 'newChecklist':openEditor(null,true);break;
     case 'editNote':{const n=getNote(noteId);if(n&& !n.trashed)openEditor(n);break;}
     case 'saveEditor':saveEditor();break;
+    case 'saveQuickNote':saveQuickNote();break;
+    case 'cancelQuickNote':resetQuickComposer();break;
     case 'cancelEditor':closeEditor();break;
     case 'closeDialog':dialog=null;closePopup();renderDialog();break;
     case 'manageLabels':dialog='labels';closePopup();renderDialog();break;
@@ -524,8 +576,16 @@ app.addEventListener('change',event=>{
   if(action==='toggleDarkMode')mutate(()=>{data.dark=input.checked;});
   if(action==='toggleListFromSettings')mutate(()=>{data.list=input.checked;});
 });
+app.addEventListener('focusin',event=>{
+  const element=event.target as HTMLElement;
+  if(element.id==='quickNoteText'||element.id==='quickNoteTitle')expandQuickComposer();
+});
 app.addEventListener('input',event=>{
   const node=event.target as HTMLInputElement;
+  if(node.id==='quickNoteText'){
+    expandQuickComposer();
+    resizeQuickText(node as HTMLTextAreaElement);
+  }
   if(dialog==='editor' && draft && node.matches('.editor-check-row .item-text')){
     const row=node.closest<HTMLElement>('.editor-check-row');
     const item=draft.items.find(i=>i.id===row?.getAttribute('data-item'));
@@ -535,6 +595,14 @@ app.addEventListener('input',event=>{
 });
 app.addEventListener('keydown',event=>{
   const node=event.target as HTMLElement;
+  if(node.id==='quickNoteText'||node.id==='quickNoteTitle'){
+    if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){
+      event.preventDefault();event.stopPropagation();saveQuickNote();return;
+    }
+    if(event.key==='Escape'){
+      event.preventDefault();event.stopPropagation();resetQuickComposer();node.blur();return;
+    }
+  }
   if(node.matches('[data-action="editNote"]')&&(event.key==='Enter'||event.key===' ')){event.preventDefault();execute('editNote',node);}
   if(node.id==='newLabelInput'&&event.key==='Enter'){event.preventDefault();execute('addLabel',node);}
 });

@@ -133,6 +133,30 @@ with sync_playwright() as p:
     assert 'dark-mode' not in (page.locator('#desktop').get_attribute('class') or '')
     assert page.locator(close_icon).evaluate('(e)=>getComputedStyle(e).stroke')=='rgb(0, 0, 0)', 'Switching back to light mode should restore black icon'
     assert page.evaluate("JSON.parse(localStorage.getItem('notekeep98-v1')).dark") is False
+    # Quick note is a genuine textarea, directly editable without a modal.
+    quick=page.locator('#quickNoteText')
+    assert quick.evaluate('(e)=>e.tagName')=='TEXTAREA'
+    quick.fill('A fast note from the composer')
+    assert page.locator('#quickNoteTitle').is_visible()
+    assert page.locator('#quickActions').is_visible()
+    page.locator('#quickNoteTitle').fill('Quick capture')
+    quick.press('Control+Enter')
+    assert page.locator('.note-window').filter(has_text='Quick capture').count()==1
+    assert page.locator('.note-window').filter(has_text='A fast note from the composer').count()==1
+    assert quick.input_value()==''
+    assert page.locator('#quickNoteTitle').is_hidden()
+    assert page.locator('#quickActions').is_hidden()
+    # Multiline body and action button; saved after reload.
+    quick.fill('First line\\nSecond line')
+    page.locator('[data-action="saveQuickNote"]').click()
+    assert page.locator('.note-window').filter(has_text='First line').count()==1
+    assert page.evaluate("""() => JSON.parse(localStorage.getItem('notekeep98-v1')).notes.some(n=>n.body==='First line\\nSecond line')""")
+    quick.fill('Unsaved text')
+    quick.press('Escape')
+    assert quick.input_value()==''
+    assert page.locator('.note-window').filter(has_text='Unsaved text').count()==0
+    page.reload(wait_until='load')
+    assert page.locator('.note-window').filter(has_text='Quick capture').count()==1
     # open and save note
     page.locator('.quick-bar [data-action="newNote"]').click()
     assert page.locator('#editTitle').count()==1
@@ -300,6 +324,15 @@ with sync_playwright() as p:
     mobile.locator('[data-action="menu"][data-value="view"]').click()
     mobile.locator('.popup-item[data-action="toggleDarkMode"]').click()
     assert mobile_close.evaluate('(e)=>getComputedStyle(e).stroke')=='rgb(0, 0, 0)'
+    # Mobile quick composer expands without horizontal overflow and allows cancel.
+    mobile_quick=mobile.locator('#quickNoteText')
+    mobile_quick.fill('Mobile quick draft')
+    assert mobile.locator('#quickActions').is_visible()
+    assert mobile.locator('#quickNoteTitle').is_visible()
+    assert mobile.evaluate('document.documentElement.scrollWidth <= window.innerWidth')
+    mobile.locator('[data-action="cancelQuickNote"]').click()
+    assert mobile_quick.input_value()==''
+    assert mobile.locator('#quickActions').is_hidden()
     mobile.screenshot(path=str(results/'mobile.png'),full_page=True)
     print('mobile horizontal overflow:',mobile.evaluate('document.documentElement.scrollWidth > window.innerWidth'))
     print('errors',errors)
@@ -329,6 +362,13 @@ with sync_playwright() as p:
     assert 'Note saved' not in blocked.locator('#toastRoot').inner_text()
     blocked.reload(wait_until='load')
     assert blocked.locator('.note-window').filter(has_text='Must Not Claim Saved').count()==0
+    # Quick composer also keeps unsaved text when localStorage rejects writes.
+    blocked.locator('#quickNoteText').fill('Preserve blocked quick draft')
+    blocked.locator('[data-action="saveQuickNote"]').click()
+    assert blocked.locator('#quickNoteText').input_value()=='Preserve blocked quick draft'
+    assert blocked.locator('#quickActions').is_visible()
+    assert blocked.locator('.note-window').filter(has_text='Preserve blocked quick draft').count()==0
+    assert 'Could not save to browser storage' in blocked.locator('#toastRoot').inner_text()
     blocked.close()
     print('ALL BROWSER TESTS PASSED')
     browser.close()
