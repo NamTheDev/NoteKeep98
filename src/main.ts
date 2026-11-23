@@ -320,7 +320,12 @@ function saveEditor():void {
   if(!mutate(()=>{
     if(editingId){const index=data.notes.findIndex(n=>n.id===editingId);if(index>=0)data.notes[index]=normalizeNote(item);}
     else data.notes.unshift(normalizeNote(item));
-  }))return;
+  })){
+    // Rebuild from the preserved draft when browser storage rejects a write.
+    // Never leave the editor showing stale input after a failed save.
+    renderDialog();
+    return;
+  }
   editingId=null;draft=null;dialog=null;renderDialog();notify('Note saved');
 }
 function closeEditor():void {draft=null;editingId=null;dialog=null;closePopup();renderDialog();}
