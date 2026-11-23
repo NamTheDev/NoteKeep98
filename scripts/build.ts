@@ -21,7 +21,7 @@ const html=template
   .replace('href="./style.css"',`href="./style.css?v=${cssHash}"`)
   .replace('src="./app.js"',`src="./app.js?v=${appHash}"`);
 const baseFavicon=await Bun.file(`${root}node_modules/lucide-static/icons/notebook-pen.svg`).text();
-const adaptiveFavicon=baseFavicon.replace(/(<svg\\b[^>]*>)/, (tag)=>tag+
+const adaptiveFavicon=baseFavicon.replace(/(<svg\b[^>]*>)/, (tag)=>tag+
   '<style>:root{color:#252525}@media (prefers-color-scheme:dark){:root{color:#f1f1f1}}</style>');
 const names=["file-text","folder","pencil","square-check","search","archive","trash-2","rotate-ccw","pin","bell","palette","tag","list","layout-grid","ellipsis","x","settings","save","upload","download","copy","info","triangle-alert","notebook-pen","clock","star","menu","sparkles","chevron-right"];
 await Promise.all([
