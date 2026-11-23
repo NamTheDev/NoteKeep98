@@ -50,6 +50,7 @@ A **standalone HTML preview** is also provided with the downloadable package for
 - Undo for reversible move/delete actions
 - Grid/list layouts, a full light/dark interface theme, and a mobile folder pane
 - Dark Mode uses a restrained four-tone Windows 95/98 bevel system and neutral surfaces, adapted from [Chris Lemke's design reference](https://chrislemke.github.io/website_designs/designs/Windows_95_98.html) (the reference does not specify an official dark palette)
+- Interface styling follows the reference's flat teal desktop, silver system panels, sunken white content areas, compact controls, navy selection, and 1–2px bevel geometry. Note cards, vector icons, and arrowless scrollbars remain deliberate usability/implementation adaptations; see [design audit](docs/DESIGN_REFERENCE_AUDIT.md).
 - Working menus, Start menu, taskbar, and desktop window controls; mobile window stays maximized with its maximize control disabled
 - Auto-save local note changes to browser `localStorage`
 - Import/export notes as JSON and restore example data

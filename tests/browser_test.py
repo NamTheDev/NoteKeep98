@@ -20,6 +20,37 @@ with sync_playwright() as p:
     page.goto(base_url,wait_until='load')
     page.wait_for_timeout(300)
     print('title',page.title(),'notes',page.locator('.note-window').count(), 'errors:',errors)
+    # Canonical 1990s system palette and four-tone component checks.
+    light_system=page.evaluate("""() => {
+      const snapshot=(selector)=>{const s=getComputedStyle(document.querySelector(selector));return {
+        bg:s.backgroundColor, image:s.backgroundImage,
+        top:s.borderTopColor,left:s.borderLeftColor,
+        right:s.borderRightColor,bottom:s.borderBottomColor,
+        shadow:s.boxShadow,height:s.height
+      }};
+      return {
+        desktop:snapshot('.desktop'),window:snapshot('#mainWindow'),
+        content:snapshot('.content-pane'),header:snapshot('.content-heading'),
+        button:snapshot('.chrome-btn'),field:snapshot('.search-box'),
+        note:snapshot('.note-window'),taskbar:snapshot('.taskbar'),
+        title:snapshot('.title-bar')
+      };
+    }""")
+    assert light_system['desktop']['bg']=='rgb(0, 128, 128)',light_system
+    assert light_system['desktop']['image']=='none',light_system
+    assert light_system['window']['bg']=='rgb(192, 192, 192)',light_system
+    assert light_system['content']['bg']=='rgb(255, 255, 255)',light_system
+    assert light_system['header']['bg']=='rgb(192, 192, 192)',light_system
+    assert 'gradient' in light_system['title']['image'],light_system
+    for raised in ['window','button','note']:
+        style=light_system[raised]
+        assert style['top']==style['left']=='rgb(255, 255, 255)',(raised,style)
+        assert style['right']==style['bottom']=='rgb(0, 0, 0)',(raised,style)
+        assert 'rgb(223, 223, 223)' in style['shadow'] and 'rgb(128, 128, 128)' in style['shadow'],(raised,style)
+    recessed=light_system['field']
+    assert recessed['top']==recessed['left']=='rgb(0, 0, 0)',recessed
+    assert recessed['right']==recessed['bottom']=='rgb(255, 255, 255)',recessed
+    assert light_system['taskbar']['height']=='34px',light_system
     page.screenshot(path=str(results/'desktop.png'),full_page=True)
     close_icon='#mainWindow .win-control[aria-label="Close window"] svg path'
     assert page.locator(close_icon).evaluate('(e)=>getComputedStyle(e).stroke')=='rgb(0, 0, 0)', 'Light mode close icon should remain black'
@@ -218,6 +249,15 @@ with sync_playwright() as p:
     mobile.wait_for_timeout(200)
     main_window=mobile.locator('#mainWindow')
     maximize_button=mobile.locator('#mainWindow [data-action="maximize"]')
+    # The sidebar and backdrop align with the workspace after layout changes.
+    mobile.locator('[data-action="toggleNav"]').click()
+    assert mobile.locator('#sidebar').evaluate('(e)=>e.classList.contains("mobile-open")')
+    workspace_box=mobile.locator('.workspace').bounding_box()
+    sidebar_box=mobile.locator('#sidebar').bounding_box()
+    assert workspace_box is not None and sidebar_box is not None
+    assert abs(workspace_box['y']-sidebar_box['y'])<=2,(workspace_box,sidebar_box)
+    mobile.locator('#mobileScrim').click(position={'x':320,'y':15})
+    assert not mobile.locator('#sidebar').evaluate('(e)=>e.classList.contains("mobile-open")')
     assert main_window.is_visible()
     assert 'is-maximized' in (main_window.get_attribute('class') or ''), 'Mobile window must always be maximized'
     assert maximize_button.is_disabled(), 'Mobile maximize control must be disabled'
