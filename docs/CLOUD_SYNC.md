@@ -18,7 +18,7 @@ volume. Cloud access is not enabled by these foundation modules.
 - No CRDT or per-keystroke collaboration; no end-to-end encryption in this release.
 
 ## Implementation state
-The shared protocol and conservative three-way merge are initial foundations only.
+The shared protocol, conservative three-way merge and SQLite credential/revision transaction modules are initial foundations only. The database module is not exposed over HTTP or WebSockets yet. Recovery, rotation, live socket revocation, history compaction and total storage limits still require implementation.
 Text merge handles independent contiguous changes; overlapping or ambiguous changes
 return conflicts. No note is silently overwritten. Full synchronization requires
 transactional revision storage, durable outbox, authenticated server, cursor recovery,

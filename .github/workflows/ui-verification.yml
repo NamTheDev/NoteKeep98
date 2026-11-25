@@ -24,7 +24,7 @@ jobs:
         run: |
           bun install
           bun run typecheck
-          bun test tests/sync-merge.test.ts
+          bun test tests/sync-merge.test.ts tests/sync-database.test.ts
           bun run build
       - name: Install Playwright Chromium
         run: |
