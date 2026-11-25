@@ -35,6 +35,8 @@ with sync_playwright() as p:
           'browser':'#121212' if expected=='dark' else '#fafafa', 'locked':False
         }, signal
     assert_theme_signal('dark')
+    assert page.locator('html').get_attribute('data-bs-theme') == 'dark'
+    assert page.locator('link[href="./bootstrap.min.css"]').count() == 1
     assert page.locator('.note-window').count() > 0
     assert page.locator('.material-symbols-rounded').count() > 12
     assert page.locator('#navRoot .ui-icon').first.evaluate('(e)=>e.textContent.trim().length>0')
@@ -241,7 +243,7 @@ with sync_playwright() as p:
     bounds=main_window.bounding_box()
     assert bounds is not None
     assert abs(bounds['x'])<=1 and abs(bounds['width']-390)<=2, bounds
-    expect(mobile.locator('#desktop')).to_have_class('desktop dark-mode')
+    assert mobile.locator('#desktop').evaluate('(e)=>e.classList.contains("dark-mode")')
     icon_filter=mobile.locator('.mobile-nav-toggle .ui-icon').evaluate('(e)=>getComputedStyle(e).filter')
     assert icon_filter == 'none', icon_filter
     mobile.locator('[data-action="toggleNav"]').click()

@@ -18,3 +18,7 @@ keep was developed with assistance from **OpenAI's ChatGPT**, including code gen
 ## Product-name clarification
 
 Google Keep is a Google product. keep is an independent, local-first notes application and is not affiliated with Google or Microsoft.
+
+## Bootstrap
+
+Bootstrap 6.0.0-alpha.2 — The Bootstrap Authors, MIT license. See [LICENSE.bootstrap](LICENSE.bootstrap) and https://getbootstrap.com/llms-full.txt.
