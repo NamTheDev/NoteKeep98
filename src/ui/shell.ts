@@ -9,18 +9,18 @@ export function renderShell(icon:(name:string)=>string): string {
       <div class="mobile-scrim" id="mobileScrim" data-action="closeNav"></div>
       <section class="content-pane d-flex flex-column flex-grow-1 overflow-hidden" aria-label="Notes">
         <div class="content-heading d-flex align-items-center justify-content-between">
-          <button class="chrome-btn mobile-nav-toggle btn-outline theme-secondary btn" data-action="toggleNav" title="Open navigation" aria-label="Open navigation" aria-expanded="false">${icon('menu')}</button>
+          <button class="chrome-btn mobile-nav-toggle btn-outline theme-secondary btn rounded-5" data-action="toggleNav" title="Open navigation" aria-label="Open navigation" aria-expanded="false">${icon('menu')}</button>
           <h1 class="page-title fw-medium" id="pageTitle">All Notes</h1>
-          <div class="content-actions d-flex flex-wrap align-items-center"><label class="search-box d-flex align-items-center">${icon('search')}<input type="search" id="searchInput" aria-label="Search notes" placeholder="Search notes..." autocomplete="off" class="form-control flex-grow-1"><button class="search-clear btn-text theme-secondary btn-sm btn" id="clearSearch" data-action="clearSearch" aria-label="Clear search" hidden>×</button></label></div>
+          <div class="content-actions d-flex flex-wrap align-items-center"><label class="search-box d-flex align-items-center">${icon('search')}<input type="search" id="searchInput" aria-label="Search notes" placeholder="Search notes..." autocomplete="off" class="form-control flex-grow-1 rounded-5"><button class="search-clear btn-text theme-secondary btn-sm btn rounded-5" id="clearSearch" data-action="clearSearch" aria-label="Clear search" hidden>×</button></label></div>
         </div>
-        <div class="quick-bar card d-flex flex-row align-items-center" id="quickBar" role="group" aria-label="Quick note">
+        <div class="quick-bar card d-flex flex-row align-items-center rounded-6" id="quickBar" role="group" aria-label="Quick note">
           <div class="quick-composer" id="quickComposer">
-            <input class="quick-title form-control mb-2 fw-medium" id="quickNoteTitle" type="text" maxlength="10000" placeholder="Title (optional)" aria-label="Quick note title" hidden>
-            <textarea class="quick-text form-control" id="quickNoteText" rows="1" maxlength="100000" placeholder="Take a note..." aria-label="Quick note text"></textarea>
+            <input class="quick-title form-control mb-2 fw-medium rounded-5" id="quickNoteTitle" type="text" maxlength="10000" placeholder="Title (optional)" aria-label="Quick note title" hidden>
+            <textarea class="quick-text form-control rounded-5" id="quickNoteText" rows="1" maxlength="100000" placeholder="Take a note..." aria-label="Quick note text"></textarea>
             <div class="quick-actions d-flex flex-wrap align-items-center gap-3 mt-2" id="quickActions" hidden>
               <span class="quick-hint fg-2 small me-auto">Ctrl+Enter to save</span>
-              <button class="chrome-btn btn-outline theme-secondary btn" data-action="cancelQuickNote">Cancel</button>
-              <button class="chrome-btn primary btn-solid theme-primary btn" data-action="saveQuickNote">${icon('save')} Save note</button>
+              <button class="chrome-btn btn-outline theme-secondary btn rounded-5" data-action="cancelQuickNote">Cancel</button>
+              <button class="chrome-btn primary btn-solid theme-primary btn rounded-5" data-action="saveQuickNote">${icon('save')} Save note</button>
             </div>
           </div>
         </div>

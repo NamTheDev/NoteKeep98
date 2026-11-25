@@ -124,6 +124,8 @@ with sync_playwright() as p:
     # search
     # Search is a standalone rounded control, not a connected input group.
     search = page.locator('#searchInput')
+    assert 'rounded-5' in search.get_attribute('class').split()
+    assert 'rounded-6' in page.locator('.note-window').first.get_attribute('class').split()
     def assert_search_radius():
         radii = search.evaluate("""(el) => {
           const css = getComputedStyle(el);
