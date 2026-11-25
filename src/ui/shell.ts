@@ -27,7 +27,7 @@ export function renderShell(icon:(name:string)=>string): string {
         <div class="board-scroll flex-grow-1 overflow-auto min-h-0 min-w-0" id="boardScroll"><div id="boardRoot"></div></div>
       </section>
     </div>
-    <div class="status-bar d-flex align-items-center gap-4 border-top fg-2 bg-1 fs-xs"><div class="status-cell " id="statusText">Ready</div><div class="status-cell " id="statusCount">0 notes</div></div>
+    <div class="status-bar d-flex align-items-center gap-4 border-top fg-2 bg-1 fs-xs"><div class="status-cell flex-grow-1" id="statusText">Ready</div><div class="status-cell" id="statusCount">0 notes</div></div>
   </main>
   <div id="popupRoot"></div><div id="dialogRoot"></div><div id="toastRoot" role="status" aria-live="polite"></div>
   <input type="file" id="importInput" accept=".json,application/json" hidden>
