@@ -20,7 +20,7 @@ Bun.serve({
     }
     const target = production
       ? (path === '/' ? `${root}/dist/index.html` : `${root}/dist${path}`)
-      : (path === '/' ? `${root}/index.html` : path === '/bootstrap.min.css' ? `${root}/src/bootstrap.min.css` : path === '/style.css' ? `${root}/src/style.css` : path === '/theme-signal.js' ? `${root}/theme-signal.js` : path === '/favicon.svg' ? `${root}/node_modules/lucide-static/icons/notebook-pen.svg` : `${root}/index.html`);
+      : (path === '/' ? `${root}/index.html` : path === '/bootstrap.min.css' ? `${root}/src/bootstrap.min.css` : path === '/config.css' ? `${root}/src/config.css` : path === '/style.css' ? `${root}/src/style.css` : path === '/theme-signal.js' ? `${root}/theme-signal.js` : path === '/favicon.svg' ? `${root}/node_modules/lucide-static/icons/notebook-pen.svg` : `${root}/index.html`);
     const file = Bun.file(target);
     if (!await file.exists()) return new Response('Not found', {status:404});
     return new Response(file, {headers: {'Content-Type': mime(target), 'Cache-Control': production ? 'public, max-age=3600' : 'no-store'}});

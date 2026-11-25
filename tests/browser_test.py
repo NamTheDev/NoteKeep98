@@ -32,11 +32,13 @@ with sync_playwright() as p:
         })""")
         assert signal == {
           'meta':expected, 'root':expected, 'computed':expected,
-          'browser':'#121212' if expected=='dark' else '#fafafa', 'locked':False
+          'browser':'#1e1e2e' if expected=='dark' else '#eff1f5', 'locked':False
         }, signal
     assert_theme_signal('dark')
     assert page.locator('html').get_attribute('data-bs-theme') == 'dark'
     assert page.locator('link[href="./bootstrap.min.css"]').count() == 1
+    assert page.locator('link[href^="./config.css"]').count() == 1
+    assert page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()") == '#b4befe'
     assert page.locator('.note-window').count() > 0
     assert page.locator('.material-symbols-rounded').count() > 12
     assert page.locator('#navRoot .ui-icon').first.evaluate('(e)=>e.textContent.trim().length>0')
@@ -71,9 +73,9 @@ with sync_playwright() as p:
         animation:style('.chrome-btn').animationDuration,
         transition:style('.chrome-btn').transitionDuration}
     }""")
-    assert visual['bg']=='rgb(18, 18, 18)',visual
-    assert visual['surface']=='rgb(30, 30, 30)',visual
-    assert visual['radius']=='16px',visual
+    assert visual['bg']=='rgb(30, 30, 46)',visual
+    assert visual['surface']=='rgb(24, 24, 37)',visual
+    assert visual['radius']=='10px',visual
     assert visual['shadow']=='none',visual
     assert 'Roboto' in visual['font'],visual
     assert visual['animation']=='0s' and visual['transition']=='0s',visual
@@ -249,7 +251,7 @@ with sync_playwright() as p:
     mobile.locator('[data-action="toggleNav"]').click()
     mobile.locator('#navRoot [data-action="settings"]').click()
     backdrop=mobile.locator('.dialog-backdrop').evaluate('(e)=>getComputedStyle(e).backgroundColor')
-    assert backdrop=='rgba(0, 0, 0, 0.733)',backdrop
+    assert backdrop=='rgba(17, 17, 27, 0.75)',backdrop
     mobile.locator('.dialog-window [data-action="closeDialog"]').last.click()
     mobile.screenshot(path=str(results/'mobile-dark.png'),full_page=True)
     mobile.reload(wait_until='load')

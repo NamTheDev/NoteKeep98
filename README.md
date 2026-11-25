@@ -2,7 +2,7 @@
 
 **Website:** https://namthedev.github.io/keep/
 
-A local-first notes app with a compact, monochrome, dark-first Bootstrap 6-based interface. It runs in the browser and does **not** have a hosted database, login or sync server.
+A local-first notes app with a compact, Catppuccin, dark-first Bootstrap 6-based interface. It runs in the browser and does **not** have a hosted database, login or sync server.
 
 ## Using keep
 
@@ -16,7 +16,7 @@ Notes and settings stay in this browser's `localStorage`; no account or cloud sy
 
 ## Design system
 
-Both [keep](https://github.com/NamTheDev/keep) and [clipboard](https://github.com/NamTheDev/clipboard) use the shared monochrome Bootstrap 6 system: Roboto, Material Symbols Rounded, dark-first/light-toggle themes, compact spacing, 16px baseline rounding, hybrid tonal/outlined surfaces, and no UI animations. [`NamTheDev/util/css/bootstrap.css`](https://github.com/NamTheDev/util/blob/main/css/bootstrap.css) is the canonical stylesheet. Both apps vendor identical copies and synchronize from that source. Each app has its own layout and behavior. The locally vendored Bootstrap 6.0.0-alpha.2 CSS loads before the shared override. Browser support requires Chrome/Edge 138, Firefox 147, or Safari 26. The icon font loads from Google Fonts, with sans-serif fallback; the favicon is a separate graphic.
+Both [keep](https://github.com/NamTheDev/keep) and [clipboard](https://github.com/NamTheDev/clipboard) use the shared Catppuccin Bootstrap 6 system: Roboto, Material Symbols Rounded, dark-first/light-toggle themes, compact spacing, 10px card rounding, hybrid tonal/outlined surfaces, and no UI animations. [`NamTheDev/util/css/config.css`](https://github.com/NamTheDev/util/blob/main/css/config.css) is the canonical stylesheet. Both apps vendor identical configuration copies; local CSS owns layouts. Both apps and synchronize from that source. Each app has its own layout and behavior. The locally vendored Bootstrap 6.0.0-alpha.2 CSS loads before the shared override. Browser support requires Chrome/Edge 138, Firefox 147, or Safari 26. The icon font loads from Google Fonts, with sans-serif fallback; the favicon is a separate graphic.
 
 Legacy Windows 95/98 reference documents in `docs/` record earlier design work; they do not describe the current UI.
 
