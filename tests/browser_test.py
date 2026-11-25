@@ -122,7 +122,19 @@ with sync_playwright() as p:
     page.locator('[data-action="saveEditor"]').click()
     assert page.locator('.note-window').filter(has_text='QA Note 98').count()==1
     # search
+    # Search is a standalone rounded control, not a connected input group.
+    search = page.locator('#searchInput')
+    def assert_search_radius():
+        radii = search.evaluate("""(el) => {
+          const css = getComputedStyle(el);
+          return [css.borderTopLeftRadius, css.borderTopRightRadius,
+                  css.borderBottomLeftRadius, css.borderBottomRightRadius];
+        }""")
+        expected = page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--radius-control').trim()")
+        assert radii == [expected] * 4, radii
+    assert_search_radius()
     page.locator('#searchInput').fill('QA Note 98')
+    assert_search_radius()
     assert page.locator('.note-window').count()==1
     page.locator('#clearSearch').click()
     # checklist

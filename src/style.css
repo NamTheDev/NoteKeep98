@@ -23,8 +23,8 @@ img.ui-icon{width:var(--icon-size);height:var(--icon-size)}
 .mobile-scrim,.mobile-nav-toggle{display:none!important}
 .content-heading{padding:12px var(--content-gutter);gap:var(--content-gap)}
 .page-title{font-size:var(--font-size-title);line-height:30px;margin:0}
-.search-box{min-width:min(340px,100%);max-width:100%}
-.search-box .form-control{min-width:0}
+.search-box{width:min(340px,100%);max-width:100%}
+.search-box .form-control{min-width:0;flex:1 1 0}
 .quick-bar{margin:0 var(--content-gutter) 10px;padding:10px var(--card-inset)}
 .quick-composer{min-width:0;flex:1}
 .quick-text{min-height:42px;resize:vertical}
@@ -68,7 +68,7 @@ img.ui-icon{width:var(--icon-size);height:var(--icon-size)}
   .mobile-nav-toggle{display:inline-flex!important}
   .mobile-scrim.show{display:block!important;position:absolute;inset:0;background:var(--scrim);z-index:30}
   .content-heading{flex-wrap:wrap;padding:10px var(--content-gutter)}
-  .content-actions{width:100%}
+  .content-actions{width:100%;min-width:0}
   .search-box{width:100%;min-width:0}
   .note-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr))}
 }

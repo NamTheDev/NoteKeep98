@@ -11,7 +11,7 @@ export function renderShell(icon:(name:string)=>string): string {
         <div class="content-heading d-flex align-items-center justify-content-between">
           <button class="chrome-btn mobile-nav-toggle btn-outline theme-secondary btn" data-action="toggleNav" title="Open navigation" aria-label="Open navigation" aria-expanded="false">${icon('menu')}</button>
           <h1 class="page-title fw-medium" id="pageTitle">All Notes</h1>
-          <div class="content-actions d-flex flex-wrap align-items-center"><label class="search-box input-group align-items-center">${icon('search')}<input type="search" id="searchInput" aria-label="Search notes" placeholder="Search notes..." autocomplete="off" class="form-control"><button class="search-clear btn-text theme-secondary btn-sm btn" id="clearSearch" data-action="clearSearch" aria-label="Clear search" hidden>×</button></label></div>
+          <div class="content-actions d-flex flex-wrap align-items-center"><label class="search-box d-flex align-items-center">${icon('search')}<input type="search" id="searchInput" aria-label="Search notes" placeholder="Search notes..." autocomplete="off" class="form-control flex-grow-1"><button class="search-clear btn-text theme-secondary btn-sm btn" id="clearSearch" data-action="clearSearch" aria-label="Clear search" hidden>×</button></label></div>
         </div>
         <div class="quick-bar card d-flex flex-row align-items-center" id="quickBar" role="group" aria-label="Quick note">
           <div class="quick-composer" id="quickComposer">
