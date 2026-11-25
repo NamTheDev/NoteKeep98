@@ -26,6 +26,7 @@ jobs:
           bun run typecheck
           bun test tests/sync-merge.test.ts tests/sync-database.test.ts
           bun run build
+          bun build tests/sync-storage-browser.ts --target browser --outfile dist/sync-storage-test.js
       - name: Install Playwright Chromium
         run: |
           python -m pip install playwright==1.56.0
@@ -44,6 +45,7 @@ jobs:
           done
           curl --fail http://127.0.0.1:3000/ > /dev/null
           python tests/browser_test.py
+          python tests/sync_storage_test.py
       - name: Run the same browser tests under the GitHub Pages subpath
         shell: bash
         run: |

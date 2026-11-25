@@ -30,3 +30,9 @@ Verify owner recovery, pairing revocation and active socket termination, origin/
 idempotency, stale offline reconciliation, backup/restore, data migration and multi-tab
 coordination. Do not enable cloud mode until those gates pass. Confirm Railway billing
 and persistent storage before deployment. Existing local-only behavior is unaffected.
+
+The IndexedDB foundation provides an atomic per-workspace optimistic note/outbox write,
+acknowledgement transaction, and monotonic cursor. The browser test checks reopen,
+workspace isolation, later local edits, duplicate acknowledgements and cursor gaps.
+It is not wired into the current app. Snapshot installation, legacy migration,
+queued-edit rebasing, tab leadership and the app shell remain to be implemented.
