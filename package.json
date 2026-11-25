@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Local-first notes with compact monochrome Material Design 3",
+  "description": "Local-first notes with compact monochrome Bootstrap 6",
   "scripts": {
     "dev": "bun --watch server.ts",
     "build": "bun run scripts/build.ts",

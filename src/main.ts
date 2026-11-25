@@ -63,7 +63,7 @@ function mutate(fn:()=>void): boolean {
 function notify(message: string, allowUndo = false): void {
   if (toastTimer) window.clearTimeout(toastTimer);
   const root = $('#toastRoot'); if (!root) return;
-  root.innerHTML = `<div class="toast"><span>${html(message)}</span>${allowUndo?'<button class="chrome-btn" data-action="undo">Undo</button>':''}<button class="chrome-btn" data-action="dismissToast" aria-label="Dismiss message">${icon('x')}</button></div>`;
+  root.innerHTML = `<div class="toast show d-flex align-items-center gap-3 p-3"><span>${html(message)}</span>${allowUndo?'<button class="chrome-btn btn-outline theme-secondary" data-action="undo">Undo</button>':''}<button class="chrome-btn btn-outline theme-secondary" data-action="dismissToast" aria-label="Dismiss message">${icon('x')}</button></div>`;
   toastTimer = window.setTimeout(()=>{root.innerHTML='';},4500);
 }
 function mutationWithUndo(message: string, fn:()=>void): void {
@@ -93,43 +93,43 @@ function viewTitle():string {
   return view.startsWith('label:')?view.slice(6):'All Notes';
 }
 function navButton(dest:View,name:string,iconName:string,count?:number,sub=false):string {
-  return `<button class="nav-btn ${view===dest?'active':''} ${sub?'sub':''}" data-action="view" data-view="${html(dest)}" aria-current="${view===dest?'page':'false'}">${icon(iconName)}<span>${html(name)}</span>${count!==undefined?`<span class="nav-count">${count}</span>`:''}</button>`;
+  return `<button class="nav-btn ${view===dest?'active':''} ${sub?'sub':''} nav-link w-100" data-action="view" data-view="${html(dest)}" aria-current="${view===dest?'page':'false'}">${icon(iconName)}<span>${html(name)}</span>${count!==undefined?`<span class="nav-count ms-auto fg-2">${count}</span>`:''}</button>`;
 }
 function renderNav():void {
   const c=counts();const root=$('#navRoot');if(!root)return;
   root.innerHTML=`
-  <div class="sidebar-heading">Navigation</div>
-  <nav class="sidebar-group" aria-label="Notes navigation">
+  <div class="sidebar-heading fg-2 fw-medium">Navigation</div>
+  <nav class="sidebar-group nav flex-column" aria-label="Notes navigation">
     ${navButton('notes','All Notes','folder',c.notes)}
     ${navButton('reminders','Reminders','bell',c.reminders)}
     ${navButton('archive','Archive','archive',c.archive)}
     ${navButton('trash','Recycle Bin','trash',c.trash)}
   </nav>
-  <div class="sidebar-divider"></div>
-  <div class="sidebar-heading">Labels</div>
-  <nav class="sidebar-group" aria-label="Note labels">
+  <div class="sidebar-divider border-top"></div>
+  <div class="sidebar-heading fg-2 fw-medium">Labels</div>
+  <nav class="sidebar-group nav flex-column" aria-label="Note labels">
     ${data.labels.map(label=>navButton(`label:${label}`,label,'label',data.notes.filter(n=>n.labels.includes(label)&&!n.trashed&&!n.archived).length,true)).join('')}
-    <button class="nav-btn" data-action="manageLabels">${icon('pencil')}<span>Manage labels</span></button>
+    <button class="nav-btn nav-link w-100" data-action="manageLabels">${icon('pencil')}<span>Manage labels</span></button>
   </nav>
-  <div class="sidebar-divider"></div>
-  <div class="sidebar-heading">Actions</div>
-  <nav class="sidebar-group" aria-label="Note actions">
-    <button class="nav-btn" data-action="newNote">${icon('note')}<span>New note</span></button>
-    <button class="nav-btn" data-action="newChecklist">${icon('check')}<span>New checklist</span></button>
-    <button class="nav-btn" id="viewToggle" data-action="toggleView" aria-pressed="${data.list}" aria-label="${data.list?'Switch to grid':'Switch to list'}">${icon(data.list?'grid':'list')}<span>${data.list?'Grid view':'List view'}</span></button>
+  <div class="sidebar-divider border-top"></div>
+  <div class="sidebar-heading fg-2 fw-medium">Actions</div>
+  <nav class="sidebar-group nav flex-column" aria-label="Note actions">
+    <button class="nav-btn nav-link w-100" data-action="newNote">${icon('note')}<span>New note</span></button>
+    <button class="nav-btn nav-link w-100" data-action="newChecklist">${icon('check')}<span>New checklist</span></button>
+    <button class="nav-btn nav-link w-100" id="viewToggle" data-action="toggleView" aria-pressed="${data.list}" aria-label="${data.list?'Switch to grid':'Switch to list'}">${icon(data.list?'grid':'list')}<span>${data.list?'Grid view':'List view'}</span></button>
   </nav>
-  <div class="sidebar-divider"></div>
-  <div class="sidebar-heading">Preferences</div>
-  <nav class="sidebar-group" aria-label="Settings and data">
-    <button class="nav-btn" data-action="settings">${icon('settings')}<span>Settings</span></button>
-    <button class="nav-btn" data-action="import">${icon('upload')}<span>Import notes</span></button>
-    <button class="nav-btn" data-action="export">${icon('download')}<span>Export backup</span></button>
-    <button class="nav-btn" data-action="reset">${icon('restore')}<span>Restore samples</span></button>
-    <button class="nav-btn" data-action="about">${icon('info')}<span>About</span></button>
+  <div class="sidebar-divider border-top"></div>
+  <div class="sidebar-heading fg-2 fw-medium">Preferences</div>
+  <nav class="sidebar-group nav flex-column" aria-label="Settings and data">
+    <button class="nav-btn nav-link w-100" data-action="settings">${icon('settings')}<span>Settings</span></button>
+    <button class="nav-btn nav-link w-100" data-action="import">${icon('upload')}<span>Import notes</span></button>
+    <button class="nav-btn nav-link w-100" data-action="export">${icon('download')}<span>Export backup</span></button>
+    <button class="nav-btn nav-link w-100" data-action="reset">${icon('restore')}<span>Restore samples</span></button>
+    <button class="nav-btn nav-link w-100" data-action="about">${icon('info')}<span>About</span></button>
   </nav>`;
 }
 function noteHTML(n:Note):string { return renderNoteCard(n,view); }
-function noteGroup(notes: Note[],heading:string):string {return `<div class="board-label">${html(heading)}</div><div class="note-grid ${data.list?'is-list':''}">${notes.map(noteHTML).join('')}</div>`;}
+function noteGroup(notes: Note[],heading:string):string {return `<div class="board-label fg-2 text-uppercase fw-medium">${html(heading)}</div><div class="note-grid ${data.list?'is-list':''} d-grid">${notes.map(noteHTML).join('')}</div>`;}
 function renderBoard():void {
   const root=$('#boardRoot');if (!root)return;
   const notes=filterNotes();
@@ -141,11 +141,11 @@ function renderBoard():void {
       reminders:['No reminders yet','Set a reminder on any note to see it here.','bell']
     };
     const [title,description,symbol] = search ? ['No matching notes','Try a different search term.','search'] : messages[view] ?? ['No notes in this folder','Add a label to a note to find it here.','label'];
-    root.innerHTML=`<div class="empty-state"><div class="empty-illustration">${icon(symbol)}</div><h2>${html(title)}</h2><p>${html(description)}</p></div>`;return;
+    root.innerHTML=`<div class="empty-state text-center fg-2 p-7"><div class="empty-illustration">${icon(symbol)}</div><h2>${html(title)}</h2><p>${html(description)}</p></div>`;return;
   }
   const pinned=notes.filter(n=>n.pinned);
   const other=notes.filter(n=>!n.pinned);
-  root.innerHTML=`${view==='trash'?`<div class="empty-trash"><button class="chrome-btn" data-action="emptyTrash">${icon('trash')} Empty Recycle Bin</button></div>`:''}`+
+  root.innerHTML=`${view==='trash'?`<div class="empty-trash mb-3"><button class="chrome-btn btn-outline theme-secondary" data-action="emptyTrash">${icon('trash')} Empty Recycle Bin</button></div>`:''}`+
     (view==='notes' && !search.trim() && pinned.length ? noteGroup(pinned,`Pinned notes · ${pinned.length}`) : '')+
     (view==='notes' && !search.trim() && pinned.length ? (other.length?noteGroup(other,`Other notes · ${other.length}`):'') : noteGroup(notes,`${notes.length} ${notes.length===1?'item':'items'}`));
 }
@@ -232,57 +232,57 @@ function dateValue(iso:string|null):{date:string,time:string} {
   return {date:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,time:`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`};
 }
 function closeReminder():void {dialog=reminderReturn;renderDialog();}
-function windowHeader(title:string,_closeAction='closeDialog'):string {return `<div class="title-bar dialog-heading"><span class="app-icon">${icon('note')}</span><span class="title-text">${html(title)}</span></div>`;}
+function windowHeader(title:string,_closeAction='closeDialog'):string {return `<div class="title-bar dialog-heading dialog-header d-flex align-items-center gap-3"><span class="app-icon">${icon('note')}</span><span class="title-text dialog-title fw-medium">${html(title)}</span></div>`;}
 function renderDialog():void {
   const root=$('#dialogRoot');if(!root)return;
   if(!dialog){root.innerHTML='';return;}
   if(dialog==='editor'&&draft){
-    root.innerHTML=`<div class="dialog-backdrop" data-action="backdrop"><section class="dialog-window window" role="dialog" aria-modal="true" aria-label="${editingId?'Edit note':'New note'}">
+    root.innerHTML=`<div class="dialog-backdrop d-flex align-items-center justify-content-center" data-action="backdrop"><dialog class="dialog-window dialog show window" role="dialog" aria-modal="true" aria-label="${editingId?'Edit note':'New note'}" open>
       ${windowHeader(editingId?'Edit Note — keep':'New Note — keep','cancelEditor')}
       <div class="dialog-body">
-        <div class="dialog-paper" id="editorPaper" style="--note-color:${html(draft.color)}">
-          <div class="field"><label class="field-label" for="editTitle">Title</label><input class="win-input" id="editTitle" type="text" maxlength="10000" value="${html(draft.title)}" placeholder="Untitled note"></div>
-          <div class="field"><label class="field-label" for="editBody">${draft.checklist?'Checklist':'Your note'}</label>
-            ${draft.checklist?`<div class="editor-checks" id="editorChecks">${draft.items.map(i=>`<div class="editor-check-row" data-item="${html(i.id)}"><input class="item-check" type="checkbox" ${i.checked?'checked':''} aria-label="Completed"><input class="win-input item-text" value="${html(i.text)}" placeholder="List item"><button class="mini-tool" data-action="removeItem" data-item="${html(i.id)}" title="Remove item">×</button></div>`).join('')}</div><button class="chrome-btn" data-action="addItem" style="margin-top:10px">+ Add list item</button>`:`<textarea class="win-input" id="editBody" rows="6" placeholder="Take a note...">${html(draft.body)}</textarea>`}
+        <div class="dialog-paper rounded p-4" id="editorPaper" style="--note-color:${html(draft.color)}">
+          <div class="field form-field"><label class="field-label form-label" for="editTitle">Title</label><input class="win-input form-control" id="editTitle" type="text" maxlength="10000" value="${html(draft.title)}" placeholder="Untitled note"></div>
+          <div class="field form-field"><label class="field-label form-label" for="editBody">${draft.checklist?'Checklist':'Your note'}</label>
+            ${draft.checklist?`<div class="editor-checks d-grid gap-3" id="editorChecks">${draft.items.map(i=>`<div class="editor-check-row d-flex align-items-center gap-3" data-item="${html(i.id)}"><input class="item-check check" type="checkbox" ${i.checked?'checked':''} aria-label="Completed"><input class="win-input item-text form-control" value="${html(i.text)}" placeholder="List item"><button class="mini-tool btn-text theme-secondary btn-sm" data-action="removeItem" data-item="${html(i.id)}" title="Remove item">×</button></div>`).join('')}</div><button class="chrome-btn btn-outline theme-secondary" data-action="addItem" style="margin-top:10px">+ Add list item</button>`:`<textarea class="win-input form-control" id="editBody" rows="6" placeholder="Take a note...">${html(draft.body)}</textarea>`}
           </div>
         </div>
-        <div class="editor-tools"><button class="chrome-btn" data-action="toggleDraftPin" aria-pressed="${draft.pinned}">${icon('pin')} ${draft.pinned?'Unpin':'Pin note'}</button><button class="chrome-btn" data-action="popup" data-kind="color" data-id="draft">${icon('palette')} Color</button><button class="chrome-btn" data-action="popup" data-kind="labels" data-id="draft">${icon('label')} Labels ${draft.labels.length?`(${draft.labels.length})`:''}</button><button class="chrome-btn" data-action="reminder" data-id="draft">${icon('bell')} ${draft.reminder?'Edit reminder':'Reminder'}</button><button class="chrome-btn" data-action="toggleDraftChecklist">${icon('check')} ${draft.checklist?'Text note':'Checklist'}</button></div>
+        <div class="editor-tools d-flex flex-wrap gap-3 mt-3"><button class="chrome-btn btn-outline theme-secondary" data-action="toggleDraftPin" aria-pressed="${draft.pinned}">${icon('pin')} ${draft.pinned?'Unpin':'Pin note'}</button><button class="chrome-btn btn-outline theme-secondary" data-action="popup" data-kind="color" data-id="draft">${icon('palette')} Color</button><button class="chrome-btn btn-outline theme-secondary" data-action="popup" data-kind="labels" data-id="draft">${icon('label')} Labels ${draft.labels.length?`(${draft.labels.length})`:''}</button><button class="chrome-btn btn-outline theme-secondary" data-action="reminder" data-id="draft">${icon('bell')} ${draft.reminder?'Edit reminder':'Reminder'}</button><button class="chrome-btn btn-outline theme-secondary" data-action="toggleDraftChecklist">${icon('check')} ${draft.checklist?'Text note':'Checklist'}</button></div>
       </div>
-      <div class="dialog-footer"><span class="footer-left">${editingId?'Changes saved when you click Save':'A new local note'} &nbsp;·&nbsp; Ctrl+Enter</span><button class="chrome-btn" data-action="cancelEditor">Cancel</button><button class="chrome-btn primary" data-action="saveEditor">${icon('save')} Save note</button></div>
-    </section></div>`;return;
+      <div class="dialog-footer d-flex flex-wrap justify-content-end align-items-center gap-3"><span class="footer-left me-auto fg-2 small">${editingId?'Changes saved when you click Save':'A new local note'} &nbsp;·&nbsp; Ctrl+Enter</span><button class="chrome-btn btn-outline theme-secondary" data-action="cancelEditor">Cancel</button><button class="chrome-btn primary btn-solid theme-primary" data-action="saveEditor">${icon('save')} Save note</button></div>
+    </dialog></div>`;return;
   }
   if(dialog==='reminder'){
     const target=reminderTarget==='draft'?draft:getNote(reminderTarget||'');
     const original=dateValue(target?.reminder??null);
-    root.innerHTML=`<div class="dialog-backdrop"><section class="dialog-window window medium" role="dialog" aria-modal="true" aria-label="Set reminder">${windowHeader('Set Reminder','closeReminder')}
-      <div class="dialog-body"><p class="dialog-note">Choose a date and time for this note. Reminder dates appear in the app; system notifications are not enabled.</p><div class="field"><label class="field-label" for="reminderDate">Date</label><input class="win-input" id="reminderDate" type="date" value="${original.date}"></div><div class="field"><label class="field-label" for="reminderTime">Time</label><input class="win-input" id="reminderTime" type="time" value="${original.time}"></div></div>
-      <div class="dialog-footer"><span class="footer-left"></span>${target?.reminder?'<button class="chrome-btn" data-action="removeReminder">Remove</button>':''}<button class="chrome-btn" data-action="closeReminder">Cancel</button><button class="chrome-btn primary" data-action="saveReminder">${icon('save')} Save</button></div>
-    </section></div>`;return;
+    root.innerHTML=`<div class="dialog-backdrop d-flex align-items-center justify-content-center"><dialog class="dialog-window dialog show window medium" role="dialog" aria-modal="true" aria-label="Set reminder" open>${windowHeader('Set Reminder','closeReminder')}
+      <div class="dialog-body"><p class="dialog-note form-text">Choose a date and time for this note. Reminder dates appear in the app; system notifications are not enabled.</p><div class="field form-field"><label class="field-label form-label" for="reminderDate">Date</label><input class="win-input form-control" id="reminderDate" type="date" value="${original.date}"></div><div class="field form-field"><label class="field-label form-label" for="reminderTime">Time</label><input class="win-input form-control" id="reminderTime" type="time" value="${original.time}"></div></div>
+      <div class="dialog-footer d-flex flex-wrap justify-content-end align-items-center gap-3"><span class="footer-left me-auto fg-2 small"></span>${target?.reminder?'<button class="chrome-btn btn-outline theme-secondary" data-action="removeReminder">Remove</button>':''}<button class="chrome-btn btn-outline theme-secondary" data-action="closeReminder">Cancel</button><button class="chrome-btn primary btn-solid theme-primary" data-action="saveReminder">${icon('save')} Save</button></div>
+    </dialog></div>`;return;
   }
   if(dialog==='labels'){
-    root.innerHTML=`<div class="dialog-backdrop"><section class="dialog-window window medium" role="dialog" aria-modal="true" aria-label="Manage labels">${windowHeader('Edit Labels','closeDialog')}
-      <div class="dialog-body"><h3>Organize your notes</h3><p class="dialog-note">Create custom labels and use them to filter your notes from the folder pane.</p><label class="field-label" for="newLabelInput">New label</label><div class="input-inline" style="margin-bottom:15px"><input class="win-input" id="newLabelInput" maxlength="120" placeholder="Type a label name"><button class="chrome-btn" data-action="addLabel">+ Add</button></div><div class="label-list">${data.labels.length?data.labels.map(l=>`<div class="label-row"><span>${icon('label')}</span><input class="win-input rename-input" aria-label="Rename ${html(l)}" value="${html(l)}" data-old="${html(l)}"><button class="chrome-btn" title="Save label name" data-action="renameLabel" data-value="${html(l)}">${icon('save')}</button><button class="chrome-btn" title="Delete label" data-action="deleteLabel" data-value="${html(l)}">${icon('trash')}</button></div>`).join(''):'<p style="padding:8px">No labels yet.</p>'}</div></div><div class="dialog-footer"><button class="chrome-btn primary" data-action="closeDialog">Done</button></div>
-    </section></div>`;return;
+    root.innerHTML=`<div class="dialog-backdrop d-flex align-items-center justify-content-center"><dialog class="dialog-window dialog show window medium" role="dialog" aria-modal="true" aria-label="Manage labels" open>${windowHeader('Edit Labels','closeDialog')}
+      <div class="dialog-body"><h3>Organize your notes</h3><p class="dialog-note form-text">Create custom labels and use them to filter your notes from the folder pane.</p><label class="field-label form-label" for="newLabelInput">New label</label><div class="input-inline d-flex align-items-center gap-3" style="margin-bottom:15px"><input class="win-input form-control" id="newLabelInput" maxlength="120" placeholder="Type a label name"><button class="chrome-btn btn-outline theme-secondary" data-action="addLabel">+ Add</button></div><div class="label-list d-grid gap-3">${data.labels.length?data.labels.map(l=>`<div class="label-row d-flex align-items-center gap-3"><span>${icon('label')}</span><input class="win-input rename-input form-control" aria-label="Rename ${html(l)}" value="${html(l)}" data-old="${html(l)}"><button class="chrome-btn btn-outline theme-secondary" title="Save label name" data-action="renameLabel" data-value="${html(l)}">${icon('save')}</button><button class="chrome-btn btn-outline theme-secondary" title="Delete label" data-action="deleteLabel" data-value="${html(l)}">${icon('trash')}</button></div>`).join(''):'<p style="padding:8px">No labels yet.</p>'}</div></div><div class="dialog-footer d-flex flex-wrap justify-content-end align-items-center gap-3"><button class="chrome-btn primary btn-solid theme-primary" data-action="closeDialog">Done</button></div>
+    </dialog></div>`;return;
   }
   if(dialog==='settings'){
-    root.innerHTML=`<div class="dialog-backdrop"><section class="dialog-window window medium" role="dialog" aria-modal="true" aria-label="Settings">${windowHeader('keep — Settings','closeDialog')}
-      <div class="dialog-body"><h3>Preferences</h3><p class="dialog-note">Notes are saved in this browser on this device. keep is not affiliated with Google Keep, and does not offer cloud synchronization.</p>
-      <fieldset class="settings-group"><legend>Appearance</legend><label class="simple-choice"><input type="checkbox" data-action="toggleDarkMode" ${data.dark?'checked':''}> Dark mode</label></fieldset><fieldset class="settings-group"><legend>Notes layout</legend><label class="simple-choice"><input type="checkbox" data-action="toggleListFromSettings" ${data.list?'checked':''}> List layout</label></fieldset>
-      <p class="dialog-note" style="margin-top:17px">Settings and notes remain in this browser. Existing notes from earlier app versions are preserved automatically.</p></div>
-      <div class="dialog-footer"><button class="chrome-btn primary" data-action="closeDialog">OK</button></div></section></div>`;return;
+    root.innerHTML=`<div class="dialog-backdrop d-flex align-items-center justify-content-center"><dialog class="dialog-window dialog show window medium" role="dialog" aria-modal="true" aria-label="Settings" open>${windowHeader('keep — Settings','closeDialog')}
+      <div class="dialog-body"><h3>Preferences</h3><p class="dialog-note form-text">Notes are saved in this browser on this device. keep is not affiliated with Google Keep, and does not offer cloud synchronization.</p>
+      <fieldset class="settings-group d-grid gap-3 mb-3"><legend>Appearance</legend><label class="simple-choice d-flex align-items-center gap-3"><input type="checkbox" data-action="toggleDarkMode" ${data.dark?'checked':''} class="check"> Dark mode</label></fieldset><fieldset class="settings-group d-grid gap-3 mb-3"><legend>Notes layout</legend><label class="simple-choice d-flex align-items-center gap-3"><input type="checkbox" data-action="toggleListFromSettings" ${data.list?'checked':''} class="check"> List layout</label></fieldset>
+      <p class="dialog-note form-text" style="margin-top:17px">Settings and notes remain in this browser. Existing notes from earlier app versions are preserved automatically.</p></div>
+      <div class="dialog-footer d-flex flex-wrap justify-content-end align-items-center gap-3"><button class="chrome-btn primary btn-solid theme-primary" data-action="closeDialog">OK</button></div></dialog></div>`;return;
   }
   if(dialog==='about'){
-    root.innerHTML=`<div class="dialog-backdrop"><section class="dialog-window window medium" role="dialog" aria-modal="true" aria-label="About keep">${windowHeader('About keep','closeDialog')}
-      <div class="dialog-body"><div class="dialog-icon-message">${icon('computer')}<div><h3 style="margin:0 0 5px">keep</h3><p>Version 1.0<br>TypeScript + Bun.js<br>Independent local-first notes application</p></div></div><p class="dialog-note">Compact monochrome Material Design 3 visual language. Notes are stored only in your browser; this is not Google Keep and does not connect to Google.</p></div><div class="dialog-footer"><button class="chrome-btn primary" data-action="closeDialog">OK</button></div></section></div>`;return;
+    root.innerHTML=`<div class="dialog-backdrop d-flex align-items-center justify-content-center"><dialog class="dialog-window dialog show window medium" role="dialog" aria-modal="true" aria-label="About keep" open>${windowHeader('About keep','closeDialog')}
+      <div class="dialog-body"><div class="dialog-icon-message">${icon('computer')}<div><h3 style="margin:0 0 5px">keep</h3><p>Version 1.0<br>TypeScript + Bun.js<br>Independent local-first notes application</p></div></div><p class="dialog-note form-text">Compact monochrome Bootstrap 6 visual language. Notes are stored only in your browser; this is not Google Keep and does not connect to Google.</p></div><div class="dialog-footer d-flex flex-wrap justify-content-end align-items-center gap-3"><button class="chrome-btn primary btn-solid theme-primary" data-action="closeDialog">OK</button></div></dialog></div>`;return;
   }
   if(dialog==='confirm'){
-    root.innerHTML=`<div class="dialog-backdrop"><section class="dialog-window window medium" role="alertdialog" aria-modal="true" aria-label="${html(confirmTitle)}">${windowHeader(confirmTitle,'closeDialog')}
-      <div class="dialog-body"><div class="dialog-icon-message">${icon('warning')}<p>${html(confirmMessage)}</p></div></div><div class="dialog-footer"><button class="chrome-btn" data-action="closeDialog">Cancel</button><button class="chrome-btn primary" data-action="confirm">Continue</button></div></section></div>`;
+    root.innerHTML=`<div class="dialog-backdrop d-flex align-items-center justify-content-center"><dialog class="dialog-window dialog show window medium" role="alertdialog" aria-modal="true" aria-label="${html(confirmTitle)}" open>${windowHeader(confirmTitle,'closeDialog')}
+      <div class="dialog-body"><div class="dialog-icon-message">${icon('warning')}<p>${html(confirmMessage)}</p></div></div><div class="dialog-footer d-flex flex-wrap justify-content-end align-items-center gap-3"><button class="chrome-btn btn-outline theme-secondary" data-action="closeDialog">Cancel</button><button class="chrome-btn primary btn-solid theme-primary" data-action="confirm">Continue</button></div></dialog></div>`;
   }
 }
 function confirm(title:string,message:string,action:()=>void):void {confirmTitle=title;confirmMessage=message;confirmAction=action;dialog='confirm';closePopup();renderDialog();}
 function closePopup():void {popup={kind:null,target:null,anchor:null};const root=$('#popupRoot');if(root)root.innerHTML='';}
-function popupItem(action:string,name:string,glyph:string,extra=''):string{return `<button class="popup-item" data-action="${action}" ${extra}>${icon(glyph)}<span>${html(name)}</span></button>`;}
+function popupItem(action:string,name:string,glyph:string,extra=''):string{return `<button class="popup-item menu-item" data-action="${action}" ${extra}>${icon(glyph)}<span>${html(name)}</span></button>`;}
 function openPopup(kind:PopupKind,target:string|null,anchor:HTMLElement):void {
   if(popup.kind===kind && popup.target===target){closePopup();return;}
   if(dialog==='editor')syncDraft();
@@ -293,11 +293,11 @@ function renderPopup():void {
   const kind=popup.kind;
   const target=popup.target==='draft'?draft:popup.target?getNote(popup.target):null;
   let body='';
-  if (kind==='color' && target){body=`<div class="popup-title">Background color</div><div class="palette-grid">${COLORS.map(c=>`<button class="swatch ${target.color===c.value?'selected':''}" title="${html(c.name)}" aria-label="${html(c.name)}" style="background:${c.value}" data-action="chooseColor" data-value="${c.value}"></button>`).join('')}</div>`;}
-  else if(kind==='labels' && target){body=`<div class="popup-title">Add / remove labels</div>${data.labels.map(l=>`<label class="popup-check-label"><input type="checkbox" data-action="toggleLabel" data-value="${html(l)}" ${target.labels.includes(l)?'checked':''}>${html(l)}</label>`).join('')}${data.labels.length?'':'<p style="padding:5px 9px">No labels yet.</p>'}<div class="popup-label-actions"><button class="chrome-btn" data-action="manageLabels">Edit labels...</button></div>`;}
-  else if(kind==='more'&&target){body=`${popupItem('duplicate','Make a copy','copy')}${popupItem('archive',target.archived?'Unarchive':'Archive',target.archived?'restore':'archive',`data-id="${html(target.id)}"`)}<div class="popup-divider"></div>${popupItem('delete','Move to Recycle Bin','trash',`data-id="${html(target.id)}"`)}`;}
+  if (kind==='color' && target){body=`<div class="popup-title menu-header">Background color</div><div class="palette-grid d-grid gap-3">${COLORS.map(c=>`<button class="swatch ${target.color===c.value?'selected':''} rounded-pill" title="${html(c.name)}" aria-label="${html(c.name)}" style="background:${c.value}" data-action="chooseColor" data-value="${c.value}"></button>`).join('')}</div>`;}
+  else if(kind==='labels' && target){body=`<div class="popup-title menu-header">Add / remove labels</div>${data.labels.map(l=>`<label class="popup-check-label d-flex align-items-center gap-3 p-3"><input type="checkbox" data-action="toggleLabel" data-value="${html(l)}" ${target.labels.includes(l)?'checked':''} class="check">${html(l)}</label>`).join('')}${data.labels.length?'':'<p style="padding:5px 9px">No labels yet.</p>'}<div class="popup-label-actions p-3"><button class="chrome-btn btn-outline theme-secondary" data-action="manageLabels">Edit labels...</button></div>`;}
+  else if(kind==='more'&&target){body=`${popupItem('duplicate','Make a copy','copy')}${popupItem('archive',target.archived?'Unarchive':'Archive',target.archived?'restore':'archive',`data-id="${html(target.id)}"`)}<div class="popup-divider menu-divider border-top my-2"></div>${popupItem('delete','Move to Recycle Bin','trash',`data-id="${html(target.id)}"`)}`;}
   else return;
-  root.innerHTML=`<div class="popup" role="menu" id="activePopup">${body}</div>`;
+  root.innerHTML=`<div class="popup menu show" role="menu" id="activePopup">${body}</div>`;
   const el=$<HTMLElement>('.popup',root);
   if(el){
     const r=popup.anchor.getBoundingClientRect();

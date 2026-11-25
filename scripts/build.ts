@@ -26,6 +26,7 @@ const adaptiveFavicon=baseFavicon.replace(/(<svg\b[^>]*>)/, (tag)=>tag+
 await Promise.all([
   Bun.write(`${root}dist/index.html`,html),
   Bun.write(`${root}dist/style.css`,css),
+  Bun.write(`${root}dist/bootstrap.min.css`,await Bun.file(`${root}src/bootstrap.min.css`).text()),
   Bun.write(`${root}dist/theme-signal.js`,await Bun.file(`${root}theme-signal.js`).text()),
   Bun.write(`${root}dist/favicon.svg`,adaptiveFavicon)
 ]);
