@@ -81,15 +81,14 @@ with sync_playwright() as p:
     assert visual['animation']=='0s' and visual['transition']=='0s',visual
     page.screenshot(path=str(results/'desktop-dark.png'),full_page=True)
     page.locator('[data-action="settings"]').first.click()
-    assert page.locator('input[data-action="toggleDarkMode"]').is_checked()
+    assert page.locator('input[data-action="toggleDarkMode"]').count() == 0
     page.locator('[data-action="closeDialog"]').last.click()
-    page.locator('[data-action="settings"]').first.click()
-    page.locator('input[data-action="toggleDarkMode"]').uncheck()
-    page.locator('[data-action="closeDialog"]').last.click()
-    assert_theme_signal('light')
-    assert page.evaluate("JSON.parse(localStorage.getItem('notekeep98-v1')).dark") is False
+    page.evaluate("""() => {
+      const data=JSON.parse(localStorage.getItem('notekeep98-v1') || '{}');
+      localStorage.setItem('notekeep98-v1',JSON.stringify({...data,dark:false}));
+    }""")
     page.reload(wait_until='load')
-    assert_theme_signal('light')
+    assert_theme_signal('dark')
     # Quick note is a genuine textarea, directly editable without a modal.
     quick=page.locator('#quickNoteText')
     assert quick.evaluate('(e)=>e.tagName')=='TEXTAREA'
@@ -271,7 +270,7 @@ with sync_playwright() as p:
     mobile.reload(wait_until='load')
     mobile.locator('[data-action="toggleNav"]').click()
     mobile.locator('#navRoot [data-action="settings"]').click()
-    mobile.locator('input[data-action="toggleDarkMode"]').uncheck()
+    assert mobile.locator('input[data-action="toggleDarkMode"]').count() == 0
     mobile.locator('[data-action="closeDialog"]').last.click()
     # Mobile quick composer expands without horizontal overflow and allows cancel.
     mobile_quick=mobile.locator('#quickNoteText')

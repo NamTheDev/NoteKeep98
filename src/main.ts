@@ -160,9 +160,7 @@ function render():void {
   $('#sidebar')?.classList.toggle('mobile-open',mobileMenu);
   $('#mobileScrim')?.classList.toggle('show',mobileMenu);
   $('[data-action="toggleNav"]')?.setAttribute('aria-expanded',String(mobileMenu));
-  $('.desktop')?.classList.toggle('dark-mode',data.dark);
-  // Keep root color-scheme and extension detection in sync with native preferences.
-  window.dispatchEvent(new CustomEvent('app-theme-change',{detail:{dark:data.dark}}));
+  $('.desktop')?.classList.add('dark-mode');
 }
 
 function saveQuickNote():void {
@@ -267,7 +265,7 @@ function renderDialog():void {
   if(dialog==='settings'){
     root.innerHTML=`<div class="dialog-backdrop d-flex align-items-center justify-content-center"><dialog class="dialog-window dialog show window medium rounded-7" role="dialog" aria-modal="true" aria-label="Settings" open>${windowHeader('keep — Settings','closeDialog')}
       <div class="dialog-body min-h-0 py-4"><h3>Preferences</h3><p class="dialog-note form-text">Notes are saved in this browser on this device. keep is not affiliated with Google Keep, and does not offer cloud synchronization.</p>
-      <fieldset class="settings-group d-grid gap-3 mb-3"><legend>Appearance</legend><label class="simple-choice d-flex align-items-center gap-3"><input type="checkbox" data-action="toggleDarkMode" ${data.dark?'checked':''} class="check"> Dark mode</label></fieldset><fieldset class="settings-group d-grid gap-3 mb-3"><legend>Notes layout</legend><label class="simple-choice d-flex align-items-center gap-3"><input type="checkbox" data-action="toggleListFromSettings" ${data.list?'checked':''} class="check"> List layout</label></fieldset>
+      <fieldset class="settings-group d-grid gap-3 mb-3"><legend>Notes layout</legend><label class="simple-choice d-flex align-items-center gap-3"><input type="checkbox" data-action="toggleListFromSettings" ${data.list?'checked':''} class="check"> List layout</label></fieldset>
       <p class="dialog-note form-text mt-5">Settings and notes remain in this browser. Existing notes from earlier app versions are preserved automatically.</p></div>
       <div class="dialog-footer d-flex flex-wrap justify-content-end align-items-center gap-3 py-3"><button class="chrome-btn primary btn-solid theme-primary btn rounded-5" data-action="closeDialog">OK</button></div></dialog></div>`;return;
   }
@@ -389,7 +387,6 @@ function execute(action:string,button:HTMLElement):void {
       dialog=null;view='notes';search='';const field=$<HTMLInputElement>('#searchInput');if(field)field.value='';renderDialog();render();notify('Sample notes restored');});break;
     case 'confirm':{const fn=confirmAction;confirmAction=null;dialog=null;renderDialog();fn?.();break;}
     case 'toggleView':mutate(()=>{data.list=!data.list;});closePopup();break;
-    case 'toggleDarkMode':mutate(()=>{data.dark=!data.dark;});closePopup();if(dialog==='settings')renderDialog();break;
     case 'toggleListFromSettings':mutate(()=>{data.list=!data.list;});renderDialog();break;
     case 'clearSearch':search='';{const field=$<HTMLInputElement>('#searchInput');if(field){field.value='';field.focus();}}render();break;
     case 'dismissToast':{const root=$('#toastRoot');if(root)root.innerHTML='';break;}
@@ -403,7 +400,7 @@ app.addEventListener('click',event=>{
   const button=(event.target as Element).closest<HTMLElement>('[data-action]');
   if(button){
     const action=button.getAttribute('data-action')??'';
-    if(['toggleLabel','checkItem','toggleDarkMode','toggleListFromSettings'].includes(action) && button.matches('input'))return;
+    if(['toggleLabel','checkItem','toggleListFromSettings'].includes(action) && button.matches('input'))return;
     if(action==='backdrop')return;
     execute(action,button);
   }
@@ -427,7 +424,6 @@ app.addEventListener('change',event=>{
     const item=draft.items.find(i=>i.id===row?.getAttribute('data-item'));
     if(item)item.checked=input.checked;
   }
-  if(action==='toggleDarkMode')mutate(()=>{data.dark=input.checked;});
   if(action==='toggleListFromSettings')mutate(()=>{data.list=input.checked;});
 });
 app.addEventListener('focusin',event=>{

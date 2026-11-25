@@ -23,7 +23,6 @@ export interface AppData {
   labels: string[];
   list: boolean;
   collapsed: boolean;
-  dark: boolean;
 }
 
 // Preserve the original browser storage key so upgrades never discard existing notes.
@@ -60,7 +59,7 @@ export function seed(): AppData {
       sample('Favorite color combinations', 'Teal + navy + warm gray\nDusty lilac + soft cream\nForest green + paper white',{color:'#ffd8c9',labels:['Ideas'],createdAt:recent(7),updatedAt:recent(3)}),
       sample('A note to future me', 'Keep making things. Keep asking questions. Save the interesting bits.',{color:'#ffffff',createdAt:recent(7),updatedAt:recent(4)})
     ],
-    labels:['Personal','Work','Ideas'],list:false,collapsed:false,dark:true
+    labels:['Personal','Work','Ideas'],list:false,collapsed:false
   };
 }
 function obj(value: unknown): Record<string, unknown> {
@@ -90,7 +89,7 @@ export function load(): AppData {
     return {
       notes:Array.isArray(raw.notes) ? raw.notes.slice(0,5000).map(normalizeNote) : [],
       labels:Array.isArray(raw.labels) ? raw.labels.filter((x:unknown)=>typeof x==='string').slice(0,200).map((x:string)=>x.slice(0,120)) : [],
-      list: !!(raw.list ?? raw.listView),collapsed:!!raw.collapsed,dark:!!raw.dark
+      list: !!(raw.list ?? raw.listView),collapsed:!!raw.collapsed
     };
   } catch {return seed();}
 }

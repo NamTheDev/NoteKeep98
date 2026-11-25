@@ -22,7 +22,7 @@ Do not make pure note helpers depend on the UI coordinator. Keep storage format 
 
 ## Verification
 
-Run `bun run typecheck`, `bun run build`, and the Playwright UI workflow. Existing note editing, search, labels, import/export, checklist, reminders, archive/trash, keyboard shortcuts, theme persistence and mobile navigation must survive.
+Run `bun run typecheck`, `bun run build`, and the Playwright UI workflow. Existing note editing, search, labels, import/export, checklist, reminders, archive/trash, keyboard shortcuts, fixed native dark theme and mobile navigation must survive.
 
 ## Sidebar and typography
 
