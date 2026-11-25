@@ -13,10 +13,10 @@ export function noteHTML(n:Note,currentView:string):string {
     <button class="mini-tool btn-text theme-secondary btn-sm btn rounded-5" title="Edit labels" aria-label="Edit labels" data-action="popup" data-kind="labels" data-id="${html(n.id)}">${icon('label')}</button>
     <button class="mini-tool btn-text theme-secondary btn-sm btn rounded-5" title="${n.archived?'Unarchive':'Archive'}" aria-label="${n.archived?'Unarchive':'Archive'}" data-action="archive" data-id="${html(n.id)}">${icon(n.archived?'restore':'archive')}</button>
     <button class="mini-tool btn-text theme-secondary btn-sm btn rounded-5" title="More options" aria-label="More options" data-action="popup" data-kind="more" data-id="${html(n.id)}">${icon('more')}</button>`;
-  return `<article class="note-window card rounded-6" data-note="${html(n.id)}" style="--note-color:${html(n.color)}">
-    <div class="note-titlebar d-flex align-items-center gap-3 fg-2"><span class="note-titlebar-text flex-grow-1 text-truncate"></span><button class="note-top-btn ${n.pinned?'pinned':''} btn-text theme-secondary btn-sm btn rounded-5" data-action="pin" data-id="${html(n.id)}" title="${n.pinned?'Unpin':'Pin'}" aria-label="${n.pinned?'Unpin':'Pin'}" ${isTrash?'disabled':''}>${icon('pin')}</button></div>
-    <div class="note-paper card-body" data-action="editNote" data-id="${html(n.id)}" role="button" tabindex="0" aria-label="Open ${html(n.title || 'untitled note')}">
+  return `<article class="note-window card rounded-6 min-w-0 overflow-hidden" data-note="${html(n.id)}" style="--note-color:${html(n.color)}">
+    <div class="note-titlebar d-flex align-items-center gap-3 fg-2 pb-0"><span class="note-titlebar-text flex-grow-1 text-truncate min-w-0 fs-xs"></span><button class="note-top-btn ${n.pinned?'pinned':''} btn-text theme-secondary btn-sm btn rounded-5" data-action="pin" data-id="${html(n.id)}" title="${n.pinned?'Unpin':'Pin'}" aria-label="${n.pinned?'Unpin':'Pin'}" ${isTrash?'disabled':''}>${icon('pin')}</button></div>
+    <div class="note-paper card-body min-w-0 pt-3" data-action="editNote" data-id="${html(n.id)}" role="button" tabindex="0" aria-label="Open ${html(n.title || 'untitled note')}">
       ${n.title?`<h2 class="note-heading card-title fw-medium mb-1">${html(n.title)}</h2>`:''}${body}${tags}${reminder}</div>
-    <div class="note-foot d-flex flex-wrap align-items-center">${footer}<span class="date">${html(dateLabel(n.updatedAt))}</span></div>
+    <div class="note-foot d-flex flex-wrap align-items-center gap-1">${footer}<span class="date ms-auto fs-xs fg-3">${html(dateLabel(n.updatedAt))}</span></div>
   </article>`;
 }

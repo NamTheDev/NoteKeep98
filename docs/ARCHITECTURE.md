@@ -27,3 +27,7 @@ Run `bun run typecheck`, `bun run build`, and the Playwright UI workflow. Existi
 ## Sidebar and typography
 
 Both apps use the same navigation group classes, compact layout tokens and Material Symbols Rounded. keep groups Notes, Labels, Actions and Preferences in its sidebar. Only the view title and search remain in the content header; decorative kicker and duplicate creation controls were removed. On mobile, selecting a sidebar action closes the drawer.
+
+## Bootstrap-first styling
+
+Follow the [shared minimum-custom-CSS standard](https://github.com/NamTheDev/util/blob/main/design/DESIGN_PRINCIPLES.md). Use native components and existing utilities directly in static and generated markup; shared theme values remain in config.css. Remaining local styles cover application-specific responsive geometry, component token overrides, dynamic colors where applicable, compact touch controls, dialogs, and interaction states that existing utilities cannot directly preserve. Avoid reintroducing generic layout or appearance rules.

@@ -8,4 +8,4 @@ const iconNames: Record<string,string> = {
   star:"star",menu:"menu",sparkle:"auto_awesome",arrow:"chevron_right"
 };
 export const icon = (name: string): string =>
-  `<span class="ui-icon material-symbols-rounded" aria-hidden="true">${iconNames[name] ?? 'description'}</span>`;
+  `<span class="ui-icon material-symbols-rounded align-middle flex-shrink-0" aria-hidden="true">${iconNames[name] ?? 'description'}</span>`;
