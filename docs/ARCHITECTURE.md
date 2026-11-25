@@ -11,7 +11,9 @@
 - `src/ui/icons.ts` — Material Symbols Rounded semantic icon mapping.
 - `src/ui/quick-composer.ts` — standalone quick-composer DOM behavior.
 - `src/utils/format.ts` — safe HTML escaping and date/time formatting.
-- `src/style.css` — vendored copy of [`util/css/material_design.css`](https://github.com/NamTheDev/util/blob/main/css/material_design.css), the canonical style source.
+- `src/config.css` — synchronized [shared design configuration](https://github.com/NamTheDev/util/blob/main/design/config.css).
+- `src/bootstrap.min.css` — vendored Bootstrap 6 stylesheet.
+- `src/style.css` — application-specific layout and component styling.
 - `scripts/build.ts` — Bun JS bundling and versioned CSS/JS output.
 
 ## Boundaries
