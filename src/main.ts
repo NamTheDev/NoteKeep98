@@ -6,18 +6,22 @@ import {icon} from './ui/icons';
 import {renderShell} from './ui/shell';
 import {expandQuickComposer,resetQuickComposer,resizeQuickText} from './ui/quick-composer';
 import {downloadBackup} from './features/notes/backup';
+import {CloudSync} from './features/sync/client';
+import {mergeNote} from './features/sync/merge';
 
 type Dialog = 'editor' | 'reminder' | 'labels' | 'settings' | 'about' | 'confirm' | null;
 type PopupKind = 'color' | 'labels' | 'more' | null;
 interface PopupState { kind: PopupKind; target: string | null; anchor: HTMLElement | null; }
 
 const $ = <T extends Element = HTMLElement>(selector: string, root: ParentNode = document): T | null => root.querySelector<T>(selector);
-let data: AppData = load();
+const cloud=document.querySelector('meta[name="keep-cloud"]')?new CloudSync(()=>{data=cloud?.project(load())??load();render();},message=>notify(message)):null;
+let data: AppData = cloud?.project(load())??load();
 let view: View = 'notes';
 let search = '';
 let dialog: Dialog = null;
 let popup: PopupState = {kind:null,target:null,anchor:null};
 let draft: Note | null = null;
+let editorBase: Note | null = null;
 let editingId: string | null = null;
 let reminderTarget: string | null = null;
 let reminderReturn: Dialog = null;
@@ -49,7 +53,7 @@ function mutate(fn:()=>void): boolean {
   const previous=structuredClone(data);
   const previousView=view;
   fn();
-  if(!persist()){
+  if(!(cloud?.active?cloud.capture(previous,data):persist())){
     data=previous;
     view=previousView;
     render();
@@ -151,6 +155,7 @@ function render():void {
   renderNav();renderBoard();
   const setText=(sel:string,text:string)=>{const el=$(sel);if(el)el.textContent=text;};
   setText('#pageTitle',viewTitle());
+  if(cloud){setText('#statusText',cloud.statusText);setText('#storageNotice',cloud.active?'Cloud workspace · saved edits sync automatically.':'Notes stay on this device.');}
   setText('#statusCount',`${filterNotes().length} ${filterNotes().length===1?'note':'notes'}`);
   const quick=$('#quickBar');if(quick)quick.hidden=view==='trash'||view==='archive';
   const clear=$('#clearSearch');if(clear)clear.hidden=!search;
@@ -192,6 +197,7 @@ function syncDraft():void {
   });
 }
 function openEditor(note:Note|null,checklist=false):void {
+  editorBase=note?structuredClone(note):null;
   draft=note?structuredClone(note):blankNote(checklist);
   editingId=note?.id??null;
   dialog='editor';closePopup();renderDialog();
@@ -199,7 +205,12 @@ function openEditor(note:Note|null,checklist=false):void {
 }
 function saveEditor():void {
   syncDraft();if(!draft)return;
-  const item=draft;
+  let item=draft;
+  if(cloud?.active&&editingId&&editorBase){
+    const current=getNote(editingId)??null,merged=mergeNote(editorBase,item,current);
+    if(!merged.ok||!merged.value){item={...item,id:id(),title:(item.title+' (conflict copy)').slice(0,10000)};editingId=null;notify('Concurrent edit preserved as a separate note');}
+    else item=merged.value;
+  }
   item.items=item.items.filter(c=>c.text.trim());
   if(!item.title.trim()&&!item.body.trim()&&!item.items.length){dialog=null;draft=null;renderDialog();return;}
   item.updatedAt=now();
@@ -261,9 +272,9 @@ function renderDialog():void {
   }
   if(dialog==='settings'){
     root.innerHTML=`<div class="dialog-backdrop d-flex align-items-center justify-content-center"><dialog class="dialog-window dialog show window medium rounded-7" role="dialog" aria-modal="true" aria-label="Settings" open>${windowHeader('keep — Settings')}
-      <div class="dialog-body min-h-0 py-4"><h3>Preferences</h3><p class="dialog-note form-text">Notes are saved in this browser on this device. keep is not affiliated with Google Keep, and does not offer cloud synchronization.</p>
+      <div class="dialog-body min-h-0 py-4"><h3>Preferences</h3><p class="dialog-note form-text">${cloud?'Cloud Sync is available in this deployment.':'Notes are saved in this browser on this device. keep is not affiliated with Google Keep, and does not offer cloud synchronization.'}</p>
       <fieldset class="settings-group d-grid gap-3 mb-3"><legend>Notes layout</legend><label class="simple-choice d-flex align-items-center gap-3"><input type="checkbox" data-action="toggleListFromSettings" ${data.list?'checked':''} class="check"> List layout</label></fieldset>
-      <p class="dialog-note form-text mt-5">Settings and notes remain in this browser. Existing notes from earlier app versions are preserved automatically.</p></div>
+      <p class="dialog-note form-text mt-5">Settings and notes remain in this browser. Existing notes from earlier app versions are preserved automatically.</p>${cloud?.settings()??''}</div>
       <div class="dialog-footer d-flex flex-wrap justify-content-end align-items-center gap-3 py-3"><button class="chrome-btn primary btn-solid theme-primary btn rounded-5" data-action="closeDialog">OK</button></div></dialog></div>`;return;
   }
   if(dialog==='about'){
@@ -327,6 +338,7 @@ function execute(action:string,button:HTMLElement):void {
   if(button.closest('#sidebar') && mobileMenu){mobileMenu=false;$('#sidebar')?.classList.remove('mobile-open');$('#mobileScrim')?.classList.remove('show');}
   const noteId=button.getAttribute('data-id')??'';
   const value=button.getAttribute('data-value')??'';
+  if(action.startsWith('cloud:')&&cloud){void cloud.action(action.slice(6),noteId,data).then(()=>{if(dialog==='settings')renderDialog();});return;}
   switch(action){
     case 'popup':openPopup(button.getAttribute('data-kind') as PopupKind,noteId,button);break;
     case 'view':setView(button.getAttribute('data-view') as View || 'notes');break;
@@ -339,7 +351,7 @@ function execute(action:string,button:HTMLElement):void {
     case 'cancelEditor':closeEditor();break;
     case 'closeDialog':dialog=null;closePopup();renderDialog();break;
     case 'manageLabels':dialog='labels';closePopup();renderDialog();break;
-    case 'settings':dialog='settings';closePopup();renderDialog();break;
+    case 'settings':dialog='settings';closePopup();renderDialog();if(cloud)void cloud.refreshDevices().then(()=>{if(dialog==='settings')renderDialog();});break;
     case 'about':dialog='about';closePopup();renderDialog();break;
     case 'addLabel':{
       const input=$<HTMLInputElement>('#newLabelInput');const name=input?.value.trim();if(!name)return;
@@ -493,3 +505,4 @@ if(importInput)importInput.addEventListener('change',async()=>{
   importInput.value='';
 });
 render();
+cloud?.start();

@@ -5,7 +5,7 @@ export function renderShell(icon:(name:string)=>string): string {
 
   <main class="main-window window w-100 d-flex flex-column h-100 min-h-0 position-relative" id="mainWindow" aria-label="keep application window">
     <div class="workspace d-flex flex-grow-1 position-relative min-h-0 min-w-0">
-      <aside class="sidebar border-end bg-1 flex-shrink-0 overflow-auto position-relative" id="sidebar"><div id="navRoot"></div><div class="sidebar-foot d-flex gap-3 fg-2 small p-4 mt-5">${icon('info')}<span>Notes stay on this device.</span></div></aside>
+      <aside class="sidebar border-end bg-1 flex-shrink-0 overflow-auto position-relative" id="sidebar"><div id="navRoot"></div><div class="sidebar-foot d-flex gap-3 fg-2 small p-4 mt-5">${icon('info')}<span id="storageNotice">Notes stay on this device.</span></div></aside>
       <div class="mobile-scrim" id="mobileScrim" data-action="closeNav"></div>
       <section class="content-pane d-flex flex-column flex-grow-1 overflow-hidden min-h-0 min-w-0" aria-label="Notes">
         <div class="content-heading d-flex align-items-center justify-content-between">

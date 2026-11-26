@@ -36,3 +36,19 @@ acknowledgement transaction, and monotonic cursor. The browser test checks reope
 workspace isolation, later local edits, duplicate acknowledgements and cursor gaps.
 It is not wired into the current app. Snapshot installation, legacy migration,
 queued-edit rebasing, tab leadership and the app shell remain to be implemented.
+
+## Live test implementation
+The same-origin Railway deployment exposes workspace creation, pairing, owner recovery,
+token rotation/revocation, device removal, session logout, snapshot, and WebSocket
+resume/mutation APIs. The private deployment admits one workspace using a Railway
+invitation secret. GitHub Pages does not receive the cloud feature marker.
+
+This is a test release, not the completed durability specification: the active
+browser client currently uses a single localStorage journal for atomic optimistic
+state and queue persistence, with a Web Locks writer and read-only secondary tabs.
+The previously tested IndexedDB outbox is not yet integrated into the app. Browser
+quota is therefore smaller than the cloud quota. No service worker/offline shell,
+automatic history compaction, backup automation, or end-to-end encryption yet.
+Conflict recovery preserves an edit as a separate note; arbitrary multi-hunk merge
+and manual merged-text editing are not included. Export JSON backups before testing
+important data. The cloud database must reside on the attached volume.
