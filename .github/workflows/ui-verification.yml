@@ -65,6 +65,7 @@ jobs:
           curl --fail http://127.0.0.1:8765/keep/config.css > /dev/null
           KEEP_BASE_URL=http://127.0.0.1:8765/keep/ python tests/browser_test.py
       - name: Verify two-device cloud synchronization and revocation
+        if: always() && !cancelled()
         shell: bash
         env:
           KEEP_CLOUD_ENABLED: 'true'

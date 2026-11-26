@@ -205,7 +205,7 @@ function openEditor(note:Note|null,checklist=false):void {
 }
 function saveEditor():void {
   syncDraft();if(!draft)return;
-  let item=draft;
+  let item=structuredClone(draft);
   if(cloud?.active&&editingId&&editorBase){
     const current=getNote(editingId)??null,merged=mergeNote(editorBase,item,current);
     if(!merged.ok||!merged.value){item={...item,id:id(),title:(item.title+' (conflict copy)').slice(0,10000)};editingId=null;notify('Concurrent edit preserved as a separate note');}
@@ -218,9 +218,7 @@ function saveEditor():void {
     if(editingId){const index=data.notes.findIndex(n=>n.id===editingId);if(index>=0)data.notes[index]=normalizeNote(item);}
     else data.notes.unshift(normalizeNote(item));
   })){
-    // Rebuild from the preserved draft when browser storage rejects a write.
-    // Never leave the editor showing stale input after a failed save.
-    renderDialog();
+    // The dialog DOM still contains the user's input. Do not replace it on a rejected write.
     return;
   }
   editingId=null;draft=null;dialog=null;renderDialog();notify('Note saved');
