@@ -3,7 +3,7 @@ import {createCloud} from './server/sync/transport';
 const port = Number(Bun.env.PORT || 3000);
 const production = Bun.env.NODE_ENV === "production";
 const root = import.meta.dir;
-const cloud = Bun.env.KEEP_CLOUD_ENABLED==='true' ? createCloud(Bun.env.KEEP_DATABASE_PATH||'/data/keep.sqlite',Bun.env.KEEP_ORIGIN||'',Bun.env.KEEP_CREATE_INVITE||'') : null;
+const cloud = Bun.env.KEEP_CLOUD_ENABLED==='true' ? createCloud(Bun.env.KEEP_DATABASE_PATH||'/data/keep.sqlite',Bun.env.KEEP_ORIGIN||'',Number(Bun.env.KEEP_MAX_WORKSPACES||5)) : null;
 const staticPaths=new Set(['/','/index.html','/app.js','/bootstrap.min.css','/config.css','/style.css','/theme-signal.js','/favicon.svg','/sync-storage-test.js']);
 const mime = (path: string) => path.endsWith('.js') ? 'text/javascript; charset=utf-8' : path.endsWith('.css') ? 'text/css; charset=utf-8' : path.endsWith('.html') ? 'text/html; charset=utf-8' : path.endsWith('.svg') ? 'image/svg+xml' : 'application/octet-stream';
 

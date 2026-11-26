@@ -15,7 +15,7 @@ interface PopupState { kind: PopupKind; target: string | null; anchor: HTMLEleme
 
 const $ = <T extends Element = HTMLElement>(selector: string, root: ParentNode = document): T | null => root.querySelector<T>(selector);
 const cloudConfig=document.querySelector<HTMLMetaElement>('meta[name="keep-cloud"]')?.content;
-const cloud:CloudSync|null=cloudConfig?new CloudSync(()=>{data=cloud?.project(load())??load();render();},message=>notify(message),cloudConfig==='enabled'?location.origin:cloudConfig):null;
+const cloud:CloudSync|null=cloudConfig?new CloudSync(()=>{data=cloud?.project(load())??load();render();},(message,error)=>notify(message,false,error),cloudConfig==='enabled'?location.origin:cloudConfig):null;
 let data: AppData = cloud?.project(load())??load();
 let view: View = 'notes';
 let search = '';
@@ -58,17 +58,17 @@ function mutate(fn:()=>void): boolean {
     data=previous;
     view=previousView;
     render();
-    notify('Could not save to browser storage. Your change was not applied. Free up space or export a backup.');
+    notify('Could not save to browser storage. Your change was not applied. Free up space or export a backup.',false,true);
     return false;
   }
   render();
   return true;
 }
-function notify(message: string, allowUndo = false): void {
+function notify(message: string, allowUndo = false, error = false): void {
   if (toastTimer) window.clearTimeout(toastTimer);
   const root = $('#toastRoot'); if (!root) return;
-  root.innerHTML = `<div class="toast show d-flex align-items-center gap-3 p-3"><span>${html(message)}</span>${allowUndo?'<button class="chrome-btn btn-outline theme-secondary btn rounded-5" data-action="undo">Undo</button>':''}<button class="chrome-btn btn-outline theme-secondary btn rounded-5" data-action="dismissToast" aria-label="Dismiss message">${icon('x')}</button></div>`;
-  toastTimer = window.setTimeout(()=>{root.innerHTML='';},4500);
+  root.innerHTML = `<div role="${error?'alert':'status'}" class="toast show ${error?'toast-error':''} d-flex align-items-center gap-3 p-3"><span>${html(message)}</span>${allowUndo?'<button class="chrome-btn btn-outline theme-secondary btn rounded-5" data-action="undo">Undo</button>':''}<button class="chrome-btn btn-outline theme-secondary btn rounded-5" data-action="dismissToast" aria-label="Dismiss message">${icon('x')}</button></div>`;
+  toastTimer = window.setTimeout(()=>{root.innerHTML='';},error?8000:4500);
 }
 function mutationWithUndo(message: string, fn:()=>void): void {
   const previous=structuredClone(data.notes);
@@ -329,7 +329,7 @@ function exportData():void { downloadBackup(data); notify('JSON backup exported'
 function renameLabel(oldName:string):void {
   const input=$<HTMLInputElement>(`.rename-input[data-old="${CSS.escape(oldName)}"]`);
   const next=input?.value.trim();if(!next||next===oldName)return;
-  if(data.labels.some(l=>l.toLowerCase()===next.toLowerCase())){notify('A label with that name already exists');return;}
+  if(data.labels.some(l=>l.toLowerCase()===next.toLowerCase())){notify('A label with that name already exists',false,true);return;}
   if(!mutate(()=>{data.labels=data.labels.map(l=>l===oldName?next:l);for(const n of data.notes)n.labels=n.labels.map(l=>l===oldName?next:l);if(view===`label:${oldName}`)view=`label:${next}`;}))return;
   renderDialog();notify('Label renamed');
 }
@@ -354,7 +354,7 @@ function execute(action:string,button:HTMLElement):void {
     case 'about':dialog='about';closePopup();renderDialog();break;
     case 'addLabel':{
       const input=$<HTMLInputElement>('#newLabelInput');const name=input?.value.trim();if(!name)return;
-      if(data.labels.some(l=>l.toLowerCase()===name.toLowerCase())){notify('That label already exists');return;}
+      if(data.labels.some(l=>l.toLowerCase()===name.toLowerCase())){notify('That label already exists',false,true);return;}
       if(!mutate(()=>data.labels.push(name)))break;
       renderDialog();$<HTMLInputElement>('#newLabelInput')?.focus();notify('Label created');break;
     }
@@ -374,8 +374,8 @@ function execute(action:string,button:HTMLElement):void {
     case 'closeReminder':closeReminder();break;
     case 'saveReminder':{
       const d=$<HTMLInputElement>('#reminderDate')?.value;const t=$<HTMLInputElement>('#reminderTime')?.value;
-      if(!d||!t){notify('Choose a date and time');break;}
-      const stamp=new Date(`${d}T${t}`);if(Number.isNaN(stamp.getTime())){notify('Invalid reminder date');break;}
+      if(!d||!t){notify('Choose a date and time',false,true);break;}
+      const stamp=new Date(`${d}T${t}`);if(Number.isNaN(stamp.getTime())){notify('Invalid reminder date',false,true);break;}
       setReminder(stamp.toISOString());break;
     }
     case 'removeReminder':setReminder(null);break;
@@ -500,7 +500,7 @@ if(importInput)importInput.addEventListener('change',async()=>{
     if(mutate(()=>{data.notes.unshift(...incoming);data.labels=Array.from(new Set([...data.labels,...labels,...incoming.flatMap(n=>n.labels)])).slice(0,200);})){
       dialog=null;renderDialog();notify(`${incoming.length} notes imported`);
     }
-  }catch{notify('Invalid JSON notes backup');}
+  }catch{notify('Invalid JSON notes backup',false,true);}
   importInput.value='';
 });
 render();

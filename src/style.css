@@ -76,3 +76,10 @@ html,body,#app{height:100%;min-width:320px}
 .dialog-window.dialog[open]{display:flex;flex-direction:column;overflow:hidden}
 .dialog-window .dialog-body{flex:1 1 auto;min-height:0;overflow:auto}
 .dialog-window .dialog-header,.dialog-window .dialog-footer{flex-shrink:0;position:relative}
+
+/* Explicit error state: Catppuccin red with dark, high-contrast text. */
+.toast.show.toast-error{--bs-toast-bg:var(--error);background:var(--error);color:var(--base);border-color:var(--error)}
+.toast-error .btn{color:var(--base);border-color:var(--base);--bs-btn-color:var(--base);--bs-btn-border-color:var(--base)}
+.toast.show{flex-direction:row;flex-wrap:nowrap}
+.toast.show>span{min-width:0;overflow-wrap:anywhere}
+.toast.show>button{flex-shrink:0}

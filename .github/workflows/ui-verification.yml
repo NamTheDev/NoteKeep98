@@ -72,7 +72,6 @@ jobs:
           KEEP_ORIGIN: http://127.0.0.1:3011
           KEEP_API_ONLY: 'true'
           KEEP_CLOUD_TEST_URL: http://127.0.0.1:3011/keep/
-          KEEP_CREATE_INVITE: local-ci-invitation-not-a-production-secret
           KEEP_DATABASE_PATH: /tmp/keep-cloud-ci.sqlite
         run: |
           set -euo pipefail

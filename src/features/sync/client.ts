@@ -14,7 +14,7 @@ type Grant={id:string;created_at:number};
 type Snapshot={workspaceRevision:number;notes:RevisionedNote[]};
 type Frame=ServerMessage|{type:'ready'|'resumed'|'resync'|'pong'};
 const metadata=(labels:string[]):Note=>({...blankNote(),id:META,labels,createdAt:'1970-01-01T00:00:00.000Z',updatedAt:'1970-01-01T00:00:00.000Z'});
-const button=(action:string,label:string,extra='')=>`<button class="chrome-btn btn-outline theme-secondary btn rounded-5" data-action="cloud:${action}" ${extra}>${html(label)}</button>`;
+const button=(action:string,label:string,extra='')=>`<button class="chrome-btn ${action==='create'?'primary btn-solid theme-primary':'btn-outline theme-secondary'} btn rounded-5" data-action="cloud:${action}" ${extra}>${html(label)}</button>`;
 export class CloudSync{
   private state:State|null=null;
   private socket:WebSocket|null=null;
@@ -31,7 +31,7 @@ export class CloudSync{
   private busy=false;
   private epoch=0;
   private session='';
-  constructor(private changed:()=>void,private notice:(message:string)=>void,private apiBase:string){
+  constructor(private changed:()=>void,private notice:(message:string,error?:boolean)=>void,private apiBase:string){
     this.reload();
   }
   get active(){return !!this.state;}
@@ -46,7 +46,7 @@ export class CloudSync{
     window.addEventListener('storage',e=>{if(e.key===KEY&&!this.writer){this.reload();this.status='Read-only: another tab is syncing';this.changed();}});
     void navigator.locks.request('keep-cloud-sync-writer',async()=>{
       this.writer=true;this.reload();
-      try{this.session=await readSession();}catch{this.notice('Cannot access device credential storage.');}
+      try{this.session=await readSession();}catch{this.notice('Cannot access device credential storage.',true);}
       this.changed();if(this.active)void this.connect();
       await new Promise<void>(()=>{});
     });
@@ -55,7 +55,7 @@ export class CloudSync{
   }
   private save(next:State|null):boolean{
     try{if(next)localStorage.setItem(KEY,JSON.stringify(next));else localStorage.removeItem(KEY);this.state=next;return true;}
-    catch{this.notice('Cloud cache is full; the change was not applied. Export a backup.');return false;}
+    catch{this.notice('Cloud cache is full; the change was not applied. Export a backup.',true);return false;}
   }
   private optimistic(s:State):Map<string,Note|null>{
     const map=new Map(s.confirmed.map(n=>[n.noteId,n.value]));
@@ -69,9 +69,9 @@ export class CloudSync{
     return {notes,labels:[...new Set([...labels,...notes.flatMap(n=>n.labels)])],list:s.list,collapsed:s.collapsed};
   }
   capture(previous:AppData,next:AppData):boolean{
-    if(!this.state||!this.writer){this.notice('This tab is read-only while another tab owns synchronization.');return false;}
+    if(!this.state||!this.writer){this.notice('This tab is read-only while another tab owns synchronization.',true);return false;}
     const s=structuredClone(this.state),before=new Map(previous.notes.map(n=>[n.id,n])),after=new Map(next.notes.map(n=>[n.id,n]));
-    if(before.has(META)||after.has(META)){this.notice('Reserved note identifier.');return false;}
+    if(before.has(META)||after.has(META)){this.notice('Reserved note identifier.',true);return false;}
     if(!equal(previous.labels,next.labels)){
       before.set(META,this.optimistic(s).get(META)??metadata(previous.labels));
       after.set(META,metadata(next.labels));
@@ -81,7 +81,7 @@ export class CloudSync{
       if(equal(prior,value))continue;
       const confirmed=s.confirmed.find(n=>n.noteId===id);
       const m:Queue={operationId:crypto.randomUUID(),noteId:id,baseRevision:confirmed?.revision??0,base:id===META&&!confirmed&&!s.pending.some(p=>p.noteId===id)?null:prior,value,queuedAt:Date.now()};
-      if(new TextEncoder().encode(JSON.stringify({type:'mutate',mutation:{operationId:m.operationId,noteId:id,baseRevision:m.baseRevision,value}})).length>MAX){this.notice('Note exceeds the 256 KiB sync message limit.');return false;}
+      if(new TextEncoder().encode(JSON.stringify({type:'mutate',mutation:{operationId:m.operationId,noteId:id,baseRevision:m.baseRevision,value}})).length>MAX){this.notice('Note exceeds the 256 KiB sync message limit.',true);return false;}
       s.pending.push(m);
     }
     s.list=next.list;s.collapsed=next.collapsed;
@@ -194,7 +194,7 @@ export class CloudSync{
   settings():string{
     const s=this.state;
     if(!navigator.locks)return '<p>Cloud Sync requires a browser with Web Locks support.</p>';
-    if(!s)return `<fieldset class="settings-group d-grid gap-3 mt-3"><legend>Cloud Sync</legend><p>Connect using a pairing token, or create a private workspace. Local-only notes remain separate when pairing.</p><label for="cloudCredential">Invitation, pairing token or recovery key</label><input id="cloudCredential" class="form-control rounded-5" type="password" autocomplete="off"><div class="d-flex flex-wrap gap-2">${button('create','Create workspace')}${button('pair','Pair device')}${button('recover','Recover owner')}</div></fieldset>`;
+    if(!s)return `<fieldset class="settings-group d-grid gap-3 mt-3"><legend>Cloud Sync</legend><p>Create a workspace to sync your notes. No account or invitation needed.</p><div>${button('create','Create workspace')}</div><hr class="my-2"><label for="cloudCredential">Pairing token or recovery key</label><input id="cloudCredential" class="form-control rounded-5" type="password" autocomplete="off" placeholder="Required only to join or recover"><div class="d-flex flex-wrap gap-2">${button('pair','Pair device')}${button('recover','Recover owner')}</div><p class="form-text mb-0">Pairing keeps existing local-only notes separate.</p></fieldset>`;
     return `<fieldset class="settings-group d-grid gap-3 mt-3"><legend>Cloud Sync</legend><p>${html(this.status)} · ${s.pending.length} pending · ${s.conflicts.length} conflicts</p>
       ${this.secretDisplay?`<label for="cloudSecret">Save this credential now — it is not stored in the browser.</label><textarea id="cloudSecret" class="form-control" readonly rows="3">${html(this.secretDisplay)}</textarea>${button('hide','Hide credential')}`:''}
       ${s.identity.owner?`<div class="d-flex flex-wrap gap-2">${button('token','Generate / rotate pairing token')}${button('refresh','Refresh devices')}</div>
@@ -204,16 +204,16 @@ export class CloudSync{
       <div class="d-flex flex-wrap gap-2">${button('retry','Reconnect')}${button('leave','Disconnect')}${s.identity.owner?button('delete','Delete cloud workspace'):''}</div></fieldset>`;
   }
   async action(action:string,id:string,local:AppData):Promise<void>{
-    if(!this.writer){this.notice('Use the active synchronization tab.');return;}
+    if(!this.writer){this.notice('Use the active synchronization tab.',true);return;}
     if(this.busy)return;this.busy=true;
     try{
       const credential=(document.getElementById('cloudCredential') as HTMLInputElement|null)?.value.trim()||'';
       if(action==='create'||action==='pair'||action==='recover'){
         if(this.active)return;
-        if(!credential)throw Error('Enter a credential');
+        if(action!=='create'&&!credential)throw Error(action==='pair'?'Enter a pairing token.':'Enter your recovery key.');
         if(action==='pair'||action==='recover'){if(!window.confirm('Open this cloud workspace? Existing local-only notes remain separate.'))return;}
         const route=action==='create'?'workspaces':action;
-        const body=action==='create'?{invite:credential}:action==='pair'?{token:credential}:{key:credential};
+        const body=action==='create'?{}:action==='pair'?{token:credential}:{key:credential};
         await this.adopt(await this.api<Identity>(route,'POST',body),local,action==='create');
       }else if(action==='token'){
         if(!window.confirm('Generate a new pairing token? Previous paired devices will lose cloud access.'))return;
@@ -247,7 +247,7 @@ export class CloudSync{
         }else if(!window.confirm('Discard this preserved conflicting edit?'))return;
         const updated=structuredClone(this.state);updated.conflicts=updated.conflicts.filter(x=>x.operationId!==id);this.save(updated);this.changed();
       }
-    }catch(e){this.notice(e instanceof Error?e.message:'Cloud operation failed');}
+    }catch(e){this.notice(e instanceof Error?e.message:'Cloud operation failed',true);}
     finally{this.busy=false;}
   }
 }

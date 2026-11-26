@@ -1,5 +1,5 @@
 import {SyncDatabase,type Principal} from './database';
-import {digestSecret,matchesSecret} from './credentials';
+import {matchesSecret} from './credentials';
 import type {Mutation,ServerMessage} from '../../src/features/sync/protocol';
 import type {Note} from '../../src/features/notes/data';
 
@@ -24,8 +24,8 @@ function validNote(x:unknown,id:string):x is Note{
 function validMutation(x:unknown):x is Mutation{
   return object(x)&&identifier(x.operationId)&&identifier(x.noteId)&&typeof x.baseRevision==='number'&&Number.isSafeInteger(x.baseRevision)&&x.baseRevision>=0&&(x.value===null||validNote(x.value,x.noteId))&&Object.keys(x).every(k=>['operationId','noteId','baseRevision','value'].includes(k));
 }
-export function createCloud(path:string,origin:string,invite:string){
-  if(!origin||invite.length<32)throw Error('Cloud mode requires KEEP_ORIGIN and a strong KEEP_CREATE_INVITE');
+export function createCloud(path:string,origin:string,maxWorkspaces=5){
+  if(!origin||!Number.isSafeInteger(maxWorkspaces)||maxWorkspaces<1||maxWorkspaces>100)throw Error('Invalid cloud configuration');
   const db=new SyncDatabase(path),sockets=new Set<Socket>(),rates=new Map<string,{count:number;until:number}>();
   const cors={'Access-Control-Allow-Origin':origin,'Vary':'Origin','Access-Control-Allow-Methods':'GET, POST, DELETE, OPTIONS','Access-Control-Allow-Headers':'Authorization, Content-Type, X-Keep-Request','Access-Control-Max-Age':'600'};
   const json=(value:unknown,status=200)=>Response.json(value,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...cors}});
@@ -56,9 +56,9 @@ export function createCloud(path:string,origin:string,invite:string){
         const b=await req.json();if(!object(b))return json({error:'invalid request'},400);
         if(db.authenticate(s))return json({error:'Disconnect current workspace first'},409);
         if(route.endsWith('workspaces')){
-          if(!str(b.invite,200)||!matchesSecret(b.invite,digestSecret(invite)))return json({error:'Invalid invitation'},403);
+          // Accountless creation is public; cap allocation and keep workspace data private.
           const count=db.db.query('SELECT COUNT(*) AS n FROM workspaces').get() as {n:number};
-          if(count.n>=1)return json({error:'Private test workspace limit reached'},409);
+          if(count.n>=maxWorkspaces)return json({error:'Cloud workspace capacity reached. Existing workspaces are unaffected.'},503);
           const x=db.createWorkspace();return json({workspaceId:x.workspaceId,deviceId:x.deviceId,owner:true,recoveryKey:x.recoveryKey,session:x.secret},201);
         }
         if(route.endsWith('pair')){

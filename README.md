@@ -8,7 +8,7 @@ See [AI_DISCLAIMER.md](AI_DISCLAIMER.md) for the full disclosure.
 
 ## Introduction
 
-A local-first browser notes app with a compact Catppuccin interface. Notes, checklists, labels, reminders and backups are managed locally, without an account or cloud sync. [Open keep](https://namthedev.github.io/keep/).
+A local-first browser notes app with a compact Catppuccin interface. Notes, checklists, labels, reminders and backups are managed locally, with optional accountless cloud sync. [Open keep](https://namthedev.github.io/keep/).
 
 ## Resources
 

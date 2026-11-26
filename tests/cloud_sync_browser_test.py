@@ -2,7 +2,6 @@
 import os
 from playwright.sync_api import sync_playwright, expect
 URL=os.environ.get("KEEP_CLOUD_TEST_URL","http://127.0.0.1:3011/keep/")
-INVITE=os.environ["KEEP_CREATE_INVITE"]
 with sync_playwright() as p:
     browser=p.chromium.launch()
     owner=browser.new_context()
@@ -14,7 +13,10 @@ with sync_playwright() as p:
         page.goto(URL)
         page.get_by_role("button",name="Settings",exact=True).click()
         expect(page.locator("#cloudCredential")).to_be_visible()
-    a.locator("#cloudCredential").fill(INVITE)
+    b.get_by_role("button",name="Pair device",exact=True).click()
+    expect(b.locator(".toast-error")).to_contain_text("Enter a pairing token.")
+    assert a.get_by_role("button",name="Create workspace",exact=True).evaluate("(e)=>e.classList.contains('btn-solid')")
+    assert a.locator("#cloudCredential").input_value()==""
     a.get_by_role("button",name="Create workspace",exact=True).click()
     expect(a.locator("#cloudSecret")).to_be_visible(timeout=15000)
     assert "Recovery key" in a.locator("#cloudSecret").input_value()
