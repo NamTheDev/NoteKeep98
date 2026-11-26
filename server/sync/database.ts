@@ -35,7 +35,7 @@ export class SyncDatabase {
     this.db.run('INSERT INTO sessions(hash,device_id,family_id,last_seen) VALUES(?,?,?,?)',[digestSecret(secret),deviceId,familyId,Date.now()]);
     return {deviceId,workspaceId,secret};
   }
-  /** Caller must enforce invitation authorization and request rate limits. */
+  /** Caller must enforce workspace capacity and request rate limits. */
   createWorkspace(){
     return this.db.transaction(()=>{
       const workspaceId=randomUUID(),recoveryKey=issueSecret('kr');

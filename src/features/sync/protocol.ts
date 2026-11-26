@@ -26,7 +26,7 @@ export interface Conflict {
   fields:string[];
 }
 export type ClientMessage =
-  | {type:'resume';version:1;since:number}
+  | {type:'resume';version:typeof SYNC_PROTOCOL_VERSION;since:number}
   | {type:'mutate';mutation:Mutation};
 export type ServerMessage =
   | {type:'ack';operationId:string;workspaceRevision:number;note:RevisionedNote}

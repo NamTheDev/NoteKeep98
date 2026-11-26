@@ -1,6 +1,6 @@
 import {SyncDatabase,type Principal} from './database';
 import {matchesSecret} from './credentials';
-import type {Mutation,ServerMessage} from '../../src/features/sync/protocol';
+import {SYNC_PROTOCOL_VERSION,type Mutation,type ServerMessage} from '../../src/features/sync/protocol';
 import type {Note} from '../../src/features/notes/data';
 
 const MAX=256*1024;
@@ -100,7 +100,7 @@ export function createCloud(path:string,origin:string,maxWorkspaces=5){
         }
         const p=db.authenticate(ws.data.secret);if(!p){ws.close(4001,'Access revoked');return;}
         if(x.type==='ping'){send(ws,{type:'pong'});return;}
-        if(x.type==='resume'&&x.version===1&&typeof x.since==='number'&&Number.isSafeInteger(x.since)&&x.since>=0){
+        if(x.type==='resume'&&x.version===SYNC_PROTOCOL_VERSION&&typeof x.since==='number'&&Number.isSafeInteger(x.since)&&x.since>=0){
           const events=db.events(ws.data.secret,x.since);
           if(events===null){send(ws,{type:'resync'});return;}
           for(const event of events)send(ws,event);

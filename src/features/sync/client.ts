@@ -2,7 +2,7 @@ import {blankNote,type AppData,type Note} from '../notes/data';
 import {html} from '../../utils/format';
 import {mergeNote} from './merge';
 import {readSession,writeSession} from './session';
-import type {Conflict,Mutation,PendingMutation,RevisionedNote,ServerMessage} from './protocol';
+import {SYNC_PROTOCOL_VERSION,type ClientMessage,type Conflict,type Mutation,type PendingMutation,type RevisionedNote,type ServerMessage} from './protocol';
 
 const KEY='keep-cloud-test-v1',META='__keep_labels__',MAX=256*1024;
 const equal=(a:unknown,b:unknown)=>JSON.stringify(a)===JSON.stringify(b);
@@ -35,7 +35,6 @@ export class CloudSync{
     this.reload();
   }
   get active(){return !!this.state;}
-  get canWrite(){return this.writer;}
   get statusText(){return this.active?this.status:'Local only';}
   private reload(){
     try{const raw=localStorage.getItem(KEY);this.state=raw?JSON.parse(raw) as State:null;}
@@ -126,13 +125,13 @@ export class CloudSync{
   }
   private async receive(frame:Frame,ws:WebSocket){
     if(!this.state)return;
-    if(frame.type==='ready'){ws.send(JSON.stringify({type:'resume',version:1,since:this.state.cursor}));return;}
+    if(frame.type==='ready'){ws.send(JSON.stringify({type:'resume',version:SYNC_PROTOCOL_VERSION,since:this.state.cursor} satisfies ClientMessage));return;}
     if(frame.type==='resync'){
       this.ready=false;const snap=await this.api<Snapshot>('snapshot');
       if(this.socket!==ws||!this.state)return;
       const s=structuredClone(this.state);s.confirmed=snap.notes;s.cursor=snap.workspaceRevision;
       if(!this.save(s)){ws.close();return;}
-      ws.send(JSON.stringify({type:'resume',version:1,since:s.cursor}));this.changed();return;
+      ws.send(JSON.stringify({type:'resume',version:SYNC_PROTOCOL_VERSION,since:s.cursor} satisfies ClientMessage));this.changed();return;
     }
     if(frame.type==='resumed'){this.ready=true;this.backoff=1000;this.status=this.state.pending.length?'Syncing…':this.state.conflicts.length?'Conflicts preserved':'Synced';this.changed();this.flush();return;}
     if(frame.type==='pong')return;

@@ -17,8 +17,8 @@ jobs:
     name: Build static site
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
+      - uses: actions/checkout@v7.0.1
+      - uses: oven-sh/setup-bun@v2.2.0
       - name: Install dependencies
         run: bun install
       - name: Type-check and build
@@ -39,7 +39,7 @@ jobs:
           grep -E 'href="\./style\.css\?v=[0-9a-f]{12}"' dist/index.html
           grep -E 'src="\./app\.js\?v=[0-9a-f]{12}"' dist/index.html
       - name: Upload GitHub Pages artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5.0.0
         with:
           path: dist
 
@@ -56,4 +56,4 @@ jobs:
     steps:
       - name: Deploy GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5.0.1

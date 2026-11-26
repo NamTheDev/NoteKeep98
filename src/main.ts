@@ -273,7 +273,7 @@ function renderDialog():void {
     root.innerHTML=`<div class="dialog-backdrop d-flex align-items-center justify-content-center"><dialog class="dialog-window dialog show window medium rounded-7" role="dialog" aria-modal="true" aria-label="Settings" open>${windowHeader('keep — Settings')}
       <div class="dialog-body min-h-0 py-4"><h3>Preferences</h3><p class="dialog-note form-text">${cloud?'Cloud Sync is available in this deployment.':'Notes are saved in this browser on this device. keep is not affiliated with Google Keep, and does not offer cloud synchronization.'}</p>
       <fieldset class="settings-group d-grid gap-3 mb-3"><legend>Notes layout</legend><label class="simple-choice d-flex align-items-center gap-3"><input type="checkbox" data-action="toggleListFromSettings" ${data.list?'checked':''} class="check"> List layout</label></fieldset>
-      <p class="dialog-note form-text mt-5">Settings and notes remain in this browser. Existing notes from earlier app versions are preserved automatically.</p>${cloud?.settings()??''}</div>
+      <p class="dialog-note form-text mt-5">Local notes and settings remain in this browser. Cloud workspace notes sync when connected.</p>${cloud?.settings()??''}</div>
       <div class="dialog-footer d-flex flex-wrap justify-content-end align-items-center gap-3 py-3"><button class="chrome-btn primary btn-solid theme-primary btn rounded-5" data-action="closeDialog">OK</button></div></dialog></div>`;return;
   }
   if(dialog==='about'){
