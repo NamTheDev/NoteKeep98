@@ -121,4 +121,65 @@ export class SyncDatabase {
       return record({type:'ack',operationId:m.operationId,workspaceRevision:revision,note});
     })();
   }
+
+  snapshot(secret:string){
+    const p=this.authenticate(secret);if(!p)throw Error('unauthorized');
+    const revision=this.db.query<{revision:number},[string]>('SELECT revision FROM workspaces WHERE id=?').get(p.workspaceId)!.revision;
+    const notes=this.db.query<{note_id:string;revision:number;value:string|null},[string]>('SELECT note_id,revision,value FROM notes WHERE workspace_id=?').all(p.workspaceId).map(n=>({noteId:n.note_id,revision:n.revision,value:n.value===null?null:JSON.parse(n.value)}));
+    return {workspaceRevision:revision,notes};
+  }
+  events(secret:string,since:number){
+    const p=this.authenticate(secret);if(!p)throw Error('unauthorized');
+    const revision=this.db.query<{revision:number},[string]>('SELECT revision FROM workspaces WHERE id=?').get(p.workspaceId)!.revision;
+    if(since>revision||revision-since>200)return null;
+    const rows=this.db.query<{payload:string},[string,number]>('SELECT payload FROM sync_events WHERE workspace_id=? AND revision>? ORDER BY revision LIMIT 201').all(p.workspaceId,since);
+    return rows.length===revision-since?rows.map(r=>JSON.parse(r.payload)):null;
+  }
+  devices(secret:string){
+    const p=this.authenticate(secret);if(!p?.owner)throw Error('forbidden');
+    return this.db.query<{id:string;owner:number;pairing_id:string|null;last_seen:number|null},[string]>(`SELECT d.id,d.owner,d.pairing_id,MAX(s.last_seen) AS last_seen FROM devices d LEFT JOIN sessions s ON s.device_id=d.id WHERE d.workspace_id=? AND d.revoked_at IS NULL GROUP BY d.id ORDER BY d.owner DESC,d.id`).all(p.workspaceId);
+  }
+  grants(secret:string){
+    const p=this.authenticate(secret);if(!p?.owner)throw Error('forbidden');
+    return this.db.query<{id:string;created_at:number},[string]>('SELECT id,created_at FROM pairing_tokens WHERE workspace_id=? AND revoked_at IS NULL ORDER BY created_at DESC').all(p.workspaceId);
+  }
+  revokeDevice(secret:string,id:string){
+    const p=this.authenticate(secret);if(!p?.owner||p.deviceId===id)throw Error('forbidden');
+    const now=Date.now();
+    return this.db.transaction(()=>{
+      const result=this.db.run('UPDATE devices SET revoked_at=? WHERE id=? AND workspace_id=? AND owner=0 AND revoked_at IS NULL',[now,id,p.workspaceId]);
+      if(!result.changes)return [];
+      this.db.run('UPDATE sessions SET revoked_at=? WHERE device_id=?',[now,id]);return [id];
+    })();
+  }
+  rotatePairing(secret:string){
+    return this.db.transaction(()=>{
+      const revoked=this.grants(secret).flatMap(t=>this.revokePairing(secret,t.id));
+      return {...this.issuePairing(secret),revoked};
+    })();
+  }
+  recover(key:unknown){
+    if(!validSecret(key,'kr'))throw Error('invalid recovery key');
+    return this.db.transaction(()=>{
+      const w=this.db.query<{id:string},[string]>('SELECT id FROM workspaces WHERE recovery_hash=?').get(digestSecret(key));
+      if(!w)throw Error('invalid recovery key');
+      const revoked=this.db.query<{id:string},[string]>('SELECT id FROM devices WHERE workspace_id=? AND owner=1 AND revoked_at IS NULL').all(w.id).map(x=>x.id);
+      const now=Date.now(), recoveryKey=issueSecret('kr');
+      this.db.run('UPDATE devices SET revoked_at=? WHERE workspace_id=? AND owner=1',[now,w.id]);
+      this.db.run('UPDATE sessions SET revoked_at=? WHERE device_id IN (SELECT id FROM devices WHERE workspace_id=? AND owner=1)',[now,w.id]);
+      this.db.run('UPDATE workspaces SET recovery_hash=? WHERE id=?',[digestSecret(recoveryKey),w.id]);
+      return {...this.session(w.id,true,null),recoveryKey,revoked};
+    })();
+  }
+  logout(secret:string){
+    const p=this.authenticate(secret);if(!p)return [];
+    this.db.run('UPDATE sessions SET revoked_at=? WHERE family_id=?',[Date.now(),p.familyId]);return [p.deviceId];
+  }
+  deleteWorkspace(secret:string){
+    const p=this.authenticate(secret);if(!p?.owner)throw Error('forbidden');
+    return this.db.transaction(()=>{
+      const ids=this.db.query<{id:string},[string]>('SELECT id FROM devices WHERE workspace_id=?').all(p.workspaceId).map(d=>d.id);
+      this.db.run('DELETE FROM workspaces WHERE id=?',[p.workspaceId]);return ids;
+    })();
+  }
 }
