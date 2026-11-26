@@ -1,7 +1,7 @@
-import {blankNote, COLORS, id, LEGACY_KEY, load, normalizeNote, seed, STORAGE_KEY, type AppData, type Note} from './features/notes/data';
+import {blankNote, COLORS, id, load, normalizeNote, seed, STORAGE_KEY, type AppData, type Note} from './features/notes/data';
 import {selectNotes, type View} from './features/notes/selectors';
 import {noteHTML as renderNoteCard} from './features/notes/note-card';
-import {html,now,dateLabel} from './utils/format';
+import {html,now} from './utils/format';
 import {icon} from './ui/icons';
 import {renderShell} from './ui/shell';
 import {expandQuickComposer,resetQuickComposer,resizeQuickText} from './ui/quick-composer';
@@ -12,7 +12,6 @@ type PopupKind = 'color' | 'labels' | 'more' | null;
 interface PopupState { kind: PopupKind; target: string | null; anchor: HTMLElement | null; }
 
 const $ = <T extends Element = HTMLElement>(selector: string, root: ParentNode = document): T | null => root.querySelector<T>(selector);
-const $$ = <T extends Element = HTMLElement>(selector: string, root: ParentNode = document): T[] => Array.from(root.querySelectorAll<T>(selector));
 let data: AppData = load();
 let view: View = 'notes';
 let search = '';
@@ -128,8 +127,7 @@ function renderNav():void {
     <button class="nav-btn nav-link w-100 rounded-5 justify-content-start text-start" data-action="about">${icon('info')}<span>About</span></button>
   </nav>`;
 }
-function noteHTML(n:Note):string { return renderNoteCard(n,view); }
-function noteGroup(notes: Note[],heading:string):string {return `<div class="board-label fg-2 text-uppercase fw-medium">${html(heading)}</div><div class="note-grid ${data.list?'is-list':''} d-grid">${notes.map(noteHTML).join('')}</div>`;}
+function noteGroup(notes: Note[],heading:string):string {return `<div class="board-label fg-2 text-uppercase fw-medium">${html(heading)}</div><div class="note-grid ${data.list?'is-list':''} d-grid">${notes.map(note=>renderNoteCard(note,view)).join('')}</div>`;}
 function renderBoard():void {
   const root=$('#boardRoot');if (!root)return;
   const notes=filterNotes();
@@ -154,7 +152,6 @@ function render():void {
   const setText=(sel:string,text:string)=>{const el=$(sel);if(el)el.textContent=text;};
   setText('#pageTitle',viewTitle());
   setText('#statusCount',`${filterNotes().length} ${filterNotes().length===1?'note':'notes'}`);
-  setText('#statusText','Ready');
   const quick=$('#quickBar');if(quick)quick.hidden=view==='trash'||view==='archive';
   const clear=$('#clearSearch');if(clear)clear.hidden=!search;
   $('#sidebar')?.classList.toggle('mobile-open',mobileMenu);
@@ -230,13 +227,13 @@ function dateValue(iso:string|null):{date:string,time:string} {
   return {date:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,time:`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`};
 }
 function closeReminder():void {dialog=reminderReturn;renderDialog();}
-function windowHeader(title:string,_closeAction='closeDialog'):string {return `<div class="title-bar dialog-heading dialog-header d-flex align-items-center gap-3 py-3"><span class="app-icon">${icon('note')}</span><span class="title-text dialog-title fw-medium fs-lg">${html(title)}</span></div>`;}
+function windowHeader(title:string):string {return `<div class="title-bar dialog-heading dialog-header d-flex align-items-center gap-3 py-3"><span class="app-icon">${icon('note')}</span><span class="title-text dialog-title fw-medium fs-lg">${html(title)}</span></div>`;}
 function renderDialog():void {
   const root=$('#dialogRoot');if(!root)return;
   if(!dialog){root.innerHTML='';return;}
   if(dialog==='editor'&&draft){
     root.innerHTML=`<div class="dialog-backdrop d-flex align-items-center justify-content-center" data-action="backdrop"><dialog class="dialog-window dialog show window rounded-7" role="dialog" aria-modal="true" aria-label="${editingId?'Edit note':'New note'}" open>
-      ${windowHeader(editingId?'Edit Note — keep':'New Note — keep','cancelEditor')}
+      ${windowHeader(editingId?'Edit Note — keep':'New Note — keep')}
       <div class="dialog-body min-h-0 py-4">
         <div class="dialog-paper rounded-5 p-4" id="editorPaper" style="--note-color:${html(draft.color)}">
           <div class="field form-field mb-5"><label class="field-label form-label" for="editTitle">Title</label><input class="win-input form-control rounded-5 min-w-0" id="editTitle" type="text" maxlength="10000" value="${html(draft.title)}" placeholder="Untitled note"></div>
@@ -252,29 +249,29 @@ function renderDialog():void {
   if(dialog==='reminder'){
     const target=reminderTarget==='draft'?draft:getNote(reminderTarget||'');
     const original=dateValue(target?.reminder??null);
-    root.innerHTML=`<div class="dialog-backdrop d-flex align-items-center justify-content-center"><dialog class="dialog-window dialog show window medium rounded-7" role="dialog" aria-modal="true" aria-label="Set reminder" open>${windowHeader('Set Reminder','closeReminder')}
+    root.innerHTML=`<div class="dialog-backdrop d-flex align-items-center justify-content-center"><dialog class="dialog-window dialog show window medium rounded-7" role="dialog" aria-modal="true" aria-label="Set reminder" open>${windowHeader('Set Reminder')}
       <div class="dialog-body min-h-0 py-4"><p class="dialog-note form-text">Choose a date and time for this note. Reminder dates appear in the app; system notifications are not enabled.</p><div class="field form-field mb-5"><label class="field-label form-label" for="reminderDate">Date</label><input class="win-input form-control rounded-5 min-w-0" id="reminderDate" type="date" value="${original.date}"></div><div class="field form-field mb-5"><label class="field-label form-label" for="reminderTime">Time</label><input class="win-input form-control rounded-5 min-w-0" id="reminderTime" type="time" value="${original.time}"></div></div>
       <div class="dialog-footer d-flex flex-wrap justify-content-end align-items-center gap-3 py-3"><span class="footer-left me-auto fg-2 small"></span>${target?.reminder?'<button class="chrome-btn btn-outline theme-secondary btn rounded-5" data-action="removeReminder">Remove</button>':''}<button class="chrome-btn btn-outline theme-secondary btn rounded-5" data-action="closeReminder">Cancel</button><button class="chrome-btn primary btn-solid theme-primary btn rounded-5" data-action="saveReminder">${icon('save')} Save</button></div>
     </dialog></div>`;return;
   }
   if(dialog==='labels'){
-    root.innerHTML=`<div class="dialog-backdrop d-flex align-items-center justify-content-center"><dialog class="dialog-window dialog show window medium rounded-7" role="dialog" aria-modal="true" aria-label="Manage labels" open>${windowHeader('Edit Labels','closeDialog')}
+    root.innerHTML=`<div class="dialog-backdrop d-flex align-items-center justify-content-center"><dialog class="dialog-window dialog show window medium rounded-7" role="dialog" aria-modal="true" aria-label="Manage labels" open>${windowHeader('Edit Labels')}
       <div class="dialog-body min-h-0 py-4"><h3>Organize your notes</h3><p class="dialog-note form-text">Create custom labels and use them to filter your notes from the folder pane.</p><label class="field-label form-label" for="newLabelInput">New label</label><div class="input-inline d-flex align-items-center gap-3 mb-5"><input class="win-input form-control rounded-5 min-w-0" id="newLabelInput" maxlength="120" placeholder="Type a label name"><button class="chrome-btn btn-outline theme-secondary btn rounded-5" data-action="addLabel">+ Add</button></div><div class="label-list d-grid gap-3">${data.labels.length?data.labels.map(l=>`<div class="label-row d-flex align-items-center gap-3"><span>${icon('label')}</span><input class="win-input rename-input form-control rounded-5 min-w-0" aria-label="Rename ${html(l)}" value="${html(l)}" data-old="${html(l)}"><button class="chrome-btn btn-outline theme-secondary btn rounded-5" title="Save label name" data-action="renameLabel" data-value="${html(l)}">${icon('save')}</button><button class="chrome-btn btn-outline theme-secondary btn rounded-5" title="Delete label" data-action="deleteLabel" data-value="${html(l)}">${icon('trash')}</button></div>`).join(''):'<p class="p-3">No labels yet.</p>'}</div></div><div class="dialog-footer d-flex flex-wrap justify-content-end align-items-center gap-3 py-3"><button class="chrome-btn primary btn-solid theme-primary btn rounded-5" data-action="closeDialog">Done</button></div>
     </dialog></div>`;return;
   }
   if(dialog==='settings'){
-    root.innerHTML=`<div class="dialog-backdrop d-flex align-items-center justify-content-center"><dialog class="dialog-window dialog show window medium rounded-7" role="dialog" aria-modal="true" aria-label="Settings" open>${windowHeader('keep — Settings','closeDialog')}
+    root.innerHTML=`<div class="dialog-backdrop d-flex align-items-center justify-content-center"><dialog class="dialog-window dialog show window medium rounded-7" role="dialog" aria-modal="true" aria-label="Settings" open>${windowHeader('keep — Settings')}
       <div class="dialog-body min-h-0 py-4"><h3>Preferences</h3><p class="dialog-note form-text">Notes are saved in this browser on this device. keep is not affiliated with Google Keep, and does not offer cloud synchronization.</p>
       <fieldset class="settings-group d-grid gap-3 mb-3"><legend>Notes layout</legend><label class="simple-choice d-flex align-items-center gap-3"><input type="checkbox" data-action="toggleListFromSettings" ${data.list?'checked':''} class="check"> List layout</label></fieldset>
       <p class="dialog-note form-text mt-5">Settings and notes remain in this browser. Existing notes from earlier app versions are preserved automatically.</p></div>
       <div class="dialog-footer d-flex flex-wrap justify-content-end align-items-center gap-3 py-3"><button class="chrome-btn primary btn-solid theme-primary btn rounded-5" data-action="closeDialog">OK</button></div></dialog></div>`;return;
   }
   if(dialog==='about'){
-    root.innerHTML=`<div class="dialog-backdrop d-flex align-items-center justify-content-center"><dialog class="dialog-window dialog show window medium rounded-7" role="dialog" aria-modal="true" aria-label="About keep" open>${windowHeader('About keep','closeDialog')}
+    root.innerHTML=`<div class="dialog-backdrop d-flex align-items-center justify-content-center"><dialog class="dialog-window dialog show window medium rounded-7" role="dialog" aria-modal="true" aria-label="About keep" open>${windowHeader('About keep')}
       <div class="dialog-body min-h-0 py-4"><div class="dialog-icon-message">${icon('computer')}<div><h3 class="m-0 mb-2">keep</h3><p>Version 1.0<br>TypeScript + Bun.js<br>Independent local-first notes application</p></div></div><p class="dialog-note form-text">Minimal Catppuccin interface with Bootstrap 6. Notes are stored only in your browser; this is not Google Keep and does not connect to Google.</p></div><div class="dialog-footer d-flex flex-wrap justify-content-end align-items-center gap-3 py-3"><button class="chrome-btn primary btn-solid theme-primary btn rounded-5" data-action="closeDialog">OK</button></div></dialog></div>`;return;
   }
   if(dialog==='confirm'){
-    root.innerHTML=`<div class="dialog-backdrop d-flex align-items-center justify-content-center"><dialog class="dialog-window dialog show window medium rounded-7" role="alertdialog" aria-modal="true" aria-label="${html(confirmTitle)}" open>${windowHeader(confirmTitle,'closeDialog')}
+    root.innerHTML=`<div class="dialog-backdrop d-flex align-items-center justify-content-center"><dialog class="dialog-window dialog show window medium rounded-7" role="alertdialog" aria-modal="true" aria-label="${html(confirmTitle)}" open>${windowHeader(confirmTitle)}
       <div class="dialog-body min-h-0 py-4"><div class="dialog-icon-message">${icon('warning')}<p>${html(confirmMessage)}</p></div></div><div class="dialog-footer d-flex flex-wrap justify-content-end align-items-center gap-3 py-3"><button class="chrome-btn btn-outline theme-secondary btn rounded-5" data-action="closeDialog">Cancel</button><button class="chrome-btn primary btn-solid theme-primary btn rounded-5" data-action="confirm">Continue</button></div></dialog></div>`;
   }
 }
@@ -379,7 +376,7 @@ function execute(action:string,button:HTMLElement):void {
     case 'emptyTrash':confirm('Empty Recycle Bin?','All notes in the Recycle Bin will be permanently deleted. This cannot be undone.',()=>{if(!mutate(()=>data.notes=data.notes.filter(n=>!n.trashed)))return;
       dialog=null;renderDialog();notify('Recycle Bin emptied');});break;
     case 'duplicate':{
-      const n=getNote(popup.target??'');if(n){const copy=structuredClone(n);copy.id=id();copy.title=n.title;copy.createdAt=now();copy.updatedAt=now();copy.pinned=false;copy.items=copy.items.map(i=>({...i,id:id()}));if(mutate(()=>data.notes.unshift(copy)))notify('Note duplicated');}closePopup();break;
+      const n=getNote(popup.target??'');if(n){const copy=structuredClone(n);copy.id=id();copy.createdAt=now();copy.updatedAt=now();copy.pinned=false;copy.items=copy.items.map(i=>({...i,id:id()}));if(mutate(()=>data.notes.unshift(copy)))notify('Note duplicated');}closePopup();break;
     }
     case 'export':closePopup();exportData();break;
     case 'import':closePopup();$<HTMLInputElement>('#importInput')?.click();break;
@@ -387,7 +384,6 @@ function execute(action:string,button:HTMLElement):void {
       dialog=null;view='notes';search='';const field=$<HTMLInputElement>('#searchInput');if(field)field.value='';renderDialog();render();notify('Sample notes restored');});break;
     case 'confirm':{const fn=confirmAction;confirmAction=null;dialog=null;renderDialog();fn?.();break;}
     case 'toggleView':mutate(()=>{data.list=!data.list;});closePopup();break;
-    case 'toggleListFromSettings':mutate(()=>{data.list=!data.list;});renderDialog();break;
     case 'clearSearch':search='';{const field=$<HTMLInputElement>('#searchInput');if(field){field.value='';field.focus();}}render();break;
     case 'dismissToast':{const root=$('#toastRoot');if(root)root.innerHTML='';break;}
     case 'undo':if(undo){const snapshot=structuredClone(undo);if(mutate(()=>{data.notes=snapshot;})){undo=null;notify('Undone');}}break;
@@ -404,7 +400,6 @@ app.addEventListener('click',event=>{
     if(action==='backdrop')return;
     execute(action,button);
   }
-  else if(popup.kind && !(event.target as Element).closest('.popup,.start-menu'))closePopup();
 });
 app.addEventListener('change',event=>{
   const node=event.target as HTMLElement;

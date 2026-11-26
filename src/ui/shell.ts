@@ -14,7 +14,7 @@ export function renderShell(icon:(name:string)=>string): string {
           <div class="content-actions d-flex flex-wrap align-items-center"><label class="search-box d-flex align-items-center gap-3 max-w-100">${icon('search')}<input type="search" id="searchInput" aria-label="Search notes" placeholder="Search notes..." autocomplete="off" class="form-control flex-grow-1 rounded-5 min-w-0"><button class="search-clear btn-text theme-secondary btn-sm btn rounded-5" id="clearSearch" data-action="clearSearch" aria-label="Clear search" hidden>×</button></label></div>
         </div>
         <div class="quick-bar card d-flex flex-row align-items-center rounded-6" id="quickBar" role="group" aria-label="Quick note">
-          <div class="quick-composer min-w-0 flex-grow-1" id="quickComposer">
+          <div class="quick-composer min-w-0 flex-grow-1">
             <input class="quick-title form-control mb-2 fw-medium rounded-5" id="quickNoteTitle" type="text" maxlength="10000" placeholder="Title (optional)" aria-label="Quick note title" hidden>
             <textarea class="quick-text form-control rounded-5" id="quickNoteText" rows="1" maxlength="100000" placeholder="Take a note..." aria-label="Quick note text"></textarea>
             <div class="quick-actions d-flex flex-wrap align-items-center gap-3 mt-2" id="quickActions" hidden>

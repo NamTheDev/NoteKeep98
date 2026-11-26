@@ -1,3 +1,5 @@
+import {now} from '../../utils/format';
+
 export interface ChecklistItem {
   id: string;
   text: string;
@@ -40,7 +42,6 @@ export const COLORS: Array<{name: string, value: string}> = [
 ];
 
 export const id = (): string => globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2) + Date.now().toString(36);
-const now = (): string => new Date().toISOString();
 export const blankNote = (checklist = false): Note => ({
   id: id(), title: '', body: '', checklist,
   items: checklist ? [{id:id(),text:'',checked:false}] : [],
