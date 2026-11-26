@@ -14,7 +14,7 @@ type PopupKind = 'color' | 'labels' | 'more' | null;
 interface PopupState { kind: PopupKind; target: string | null; anchor: HTMLElement | null; }
 
 const $ = <T extends Element = HTMLElement>(selector: string, root: ParentNode = document): T | null => root.querySelector<T>(selector);
-const cloud=document.querySelector('meta[name="keep-cloud"]')?new CloudSync(()=>{data=cloud?.project(load())??load();render();},message=>notify(message)):null;
+const cloud:CloudSync|null=document.querySelector('meta[name="keep-cloud"]')?new CloudSync(()=>{data=cloud?.project(load())??load();render();},message=>notify(message)):null;
 let data: AppData = cloud?.project(load())??load();
 let view: View = 'notes';
 let search = '';
@@ -351,7 +351,7 @@ function execute(action:string,button:HTMLElement):void {
     case 'cancelEditor':closeEditor();break;
     case 'closeDialog':dialog=null;closePopup();renderDialog();break;
     case 'manageLabels':dialog='labels';closePopup();renderDialog();break;
-    case 'settings':dialog='settings';closePopup();renderDialog();if(cloud)void cloud.refreshDevices().then(()=>{if(dialog==='settings')renderDialog();});break;
+    case 'settings':dialog='settings';closePopup();renderDialog();if(cloud?.active)void cloud.refreshDevices().then(()=>{if(dialog==='settings')renderDialog();});break;
     case 'about':dialog='about';closePopup();renderDialog();break;
     case 'addLabel':{
       const input=$<HTMLInputElement>('#newLabelInput');const name=input?.value.trim();if(!name)return;

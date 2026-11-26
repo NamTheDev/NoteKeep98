@@ -66,6 +66,7 @@ export function createCloud(path:string,origin:string,invite:string){
         }
         const x=db.recover(b.key);revoke(x.revoked);return json({workspaceId:x.workspaceId,deviceId:x.deviceId,owner:true,recoveryKey:x.recoveryKey},200,{'Set-Cookie':cookie(x.secret)});
       }
+      if(req.method==='POST'&&route==='/api/v1/session/logout'){revoke(db.logout(s));return json({ok:true},200,{'Set-Cookie':cookie('',0)});}
       const p=db.authenticate(s);if(!p)return json({error:'unauthorized'},401);
       if(req.method==='GET'&&route==='/api/v1/session')return json(p,200,{'Set-Cookie':cookie(s)});
       if(req.method==='GET'&&route==='/api/v1/snapshot')return json(db.snapshot(s));
@@ -73,7 +74,6 @@ export function createCloud(path:string,origin:string,invite:string){
       if(req.method==='POST'&&route==='/api/v1/tokens'){const x=db.rotatePairing(s);revoke(x.revoked);return json({id:x.id,token:x.token});}
       if(req.method==='DELETE'&&route.startsWith('/api/v1/tokens/')){revoke(db.revokePairing(s,route.split('/').at(-1)!));return json({ok:true});}
       if(req.method==='DELETE'&&route.startsWith('/api/v1/devices/')){revoke(db.revokeDevice(s,route.split('/').at(-1)!));return json({ok:true});}
-      if(req.method==='POST'&&route==='/api/v1/session/logout'){revoke(db.logout(s));return json({ok:true},200,{'Set-Cookie':cookie('',0)});}
       if(req.method==='DELETE'&&route==='/api/v1/workspace'){
         const b=await req.json();if(!object(b)||b.confirm!=='DELETE'||!p.owner)return json({error:'confirmation required'},403);
         // Recovery-key proof establishes current owner authorization for this destructive action.

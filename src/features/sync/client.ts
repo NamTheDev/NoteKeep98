@@ -82,7 +82,7 @@ export class CloudSync{
     }
     s.list=next.list;s.collapsed=next.collapsed;
     if(!this.save(s))return false;
-    this.status=s.pending.length?'Syncing…':'Synced';this.flush();return true;
+    this.status=s.pending.length?(this.ready?'Syncing…':'Offline — edits queued'):(this.ready?'Synced':this.status);this.flush();return true;
   }
   private async api<T>(path:string,method='GET',body?:unknown):Promise<T>{
     const response=await fetch('/api/v1/'+path,{method,credentials:'same-origin',cache:'no-store',headers:{'X-Keep-Request':'1','Content-Type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)})});
@@ -91,7 +91,7 @@ export class CloudSync{
     return result as T;
   }
   private stop(){
-    this.epoch++;this.ready=false;this.inFlight=null;clearTimeout(this.timer);clearInterval(this.heartbeat);
+    this.epoch++;this.ready=false;this.inFlight=null;clearTimeout(this.timer);this.timer=undefined;clearInterval(this.heartbeat);
     const socket=this.socket;this.socket=null;if(socket)socket.close();
   }
   private schedule(){
@@ -101,6 +101,7 @@ export class CloudSync{
   }
   private async connect(){
     if(!this.writer||!this.state||this.socket)return;
+    clearTimeout(this.timer);this.timer=undefined;
     const epoch=++this.epoch;this.status='Connecting…';this.changed();
     try{
       const identity=await this.api<Identity>('session');
@@ -130,7 +131,7 @@ export class CloudSync{
       if(!this.save(s)){ws.close();return;}
       ws.send(JSON.stringify({type:'resume',version:1,since:s.cursor}));this.changed();return;
     }
-    if(frame.type==='resumed'){this.ready=true;this.backoff=1000;this.status=this.state.pending.length?'Syncing…':'Synced';this.changed();this.flush();return;}
+    if(frame.type==='resumed'){this.ready=true;this.backoff=1000;this.status=this.state.pending.length?'Syncing…':this.state.conflicts.length?'Conflicts preserved':'Synced';this.changed();this.flush();return;}
     if(frame.type==='pong')return;
     const s=structuredClone(this.state);
     if(frame.type==='change'||frame.type==='ack'){
@@ -156,12 +157,12 @@ export class CloudSync{
       const confirmed=s.confirmed.find(n=>n.noteId===p.noteId),remote=confirmed?.value??null;
       if(Date.now()-p.queuedAt>90*86400000||(confirmed&&confirmed.value===null&&p.value!==null)){
         s.conflicts.push({operationId:p.operationId,noteId:p.noteId,base:p.base,local:p.value,remote,fields:['stale or deleted']});
-        s.pending.shift();if(this.save(s)){this.changed();this.flush();}return;
+        s.pending.shift();if(this.save(s)){this.status='Conflicts preserved';this.changed();this.flush();}return;
       }
       const merged=mergeNote(p.base,p.value,remote);
       if(!merged.ok){
         s.conflicts.push({operationId:p.operationId,noteId:p.noteId,base:p.base,local:p.value,remote,fields:merged.fields});
-        s.pending.shift();if(this.save(s)){this.notice('Conflicting edit preserved');this.changed();this.flush();}return;
+        s.pending.shift();if(this.save(s)){this.status='Conflicts preserved';this.notice('Conflicting edit preserved');this.changed();this.flush();}return;
       }
       p.wire={operationId:p.operationId,noteId:p.noteId,baseRevision:confirmed?.revision??0,value:merged.value};
       if(!this.save(s))return;
