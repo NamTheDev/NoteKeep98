@@ -2,7 +2,7 @@
 
 **Website:** https://namthedev.github.io/keep/
 
-A local-first notes app with a compact, Catppuccin, dark-first Bootstrap 6-based interface. It runs in the browser and does **not** have a hosted database, login or sync server.
+A local-first notes app with a compact, Catppuccin, dark-first Bootstrap 6-based interface. It runs in the browser and supports optional accountless cloud synchronization through a separate Railway API.
 
 ## Using keep
 
@@ -12,7 +12,7 @@ Features include editing, pinning, colors, labels, reminders, checklists, duplic
 
 ## Privacy and compatibility
 
-Notes and settings stay in this browser's `localStorage`; no account or cloud sync is provided. The existing storage key and migration path are intentionally retained so existing users do not lose notes. Clearing site data can permanently erase notes; export a JSON backup first. In-app reminders do not issue system notifications.
+Notes and settings stay in this browser's `localStorage`; no account is needed; optional Cloud Sync is configured in Settings. The existing storage key and migration path are intentionally retained so existing users do not lose notes. Clearing site data can permanently erase notes; export a JSON backup first. In-app reminders do not issue system notifications.
 
 ## Design system
 
@@ -33,4 +33,6 @@ bun run typecheck
 bun run build
 ```
 
-The production build in `dist/` is published by [GitHub Pages Actions](../.github/workflows/deploy-pages.yml). `server.ts` is for development/testing only. The [UI verification](../.github/workflows/ui-verification.yml) workflow exercises the browser on desktop and mobile. Source is MIT-licensed; see [CREDITS.md](../CREDITS.md) and [AI_DISCLAIMER.md](../AI_DISCLAIMER.md).
+The production build in `dist/` is published by [GitHub Pages Actions](../.github/workflows/deploy-pages.yml). `server.ts` runs the Railway backend in API-only mode and also supports local development. The [UI verification](../.github/workflows/ui-verification.yml) workflow exercises the browser on desktop and mobile. Source is MIT-licensed; see [CREDITS.md](../CREDITS.md) and [AI_DISCLAIMER.md](../AI_DISCLAIMER.md).
+
+The canonical frontend is [GitHub Pages](https://namthedev.github.io/keep/). Railway is API-only in production; see [cloud synchronization](CLOUD_SYNC.md).

@@ -18,7 +18,9 @@ const appBytes=new Uint8Array(await Bun.file(`${root}dist/app.js`).arrayBuffer()
 const fingerprint=(input:string|Uint8Array):string=>createHash('sha256').update(input).digest('hex').slice(0,12);
 const cssHash=fingerprint(css),appHash=fingerprint(appBytes);
 const template=await Bun.file(`${root}index.html`).text();
-const html=template
+const apiBase=Bun.env.KEEP_API_BASE||'';
+if(apiBase&&!/^https:\/\/[a-z0-9.-]+(?::[0-9]+)?$/i.test(apiBase)&&!/^http:\/\/127\.0\.0\.1:[0-9]+$/.test(apiBase))throw Error('Invalid KEEP_API_BASE');
+const html=(apiBase?template.replace('</head>',`<meta name="keep-cloud" content="${apiBase}"></head>`):template)
   .replace('href="./config.css"',`href="./config.css?v=${fingerprint(config)}"`)
   .replace('href="./style.css"',`href="./style.css?v=${cssHash}"`)
   .replace('src="./app.js"',`src="./app.js?v=${appHash}"`);

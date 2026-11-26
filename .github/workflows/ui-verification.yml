@@ -69,14 +69,21 @@ jobs:
         shell: bash
         env:
           KEEP_CLOUD_ENABLED: 'true'
-          KEEP_ORIGIN: http://127.0.0.1:3010
+          KEEP_ORIGIN: http://127.0.0.1:3011
+          KEEP_API_ONLY: 'true'
+          KEEP_CLOUD_TEST_URL: http://127.0.0.1:3011/keep/
           KEEP_CREATE_INVITE: local-ci-invitation-not-a-production-secret
           KEEP_DATABASE_PATH: /tmp/keep-cloud-ci.sqlite
         run: |
           set -euo pipefail
+          KEEP_API_BASE=http://127.0.0.1:3010 bun run build
+          mkdir -p /tmp/keep-cloud-pages/keep
+          cp -a dist/. /tmp/keep-cloud-pages/keep/
+          python -m http.server 3011 --bind 127.0.0.1 --directory /tmp/keep-cloud-pages > /tmp/keep-cloud-pages.log 2>&1 &
+          PAGES_PID=$!
           NODE_ENV=production PORT=3010 bun run start > /tmp/keep-cloud-ci.log 2>&1 &
           APP_PID=$!
-          trap 'kill "$APP_PID" 2>/dev/null || true' EXIT
+          trap 'kill "$APP_PID" "$PAGES_PID" 2>/dev/null || true' EXIT
           for i in {1..30}; do
             if curl --fail --silent --output /dev/null http://127.0.0.1:3010/health; then break; fi
             if ! kill -0 "$APP_PID" 2>/dev/null; then cat /tmp/keep-cloud-ci.log; exit 1; fi

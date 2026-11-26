@@ -71,3 +71,8 @@ html,body,#app{height:100%;min-width:320px}
 .quick-bar{--bs-card-bg:var(--base)}
 .quick-title,.quick-text{--bs-control-bg:transparent;--bs-control-border-width:0;--bs-control-box-shadow:none}
 :where(button,a,input,textarea,select,[tabindex]):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Long settings sections scroll inside the dialog instead of covering its footer. */
+.dialog-window.dialog[open]{display:flex;flex-direction:column;overflow:hidden}
+.dialog-window .dialog-body{flex:1 1 auto;min-height:0;overflow:auto}
+.dialog-window .dialog-header,.dialog-window .dialog-footer{flex-shrink:0;position:relative}

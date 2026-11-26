@@ -1,22 +1,33 @@
 name: Cloud public endpoint smoke check
 on:
+  workflow_dispatch:
   push:
     branches: [main]
-  workflow_dispatch:
 permissions:
   contents: read
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
-      - name: Verify HTTPS, cloud feature marker and authentication
+      - name: Verify Pages frontend and Railway API
         shell: bash
         run: |
           set -euo pipefail
-          url=https://keep-sync-production.up.railway.app
-          curl --retry 6 --retry-delay 5 --retry-all-errors --max-time 15 -fsS "$url/health" | grep -qx ok
-          curl --max-time 15 -fsS "$url/" | grep -q 'name="keep-cloud" content="enabled"'
-          test "$(curl --max-time 15 -sS -o /dev/null -w '%{http_code}' "$url/api/v1/session")" = 401
-          test "$(curl --max-time 15 -sS -o /dev/null -w '%{http_code}' -X POST "$url/api/v1/workspaces" -H 'Content-Type: application/json' -d '{}')" = 403
-          echo 'Public HTTPS and authorization smoke checks passed.'
+          api=https://keep-sync-production.up.railway.app
+          site=https://namthedev.github.io/keep/
+          origin=https://namthedev.github.io
+          for i in {1..36}; do
+            if curl -fsS "$site?smoke=$RANDOM" | grep -q 'name="keep-cloud" content="https://keep-sync-production.up.railway.app"' &&
+               curl -fsSI "$api/" | grep -qi "location: $site" &&
+               curl -fsS "$api/health" | grep -qx ok &&
+               test "$(curl -s -o /dev/null -w '%{http_code}' -H "Origin: $origin" "$api/api/v1/session")" = 401; then break; fi
+            sleep 5
+          done
+          curl -fsS "$site?smoke=$RANDOM" | grep -q 'name="keep-cloud" content="https://keep-sync-production.up.railway.app"'
+          curl -fsSI "$api/" | grep -qi "location: $site"
+          curl -fsS "$api/health" | grep -qx ok
+          curl -fsS -D /tmp/keep-cors -o /dev/null -X OPTIONS "$api/api/v1/workspaces" -H "Origin: $origin" -H 'Access-Control-Request-Method: POST' -H 'Access-Control-Request-Headers: authorization,content-type,x-keep-request'
+          grep -qi "access-control-allow-origin: $origin" /tmp/keep-cors
+          test "$(curl -s -o /dev/null -w '%{http_code}' -H "Origin: $origin" "$api/api/v1/session")" = 401
+          test "$(curl -s -o /dev/null -w '%{http_code}' -H 'Origin: https://example.com' "$api/api/v1/session")" = 403

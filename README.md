@@ -20,3 +20,5 @@ A local-first browser notes app with a compact Catppuccin interface. Notes, chec
 ## License
 
 Original project material is licensed under the [MIT License](LICENSE). Third-party attribution is documented in [CREDITS.md](CREDITS.md); Bootstrap retains its [own license](LICENSE.bootstrap).
+
+The canonical frontend is [GitHub Pages](https://namthedev.github.io/keep/). Railway is API-only in production; see [cloud synchronization](docs/CLOUD_SYNC.md).

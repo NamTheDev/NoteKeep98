@@ -33,3 +33,5 @@ Both apps use the same navigation group classes, compact layout tokens and Mater
 Follow the [shared minimum-custom-CSS standard](https://github.com/NamTheDev/util/blob/main/design/DESIGN_PRINCIPLES.md). Use native components and existing utilities directly in static and generated markup; shared theme values remain in config.css. Remaining local styles cover application-specific responsive geometry, component token overrides, dynamic colors where applicable, compact touch controls, dialogs, and interaction states that existing utilities cannot directly preserve. Avoid reintroducing generic layout or appearance rules.
 
 The frontend TypeScript configuration rejects unused local variables and parameters. Keep compatibility storage keys, current theme signals and shared vendored assets intact; in-progress cloud modules are exercised by dedicated tests before integration.
+
+The canonical frontend is [GitHub Pages](https://namthedev.github.io/keep/). Railway is API-only in production; see [cloud synchronization](CLOUD_SYNC.md).

@@ -16,6 +16,10 @@ Bun.serve({
     const path = new URL(req.url).pathname;
     if(path==='/health')return new Response('ok');
     if(path.startsWith('/api/'))return cloud?cloud.fetch(req,server):new Response('Not found',{status:404});
+    if(cloud&&Bun.env.KEEP_API_ONLY==='true'){
+      if(path==='/'||path==='/index.html')return Response.redirect('https://namthedev.github.io/keep/',302);
+      return new Response('Not found',{status:404});
+    }
     if(!staticPaths.has(path))return new Response('Not found',{status:404});
     if (!production && path === '/app.js') {
       const result = await Bun.build({ entrypoints: [`${root}/src/main.ts`], target: 'browser', minify: false, sourcemap: 'inline' });

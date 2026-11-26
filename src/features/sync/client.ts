@@ -1,12 +1,13 @@
 import {blankNote,type AppData,type Note} from '../notes/data';
 import {html} from '../../utils/format';
 import {mergeNote} from './merge';
+import {readSession,writeSession} from './session';
 import type {Conflict,Mutation,PendingMutation,RevisionedNote,ServerMessage} from './protocol';
 
 const KEY='keep-cloud-test-v1',META='__keep_labels__',MAX=256*1024;
 const equal=(a:unknown,b:unknown)=>JSON.stringify(a)===JSON.stringify(b);
 type Queue=PendingMutation & {wire?:Mutation};
-type Identity={workspaceId:string;deviceId:string;owner:boolean;recoveryKey?:string};
+type Identity={workspaceId:string;deviceId:string;owner:boolean;recoveryKey?:string;session?:string};
 type State={identity:Identity;cursor:number;confirmed:RevisionedNote[];pending:Queue[];conflicts:Conflict[];list:boolean;collapsed:boolean};
 type Device={id:string;owner:number;last_seen:number|null};
 type Grant={id:string;created_at:number};
@@ -29,7 +30,8 @@ export class CloudSync{
   private grants:Grant[]=[];
   private busy=false;
   private epoch=0;
-  constructor(private changed:()=>void,private notice:(message:string)=>void){
+  private session='';
+  constructor(private changed:()=>void,private notice:(message:string)=>void,private apiBase:string){
     this.reload();
   }
   get active(){return !!this.state;}
@@ -43,7 +45,9 @@ export class CloudSync{
     if(!navigator.locks){this.status='Cloud requires browser lock support';return;}
     window.addEventListener('storage',e=>{if(e.key===KEY&&!this.writer){this.reload();this.status='Read-only: another tab is syncing';this.changed();}});
     void navigator.locks.request('keep-cloud-sync-writer',async()=>{
-      this.writer=true;this.reload();this.changed();if(this.active)void this.connect();
+      this.writer=true;this.reload();
+      try{this.session=await readSession();}catch{this.notice('Cannot access device credential storage.');}
+      this.changed();if(this.active)void this.connect();
       await new Promise<void>(()=>{});
     });
     window.addEventListener('online',()=>{if(this.writer&&this.active&&!this.socket)void this.connect();});
@@ -85,7 +89,7 @@ export class CloudSync{
     this.status=s.pending.length?(this.ready?'Syncing…':'Offline — edits queued'):(this.ready?'Synced':this.status);this.flush();return true;
   }
   private async api<T>(path:string,method='GET',body?:unknown):Promise<T>{
-    const response=await fetch('/api/v1/'+path,{method,credentials:'same-origin',cache:'no-store',headers:{'X-Keep-Request':'1','Content-Type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)})});
+    const response=await fetch(this.apiBase+'/api/v1/'+path,{method,credentials:'omit',cache:'no-store',headers:{'X-Keep-Request':'1','Content-Type':'application/json',...(this.session?{Authorization:'Bearer '+this.session}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});
     const result=await response.json();
     if(!response.ok)throw Error(result.error||'Request failed');
     return result as T;
@@ -107,9 +111,8 @@ export class CloudSync{
       const identity=await this.api<Identity>('session');
       if(epoch!==this.epoch)return;
       if(identity.workspaceId!==this.state.identity.workspaceId){this.status='Session belongs to another workspace';this.changed();return;}
-      const scheme=location.protocol==='https:'?'wss:':'ws:';
-      const ws=new WebSocket(scheme+'//'+location.host+'/api/v1/sync');this.socket=ws;
-      ws.onopen=()=>{this.heartbeat=window.setInterval(()=>{if(ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify({type:'ping'}));},25000);};
+      const ws=new WebSocket(this.apiBase.replace(/^http/,'ws')+'/api/v1/sync');this.socket=ws;
+      ws.onopen=()=>{ws.send(JSON.stringify({type:'auth',session:this.session}));this.heartbeat=window.setInterval(()=>{if(ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify({type:'ping'}));},25000);};
       ws.onmessage=e=>{if(this.socket!==ws)return;try{void this.receive(JSON.parse(String(e.data)) as Frame,ws).catch(()=>{this.status='Sync recovery required';ws.close();this.changed();});}catch{ws.close();}};
       ws.onclose=e=>{if(this.socket!==ws)return;this.socket=null;this.ready=false;this.inFlight=null;clearInterval(this.heartbeat);
         this.status=e.code===4001?'Access revoked — local edits retained':'Offline — edits queued';this.changed();
@@ -172,6 +175,8 @@ export class CloudSync{
     this.inFlight=p.operationId;this.socket.send(message);
   }
   private async adopt(identity:Identity,local:AppData,upload:boolean){
+    if(!identity.session)throw Error('Missing device credential');
+    await writeSession(identity.session);this.session=identity.session;
     const snapshot=await this.api<Snapshot>('snapshot');
     const recovery=identity.recoveryKey;
     const safeIdentity={workspaceId:identity.workspaceId,deviceId:identity.deviceId,owner:identity.owner};
@@ -189,8 +194,8 @@ export class CloudSync{
   settings():string{
     const s=this.state;
     if(!navigator.locks)return '<p>Cloud Sync requires a browser with Web Locks support.</p>';
-    if(!s)return `<fieldset class="settings-group d-grid gap-3 mt-3"><legend>Cloud Sync (test)</legend><p>Connect using a pairing token, or create a private workspace. Local-only notes remain separate when pairing.</p><label for="cloudCredential">Invitation, pairing token or recovery key</label><input id="cloudCredential" class="form-control rounded-5" type="password" autocomplete="off"><div class="d-flex flex-wrap gap-2">${button('create','Create workspace')}${button('pair','Pair device')}${button('recover','Recover owner')}</div></fieldset>`;
-    return `<fieldset class="settings-group d-grid gap-3 mt-3"><legend>Cloud Sync (test)</legend><p>${html(this.status)} · ${s.pending.length} pending · ${s.conflicts.length} conflicts</p>
+    if(!s)return `<fieldset class="settings-group d-grid gap-3 mt-3"><legend>Cloud Sync</legend><p>Connect using a pairing token, or create a private workspace. Local-only notes remain separate when pairing.</p><label for="cloudCredential">Invitation, pairing token or recovery key</label><input id="cloudCredential" class="form-control rounded-5" type="password" autocomplete="off"><div class="d-flex flex-wrap gap-2">${button('create','Create workspace')}${button('pair','Pair device')}${button('recover','Recover owner')}</div></fieldset>`;
+    return `<fieldset class="settings-group d-grid gap-3 mt-3"><legend>Cloud Sync</legend><p>${html(this.status)} · ${s.pending.length} pending · ${s.conflicts.length} conflicts</p>
       ${this.secretDisplay?`<label for="cloudSecret">Save this credential now — it is not stored in the browser.</label><textarea id="cloudSecret" class="form-control" readonly rows="3">${html(this.secretDisplay)}</textarea>${button('hide','Hide credential')}`:''}
       ${s.identity.owner?`<div class="d-flex flex-wrap gap-2">${button('token','Generate / rotate pairing token')}${button('refresh','Refresh devices')}</div>
       ${this.grants.map(g=>`<div>${html(new Date(g.created_at).toLocaleString())} ${button('revoke-token','Revoke token','data-id="'+html(g.id)+'"')}</div>`).join('')}
@@ -231,6 +236,7 @@ export class CloudSync{
         // Preserve the cloud cache as an independent local backup before leaving.
         if(this.state)localStorage.setItem(KEY+'-disconnected',JSON.stringify(this.state));
         if(!this.save(null))throw Error('Could not disconnect local cache');
+        await writeSession('');this.session='';
         this.changed();
       }else if(action==='recover-conflict'||action==='discard-conflict'){
         if(!this.state)return;

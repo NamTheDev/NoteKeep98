@@ -14,7 +14,8 @@ type PopupKind = 'color' | 'labels' | 'more' | null;
 interface PopupState { kind: PopupKind; target: string | null; anchor: HTMLElement | null; }
 
 const $ = <T extends Element = HTMLElement>(selector: string, root: ParentNode = document): T | null => root.querySelector<T>(selector);
-const cloud:CloudSync|null=document.querySelector('meta[name="keep-cloud"]')?new CloudSync(()=>{data=cloud?.project(load())??load();render();},message=>notify(message)):null;
+const cloudConfig=document.querySelector<HTMLMetaElement>('meta[name="keep-cloud"]')?.content;
+const cloud:CloudSync|null=cloudConfig?new CloudSync(()=>{data=cloud?.project(load())??load();render();},message=>notify(message),cloudConfig==='enabled'?location.origin:cloudConfig):null;
 let data: AppData = cloud?.project(load())??load();
 let view: View = 'notes';
 let search = '';
