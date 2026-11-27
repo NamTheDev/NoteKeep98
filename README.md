@@ -14,7 +14,6 @@ A local-first browser notes app with a compact Catppuccin interface. Notes, chec
 
 - [Usage and development](docs/PROJECT_GUIDE.md)
 - [Architecture](docs/ARCHITECTURE.md)
-- [Shared design principles](https://github.com/NamTheDev/util/blob/main/design/DESIGN_PRINCIPLES.md)
 - [Credits](CREDITS.md)
 
 ## License
