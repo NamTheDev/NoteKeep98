@@ -151,7 +151,8 @@ function render():void {
   const setText=(sel:string,text:string)=>{const el=$(sel);if(el)el.textContent=text;};
   setText('#pageTitle',viewTitle());
   if(cloud){setText('#statusText',cloud.statusText);setText('#storageNotice',cloud.active?'Cloud workspace · saved edits sync automatically.':'Notes stay on this device.');}
-  setText('#statusCount',`${filterNotes().length} ${filterNotes().length===1?'note':'notes'}`);
+  const noteCount=filterNotes().length;
+  setText('#statusCount',`${noteCount} ${noteCount===1?'note':'notes'}`);
   const quick=$('#quickBar');if(quick)quick.hidden=view==='trash'||view==='archive';
   const clear=$('#clearSearch');if(clear)clear.hidden=!search;
   $('.desktop')?.classList.add('dark-mode');
@@ -193,29 +194,33 @@ function openEditor(note:Note|null,checklist=false):void {
   draft=note?structuredClone(note):blankNote(checklist);
   editingId=note?.id??null;
   dialog='editor';closePopup();renderDialog();
-  window.setTimeout(()=>$<HTMLInputElement>('#editTitle')?.focus(),10);
+  $<HTMLInputElement>('#editTitle')?.focus();
 }
 function saveEditor():void {
   syncDraft();if(!draft)return;
   let item=structuredClone(draft);
-  if(cloud?.active&&editingId&&editorBase){
-    const current=getNote(editingId)??null,merged=mergeNote(editorBase,item,current);
-    if(!merged.ok||!merged.value){item={...item,id:id(),title:(item.title+' (conflict copy)').slice(0,10000)};editingId=null;notify('Concurrent edit preserved as a separate note');}
-    else item=merged.value;
+  let targetId=editingId;
+  let conflict=false;
+  if(cloud?.active&&targetId&&editorBase){
+    const merged=mergeNote(editorBase,item,getNote(targetId)??null);
+    if(!merged.ok||!merged.value){
+      item={...item,id:id(),title:(item.title+' (conflict copy)').slice(0,10000)};
+      targetId=null;conflict=true;
+    }else item=merged.value;
   }
   item.items=item.items.filter(c=>c.text.trim());
   if(!item.title.trim()&&!item.body.trim()&&!item.items.length){dialog=null;draft=null;renderDialog();return;}
   item.updatedAt=now();
   if(!mutate(()=>{
-    if(editingId){const index=data.notes.findIndex(n=>n.id===editingId);if(index>=0)data.notes[index]=normalizeNote(item);}
-    else data.notes.unshift(normalizeNote(item));
-  })){
-    // The dialog DOM still contains the user's input. Do not replace it on a rejected write.
-    return;
-  }
-  editingId=null;draft=null;dialog=null;renderDialog();notify('Note saved');
+    const note=normalizeNote(item);
+    const index=targetId?data.notes.findIndex(n=>n.id===targetId):-1;
+    if(index>=0)data.notes[index]=note;
+    else data.notes.unshift(note);
+  }))return;
+  editingId=null;editorBase=null;draft=null;dialog=null;renderDialog();
+  notify(conflict?'Concurrent edit preserved as a separate note':'Note saved');
 }
-function closeEditor():void {draft=null;editingId=null;dialog=null;closePopup();renderDialog();}
+function closeEditor():void {draft=null;editorBase=null;editingId=null;dialog=null;closePopup();renderDialog();}
 function openReminder(target:string):void {
   if(dialog==='editor')syncDraft();
   reminderTarget=target;
@@ -313,7 +318,6 @@ function setReminder(value:string|null):void {
   const target=reminderTarget;
   if(!updateTarget(n=>{n.reminder=value;},target))return;
   closeReminder();
-  if(reminderReturn==='editor') renderDialog();
   notify(value?'Reminder set':'Reminder removed');
 }
 function exportData():void { downloadBackup(data); notify('JSON backup exported'); }
@@ -430,10 +434,14 @@ app.addEventListener('input',event=>{
     expandQuickComposer();
     resizeQuickText(node);
   }
-  if(dialog==='editor' && draft && node.matches('.editor-check-row .item-text')){
-    const row=node.closest<HTMLElement>('.editor-check-row');
-    const item=draft.items.find(i=>i.id===row?.getAttribute('data-item'));
-    if(item)item.text=node.value;
+  if(dialog==='editor'&&draft){
+    if(node.id==='editTitle')draft.title=node.value;
+    else if(node.id==='editBody')draft.body=node.value;
+    else if(node.matches('.editor-check-row .item-text')){
+      const row=node.closest<HTMLElement>('.editor-check-row');
+      const item=draft.items.find(i=>i.id===row?.getAttribute('data-item'));
+      if(item)item.text=node.value;
+    }
   }
   if(node.id==='searchInput') {search=node.value;render();}
 });

@@ -305,6 +305,7 @@ with sync_playwright() as p:
     blocked.locator('[data-action="saveEditor"]').click()
     assert blocked.locator('#editTitle').is_visible(), "Editor closed after storage failure"
     assert blocked.locator('#editTitle').input_value()=='Must Not Claim Saved'
+    assert blocked.locator('#editBody').input_value()=='Keep the draft visible'
     assert 'Could not save to browser storage' in blocked.locator('#toastRoot').inner_text()
     assert 'Note saved' not in blocked.locator('#toastRoot').inner_text()
     blocked.reload(wait_until='load')
