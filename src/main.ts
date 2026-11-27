@@ -43,7 +43,7 @@ if (hadTracking) window.history.replaceState(null, '', canonicalUrl);
 const app = $('#app');
 if (!app) throw new Error('Missing #app root');
 app.innerHTML = renderShell(icon);
-const marqueeScript=document.createElement('script');marqueeScript.src='./marquee.js';document.head.append(marqueeScript);
+const marqueeScript=document.createElement('script');marqueeScript.src='./marquee.js?v=restore1';document.head.append(marqueeScript);
 
 function persist(): boolean {
   try {localStorage.setItem(STORAGE_KEY,JSON.stringify(data));return true;}
