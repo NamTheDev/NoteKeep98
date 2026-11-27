@@ -51,7 +51,6 @@ with sync_playwright() as p:
         gutter:root.getPropertyValue('--content-gutter').trim(),
         gap:root.getPropertyValue('--content-gap').trim(),
         cardInset:root.getPropertyValue('--card-inset').trim(),
-        sidebarWidth:style('#sidebar').width,
         headingLeft:style('.content-heading').paddingLeft,
         noteInset:style('.note-window .note-paper').paddingLeft,
         gridGap:style('.note-grid').columnGap
@@ -59,7 +58,7 @@ with sync_playwright() as p:
     }""")
     assert spacing=={
       'gutter':'20px','gap':'12px','cardInset':'14px',
-      'sidebarWidth':'224px','headingLeft':'20px','noteInset':'14px','gridGap':'12px'
+      'headingLeft':'20px','noteInset':'14px','gridGap':'12px'
     }, spacing
     assert page.locator('.page-kicker, .page-desc').count() == 0
     assert page.locator('#navRoot [data-action="settings"]').is_visible()
@@ -75,9 +74,9 @@ with sync_playwright() as p:
     }""")
     assert visual['bg']=='rgb(30, 30, 46)',visual
     assert visual['surface']=='rgb(24, 24, 37)',visual
-    assert visual['radius']=='10px',visual
+    assert visual['radius']=='8px',visual
     assert visual['shadow']=='none',visual
-    assert 'Roboto' in visual['font'],visual
+    assert 'Source Sans 3' in visual['font'],visual
     assert visual['animation']=='0s' and visual['transition']=='0s',visual
     page.screenshot(path=str(results/'desktop-dark.png'),full_page=True)
     page.locator('[data-action="settings"]').first.click()
@@ -172,6 +171,7 @@ with sync_playwright() as p:
     page.locator('.swatch[title="Sky"]').click()
     assert 'd7e8ff' in card.get_attribute('style')
     # labels
+    page.locator('summary',has_text='Labels').click()
     page.locator('[data-action="manageLabels"]').first.click()
     page.locator('#newLabelInput').fill('QA Label')
     page.locator('[data-action="addLabel"]').click()
@@ -179,6 +179,7 @@ with sync_playwright() as p:
     card=page.locator('.note-window').filter(has_text='QA Note 98')
     card.locator('[data-kind="labels"]').click()
     page.locator('input[data-value="QA Label"]').check()
+    page.locator('summary',has_text='Labels').click()
     page.locator('[data-view="label:QA Label"]').click()
     assert page.locator('.note-window').count()==1
     # archive + restore
@@ -198,6 +199,7 @@ with sync_playwright() as p:
     page.locator('.note-window').filter(has_text='QA Note 98').locator('[data-action="restore"]').click()
     # Export is a sidebar action, not a toolbar or settings-dialog duplicate.
     with page.expect_download() as d:
+        page.locator('summary',has_text='Data & help').click()
         page.locator('#navRoot [data-action="export"]').click()
     assert d.value.suggested_filename.endswith('.json')
     # reminders and reminder filtering
@@ -245,30 +247,17 @@ with sync_playwright() as p:
     main_window=mobile.locator('#mainWindow')
     assert mobile.locator('#mainWindow .window-controls').count()==0
     assert mobile.locator('.taskbar').count()==0
-    # The sidebar and backdrop must still work in full-viewport mode.
-    mobile.locator('[data-action="toggleNav"]').click()
-    assert mobile.locator('#sidebar').evaluate('(e)=>e.classList.contains("mobile-open")')
-    workspace_box=mobile.locator('.workspace').bounding_box()
-    sidebar_box=mobile.locator('#sidebar').bounding_box()
-    assert workspace_box is not None and sidebar_box is not None
-    assert abs(workspace_box['y']-sidebar_box['y'])<=2,(workspace_box,sidebar_box)
-    mobile.locator('#mobileScrim').click(position={'x':320,'y':15})
-    assert not mobile.locator('#sidebar').evaluate('(e)=>e.classList.contains("mobile-open")')
-    assert main_window.is_visible()
-    bounds=main_window.bounding_box()
-    assert bounds is not None
-    assert abs(bounds['x'])<=1 and abs(bounds['width']-390)<=2, bounds
+    assert mobile.locator('#sidebar').count()==0
+    assert mobile.locator('.brand-name').inner_text()=='namchill235 / keep'
     assert mobile.locator('#desktop').evaluate('(e)=>e.classList.contains("dark-mode")')
-    icon_filter=mobile.locator('.mobile-nav-toggle .ui-icon').evaluate('(e)=>getComputedStyle(e).filter')
+    icon_filter=mobile.locator('#navRoot .ui-icon').first.evaluate('(e)=>getComputedStyle(e).filter')
     assert icon_filter == 'none', icon_filter
-    mobile.locator('[data-action="toggleNav"]').click()
     mobile.locator('#navRoot [data-action="settings"]').click()
     backdrop=mobile.locator('.dialog-backdrop').evaluate('(e)=>getComputedStyle(e).backgroundColor')
     assert backdrop=='rgba(17, 17, 27, 0.75)',backdrop
     mobile.locator('.dialog-window [data-action="closeDialog"]').last.click()
     mobile.screenshot(path=str(results/'mobile-dark.png'),full_page=True)
     mobile.reload(wait_until='load')
-    mobile.locator('[data-action="toggleNav"]').click()
     mobile.locator('#navRoot [data-action="settings"]').click()
     assert mobile.locator('input[data-action="toggleDarkMode"]').count() == 0
     mobile.locator('[data-action="closeDialog"]').last.click()

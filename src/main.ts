@@ -29,7 +29,6 @@ let reminderReturn: Dialog = null;
 let confirmAction: (()=>void) | null = null;
 let confirmTitle = '';
 let confirmMessage = '';
-let mobileMenu = false;
 let undo: Note[] | null = null;
 let toastTimer: number | undefined;
 
@@ -44,6 +43,7 @@ if (hadTracking) window.history.replaceState(null, '', canonicalUrl);
 const app = $('#app');
 if (!app) throw new Error('Missing #app root');
 app.innerHTML = renderShell(icon);
+const marqueeScript=document.createElement('script');marqueeScript.src='./marquee.js';document.head.append(marqueeScript);
 
 function persist(): boolean {
   try {localStorage.setItem(STORAGE_KEY,JSON.stringify(data));return true;}
@@ -86,7 +86,7 @@ function counts(): Record<string,number> {
 }
 function filterNotes(): Note[] { return selectNotes(data,view,search); }
 function setView(next: View): void {
-  view=next;mobileMenu=false;closePopup();render();
+  view=next;closePopup();render();
   $('#boardScroll')?.scrollTo({top:0});
 }
 function viewTitle():string {
@@ -97,40 +97,34 @@ function viewTitle():string {
   return view.startsWith('label:')?view.slice(6):'All Notes';
 }
 function navButton(dest:View,name:string,iconName:string,count?:number,sub=false):string {
-  return `<button class="nav-btn ${view===dest?'active':''} ${sub?'sub':''} nav-link w-100 rounded-5 justify-content-start text-start" data-action="view" data-view="${html(dest)}" aria-current="${view===dest?'page':'false'}">${icon(iconName)}<span>${html(name)}</span>${count!==undefined?`<span class="nav-count ms-auto fg-2">${count}</span>`:''}</button>`;
+  return `<button class="nav-btn ${view===dest?'active':''} ${sub?'sub':''} nav-link rounded-5 justify-content-start text-start" data-action="view" data-view="${html(dest)}" aria-current="${view===dest?'page':'false'}">${icon(iconName)}<span>${html(name)}</span>${count!==undefined?`<span class="nav-count ms-auto fg-2">${count}</span>`:''}</button>`;
 }
 function renderNav():void {
   const c=counts();const root=$('#navRoot');if(!root)return;
   root.innerHTML=`
-  <div class="sidebar-heading fg-2 fw-medium fs-xs">Navigation</div>
-  <nav class="sidebar-group nav flex-column" aria-label="Notes navigation">
+  <nav class="nav d-flex flex-wrap gap-2" aria-label="Notes navigation">
     ${navButton('notes','All Notes','folder',c.notes)}
     ${navButton('reminders','Reminders','bell',c.reminders)}
     ${navButton('archive','Archive','archive',c.archive)}
     ${navButton('trash','Recycle Bin','trash',c.trash)}
   </nav>
-  <div class="sidebar-divider border-top mx-4 my-3 opacity-50"></div>
-  <div class="sidebar-heading fg-2 fw-medium fs-xs">Labels</div>
-  <nav class="sidebar-group nav flex-column" aria-label="Note labels">
+  <details class="nav-disclosure"><summary class="btn btn-outline theme-secondary rounded-5">Labels</summary><nav class="nav d-flex flex-wrap gap-2 mt-2" aria-label="Note labels">
     ${data.labels.map(label=>navButton(`label:${label}`,label,'label',data.notes.filter(n=>n.labels.includes(label)&&!n.trashed&&!n.archived).length,true)).join('')}
-    <button class="nav-btn nav-link w-100 rounded-5 justify-content-start text-start" data-action="manageLabels">${icon('pencil')}<span>Manage labels</span></button>
+    <button class="nav-btn nav-link rounded-5 justify-content-start text-start" data-action="manageLabels">${icon('pencil')}<span>Manage labels</span></button>
+  </nav></details>
+  <nav class="nav d-flex flex-wrap gap-2" aria-label="Note actions">
+    <button class="nav-btn btn btn-solid theme-primary rounded-5" data-action="newNote">${icon('note')}<span>New note</span></button>
+    <button class="nav-btn nav-link rounded-5 justify-content-start text-start" data-action="newChecklist">${icon('check')}<span>New checklist</span></button>
+    <button class="nav-btn nav-link rounded-5 justify-content-start text-start" id="viewToggle" data-action="toggleView" aria-pressed="${data.list}" aria-label="${data.list?'Switch to grid':'Switch to list'}">${icon(data.list?'grid':'list')}<span>${data.list?'Grid view':'List view'}</span></button>
   </nav>
-  <div class="sidebar-divider border-top mx-4 my-3 opacity-50"></div>
-  <div class="sidebar-heading fg-2 fw-medium fs-xs">Actions</div>
-  <nav class="sidebar-group nav flex-column" aria-label="Note actions">
-    <button class="nav-btn nav-link w-100 rounded-5 justify-content-start text-start" data-action="newNote">${icon('note')}<span>New note</span></button>
-    <button class="nav-btn nav-link w-100 rounded-5 justify-content-start text-start" data-action="newChecklist">${icon('check')}<span>New checklist</span></button>
-    <button class="nav-btn nav-link w-100 rounded-5 justify-content-start text-start" id="viewToggle" data-action="toggleView" aria-pressed="${data.list}" aria-label="${data.list?'Switch to grid':'Switch to list'}">${icon(data.list?'grid':'list')}<span>${data.list?'Grid view':'List view'}</span></button>
-  </nav>
-  <div class="sidebar-divider border-top mx-4 my-3 opacity-50"></div>
-  <div class="sidebar-heading fg-2 fw-medium fs-xs">Preferences</div>
-  <nav class="sidebar-group nav flex-column" aria-label="Settings and data">
-    <button class="nav-btn nav-link w-100 rounded-5 justify-content-start text-start" data-action="settings">${icon('settings')}<span>Settings</span></button>
-    <button class="nav-btn nav-link w-100 rounded-5 justify-content-start text-start" data-action="import">${icon('upload')}<span>Import notes</span></button>
-    <button class="nav-btn nav-link w-100 rounded-5 justify-content-start text-start" data-action="export">${icon('download')}<span>Export backup</span></button>
-    <button class="nav-btn nav-link w-100 rounded-5 justify-content-start text-start" data-action="reset">${icon('restore')}<span>Restore samples</span></button>
-    <button class="nav-btn nav-link w-100 rounded-5 justify-content-start text-start" data-action="about">${icon('info')}<span>About</span></button>
-  </nav>`;
+  <nav class="nav d-flex flex-wrap gap-2" aria-label="Settings and data">
+    <button class="nav-btn nav-link rounded-5 justify-content-start text-start" data-action="settings">${icon('settings')}<span>Settings</span></button>
+  </nav><details class="nav-disclosure"><summary class="btn btn-outline theme-secondary rounded-5">Data &amp; help</summary><nav class="nav d-flex flex-wrap gap-2 mt-2" aria-label="Data and help">
+    <button class="nav-btn nav-link rounded-5 justify-content-start text-start" data-action="import">${icon('upload')}<span>Import notes</span></button>
+    <button class="nav-btn nav-link rounded-5 justify-content-start text-start" data-action="export">${icon('download')}<span>Export backup</span></button>
+    <button class="nav-btn nav-link rounded-5 justify-content-start text-start" data-action="reset">${icon('restore')}<span>Restore samples</span></button>
+    <button class="nav-btn nav-link rounded-5 justify-content-start text-start" data-action="about">${icon('info')}<span>About</span></button>
+  </nav></details>`;
 }
 function noteGroup(notes: Note[],heading:string):string {return `<div class="board-label fg-2 text-uppercase fw-medium">${html(heading)}</div><div class="note-grid ${data.list?'is-list':''} d-grid">${notes.map(note=>renderNoteCard(note,view)).join('')}</div>`;}
 function renderBoard():void {
@@ -160,9 +154,6 @@ function render():void {
   setText('#statusCount',`${filterNotes().length} ${filterNotes().length===1?'note':'notes'}`);
   const quick=$('#quickBar');if(quick)quick.hidden=view==='trash'||view==='archive';
   const clear=$('#clearSearch');if(clear)clear.hidden=!search;
-  $('#sidebar')?.classList.toggle('mobile-open',mobileMenu);
-  $('#mobileScrim')?.classList.toggle('show',mobileMenu);
-  $('[data-action="toggleNav"]')?.setAttribute('aria-expanded',String(mobileMenu));
   $('.desktop')?.classList.add('dark-mode');
 }
 
@@ -334,7 +325,6 @@ function renameLabel(oldName:string):void {
   renderDialog();notify('Label renamed');
 }
 function execute(action:string,button:HTMLElement):void {
-  if(button.closest('#sidebar') && mobileMenu){mobileMenu=false;$('#sidebar')?.classList.remove('mobile-open');$('#mobileScrim')?.classList.remove('show');}
   const noteId=button.getAttribute('data-id')??'';
   const value=button.getAttribute('data-value')??'';
   if(action.startsWith('cloud:')&&cloud){void cloud.action(action.slice(6),noteId,data).then(()=>{if(dialog==='settings')renderDialog();});return;}
@@ -398,8 +388,6 @@ function execute(action:string,button:HTMLElement):void {
     case 'clearSearch':search='';{const field=$<HTMLInputElement>('#searchInput');if(field){field.value='';field.focus();}}render();break;
     case 'dismissToast':{const root=$('#toastRoot');if(root)root.innerHTML='';break;}
     case 'undo':if(undo){const snapshot=structuredClone(undo);if(mutate(()=>{data.notes=snapshot;})){undo=null;notify('Undone');}}break;
-    case 'toggleNav':mobileMenu=!mobileMenu;render();break;
-    case 'closeNav':mobileMenu=false;render();break;
   }
 }
 
@@ -474,7 +462,6 @@ document.addEventListener('keydown',event=>{
     if(dialog==='reminder'){closeReminder();return;}
     if(dialog==='editor'){closeEditor();return;}
     if(dialog){dialog=null;renderDialog();return;}
-    if(mobileMenu){mobileMenu=false;render();return;}
     if(search){search='';const f=$<HTMLInputElement>('#searchInput');if(f)f.value='';render();}
   }
   if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'){
