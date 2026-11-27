@@ -14,13 +14,14 @@ html,body,#app{height:100%;min-width:320px}
 .page-title{font-size:var(--font-size-title);line-height:30px}
 .search-box{width:min(340px,100%)}
 .search-box .form-control{flex-basis:0}
-.quick-bar{margin:0 var(--content-gutter) 10px;padding:10px var(--card-inset);--bs-card-bg:var(--base)}
+.quick-bar{margin:0 var(--content-gutter) 10px;padding:10px var(--card-inset)}
 .quick-text{min-height:42px;resize:vertical}
 .board-scroll{padding:8px var(--content-gutter) 24px}
 .board-label{margin:12px 0 8px;font-size:var(--font-size-small);letter-spacing:.04em}
 .note-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:var(--content-gap);align-items:start}
 .note-grid.is-list{grid-template-columns:minmax(0,760px)}
 .card{--bs-card-bg:var(--surface);--bs-card-border-color:var(--outline-soft);--bs-card-spacer-x:var(--card-inset);--bs-card-spacer-y:12px;--bs-card-cap-bg:transparent;--bs-card-body-gap:4px}
+.quick-bar{--bs-card-bg:var(--base)}
 .note-window:hover{border-color:var(--outline)}
 .note-titlebar{min-height:32px;padding:6px 12px 0}
 .note-paper{min-height:72px}
