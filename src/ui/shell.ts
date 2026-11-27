@@ -4,7 +4,7 @@ export function renderShell(icon:(name:string)=>string): string {
 <div class="desktop d-flex justify-content-center bg-body" id="desktop">
 
   <main class="main-window window w-100 d-flex flex-column h-100 min-h-0 position-relative" id="mainWindow" aria-label="keep application window">
-    <header class="site-header border-bottom mx-4 lg:mx-6"><div class="header-inner d-flex align-items-center gap-4 w-100"><span class="brand-name">namchill235 / keep</span><nav class="header-links d-flex align-items-center gap-5 overflow-x-auto overflow-y-hidden text-nowrap" aria-label="Related projects"><a class="flex-shrink-0" href="https://namthedev.github.io/profile/">Profile</a><a class="flex-shrink-0" href="https://namthedev.github.io/docs/">Docs</a><a class="flex-shrink-0" href="https://namthedev.github.io/clipboard/">Clipboard</a><a class="flex-shrink-0" href="https://github.com/NamTheDev/keep">GitHub</a></nav></div></header>
+    <header class="site-header border-bottom mx-4 lg:mx-6"><div class="header-inner d-flex align-items-center gap-4 w-100"><span class="brand-name">namchill235 / keep</span><span class="header-description flex-grow-1 min-w-0 fg-2 fs-sm">A note-taking GitHub web app for storing notes..</span></div></header>
     <div id="navRoot" class="app-navigation border-bottom"></div>
     <div class="workspace d-flex flex-grow-1 position-relative min-h-0 min-w-0">
       <section class="content-pane d-flex flex-column flex-grow-1 overflow-hidden min-h-0 min-w-0" aria-label="Notes">

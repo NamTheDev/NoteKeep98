@@ -36,4 +36,4 @@ The frontend TypeScript configuration rejects unused local variables and paramet
 
 The canonical frontend is [GitHub Pages](https://namthedev.github.io/keep/). Railway is API-only in production; see [cloud synchronization](CLOUD_SYNC.md).
 
-The fullscreen workspace uses local shell.css and marquee.js. Stationary top navigation replaces the sidebar and its mobile drawer. Label and data actions use disclosures. Storage and cloud contracts are unchanged.
+The fullscreen workspace uses local shell.css and a stationary repository description. Stationary top navigation replaces the sidebar and its mobile drawer. Label and data actions use disclosures. Storage and cloud contracts are unchanged.

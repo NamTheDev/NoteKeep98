@@ -21,17 +21,9 @@ with sync_playwright() as p:
     assert page.title() == 'keep', 'The website title must be exactly keep'
     assert page.locator('link[rel="icon"]').get_attribute('href') == './favicon.svg'
     assert 'utm_source' not in page.url, 'Remove tracking parameters from the canonical address'
-    page.wait_for_timeout(300)
-    page.locator(".marquee-track").wait_for(state="visible")
-    assert page.locator(".marquee-toggle").count() == 0
-    page.mouse.move(0, 500)
-    start = page.locator(".header-links").evaluate("(el) => el.scrollLeft")
-    page.wait_for_function("(start) => Math.abs(document.querySelector('.header-links').scrollLeft-start)>10", arg=start, timeout=4000)
-    page.locator(".header-links").hover()
-    start = page.locator(".header-links").evaluate("(el) => el.scrollLeft")
-    page.mouse.wheel(80, 0)
-    page.wait_for_function("(start) => Math.abs(document.querySelector('.header-links').scrollLeft-start)>10", arg=start, timeout=4000)
-    page.mouse.move(0, 500)
+    assert page.locator(".header-description").inner_text() == "A note-taking GitHub web app for storing notes.."
+    assert page.locator(".marquee-track, .marquee-toggle, .header-links").count() == 0
+    assert page.locator("#navRoot").is_visible()
     def assert_theme_signal(expected):
         signal=page.evaluate("""() => ({
           meta:document.querySelector('meta[name="color-scheme"]')?.content,
