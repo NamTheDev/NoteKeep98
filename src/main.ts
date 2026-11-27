@@ -95,8 +95,8 @@ function viewTitle():string {
   if(view==='trash')return 'Recycle Bin';
   return view.startsWith('label:')?view.slice(6):'All Notes';
 }
-function navButton(dest:View,name:string,iconName:string,count?:number,sub=false):string {
-  return `<button class="nav-btn ${view===dest?'active':''} ${sub?'sub':''} nav-link rounded-5 justify-content-start text-start" data-action="view" data-view="${html(dest)}" aria-current="${view===dest?'page':'false'}">${icon(iconName)}<span>${html(name)}</span>${count!==undefined?`<span class="nav-count ms-auto fg-2">${count}</span>`:''}</button>`;
+function navButton(dest:View,name:string,iconName:string,count?:number):string {
+  return `<button class="nav-btn ${view===dest?'active':''} nav-link rounded-5 justify-content-start text-start" data-action="view" data-view="${html(dest)}" aria-current="${view===dest?'page':'false'}">${icon(iconName)}<span>${html(name)}</span>${count!==undefined?`<span class="nav-count ms-auto fg-2">${count}</span>`:''}</button>`;
 }
 function renderNav():void {
   const c=counts();const root=$('#navRoot');if(!root)return;
@@ -108,7 +108,7 @@ function renderNav():void {
     ${navButton('trash','Recycle Bin','trash',c.trash)}
   </nav>
   <details class="nav-disclosure"><summary class="btn btn-outline theme-secondary rounded-5">Labels</summary><nav class="nav d-flex flex-wrap gap-2 mt-2" aria-label="Note labels">
-    ${data.labels.map(label=>navButton(`label:${label}`,label,'label',data.notes.filter(n=>n.labels.includes(label)&&!n.trashed&&!n.archived).length,true)).join('')}
+    ${data.labels.map(label=>navButton(`label:${label}`,label,'label',data.notes.filter(n=>n.labels.includes(label)&&!n.trashed&&!n.archived).length)).join('')}
     <button class="nav-btn nav-link rounded-5 justify-content-start text-start" data-action="manageLabels">${icon('pencil')}<span>Manage labels</span></button>
   </nav></details>
   <nav class="nav d-flex flex-wrap gap-2" aria-label="Note actions">
