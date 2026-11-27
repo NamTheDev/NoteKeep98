@@ -35,3 +35,5 @@ Follow the [shared minimum-custom-CSS standard](https://github.com/NamTheDev/uti
 The frontend TypeScript configuration rejects unused local variables and parameters. Keep compatibility storage keys, current theme signals and shared vendored assets intact; in-progress cloud modules are exercised by dedicated tests before integration.
 
 The canonical frontend is [GitHub Pages](https://namthedev.github.io/keep/). Railway is API-only in production; see [cloud synchronization](CLOUD_SYNC.md).
+
+The fullscreen workspace uses shared util shell.css and marquee.js. Stationary top navigation replaces the sidebar and its mobile drawer. Label and data actions use disclosures. Storage and cloud contracts are unchanged.
